@@ -14,7 +14,10 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const hasAuthCookie = hasSupabaseAuthCookie(req);
 
-  const protectedRoutes = ['/dashboard', '/bank', '/accounting', '/statements', '/approvals', '/filings', '/company', '/settings'];
+  const protectedRoutes = [
+    '/dashboard', '/bank', '/accounting', '/statements', '/approvals', '/filings', '/company', '/settings', '/users',
+    '/en/dashboard', '/en/bank', '/en/accounting', '/en/statements', '/en/approvals', '/en/filings', '/en/company', '/en/settings', '/en/users',
+  ];
   const isProtectedRoute = protectedRoutes.some((r) => path.startsWith(r));
 
   if (isProtectedRoute && !hasAuthCookie) {
@@ -70,5 +73,6 @@ export const config = {
     '/settings/:path*',
     '/login',
     '/register',
+    '/en/:path*',
   ],
 };

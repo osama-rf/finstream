@@ -370,11 +370,11 @@ function buildSystemPrompt(ctx: AgentContext) {
 قواعد مهمة:
 - لا تخترع أرقاماً — كل تحليل مبني على بيانات فعلية
 - اكتب بالعربية المهنية الواضحة
-- الأرقام والتواريخ دائماً بالإنجليزية (1234 وليس ١٢٣٤)
+- الأرقام والتواريخ دائماً بأرقام إنجليزية (1234 وليس ١٢٣٤)
 - عند تنفيذ إجراء، أخبر المستخدم بما تم بالضبط
 - ركز على البيانات المالية للشركة فقط
 
-التاريخ اليوم: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+التاريخ اليوم: ${new Date().toLocaleDateString('ar-SA-u-nu-latn-ca-gregory', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
 }
 
 // ─── Main Agent Loop ─────────────────────────────────────────────────────────
@@ -491,7 +491,7 @@ export async function generateFinanceReport(ctx: AgentContext): Promise<FinanceR
   if (!apiKey) return fallback;
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const today = new Date().toLocaleDateString('ar-SA-u-nu-latn-ca-gregory', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const prompt = `أنت مساعد مالي ذكي. بيانات الشركة المالية:
 

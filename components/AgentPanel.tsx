@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import {
   Send, Bot, Loader2, RefreshCw, AlertTriangle, CheckCircle2,
   ArrowLeft, MessageSquare, BarChart2, Landmark, FileText,
@@ -11,69 +12,138 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import Link from "next/link";
 import type { FinanceReport, ReportItem } from "@/lib/ai/finance-agent";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type Message = { role: "user" | "agent"; text: string; toolCalls?: string[] };
+type ToolEvent = { type: "tool_start" | "tool_done" | "text" | "error"; toolName?: string; text?: string };
 
-type ToolEvent = {
-  type: "tool_start" | "tool_done" | "text" | "error";
-  toolName?: string;
-  text?: string;
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+
+const TOOL_NAMES = {
+  ar: {
+    get_financial_summary:         "قراءة الملخص المالي",
+    get_unclassified_transactions: "البحث عن معاملات غير مصنفة",
+    get_pending_approvals:         "مراجعة الموافقات المعلقة",
+    get_statements_status:         "قراءة حالة القوائم المالية",
+    get_filings_status:            "قراءة حالة الإيداعات",
+    get_journal_entries:           "قراءة دفتر اليومية",
+    classify_transaction:          "تصنيف معاملة بنكية",
+    create_journal_entry:          "إنشاء قيد محاسبي",
+    generate_income_statement:     "إنشاء قائمة دخل",
+  },
+  en: {
+    get_financial_summary:         "Reading financial summary",
+    get_unclassified_transactions: "Searching unclassified transactions",
+    get_pending_approvals:         "Reviewing pending approvals",
+    get_statements_status:         "Reading statements status",
+    get_filings_status:            "Reading filings status",
+    get_journal_entries:           "Reading journal entries",
+    classify_transaction:          "Classifying bank transaction",
+    create_journal_entry:          "Creating journal entry",
+    generate_income_statement:     "Generating income statement",
+  },
+} as const;
+
+const ATTENTION = {
+  ar: {
+    high:   { label: "يستلزم تدخلاً", color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" },
+    medium: { label: "يحتاج متابعة",  color: "var(--warning)",     bg: "color-mix(in srgb, var(--warning) 10%, transparent)" },
+    low:    { label: "وضع مستقر",     color: "#1F9A94",            bg: "#1F9A941a" },
+  },
+  en: {
+    high:   { label: "Action Required", color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" },
+    medium: { label: "Needs Attention", color: "var(--warning)",     bg: "color-mix(in srgb, var(--warning) 10%, transparent)" },
+    low:    { label: "Stable",          color: "#1F9A94",            bg: "#1F9A941a" },
+  },
 };
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const TOOL_NAME_AR: Record<string, string> = {
-  get_financial_summary:          "قراءة الملخص المالي",
-  get_unclassified_transactions:  "البحث عن معاملات غير مصنفة",
-  get_pending_approvals:          "مراجعة الموافقات المعلقة",
-  get_statements_status:          "قراءة حالة القوائم المالية",
-  get_filings_status:             "قراءة حالة الإيداعات",
-  get_journal_entries:            "قراءة دفتر اليومية",
-  classify_transaction:           "تصنيف معاملة بنكية",
-  create_journal_entry:           "إنشاء قيد محاسبي",
-  generate_income_statement:      "إنشاء قائمة دخل",
+const QUICK_ACTIONS = {
+  ar: {
+    company_admin: [
+      { label: "الوضع المالي",     icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للشركة: الرصيد، الإيرادات، المصروفات، المعاملات غير المصنفة، والموافقات المعلقة." },
+      { label: "تصنيف تلقائي",    icon: Landmark,     prompt: "راجع المعاملات البنكية غير المصنفة وصنّفها تلقائياً." },
+      { label: "إنشاء قائمة دخل", icon: FileText,     prompt: "أنشئ مسودة قائمة دخل للشهر الحالي بناءً على المعاملات المصنفة." },
+      { label: "موافقات معلقة",   icon: CheckCircle2, prompt: "ما الموافقات المعلقة على القوائم المالية والإيداعات التي تحتاج قراراً الآن؟" },
+      { label: "حالة الإيداعات",  icon: Upload,       prompt: "ما حالة الإيداعات الرسمية لدى وزارة التجارة وهيئة الزكاة؟" },
+      { label: "تقرير اليومية",   icon: TrendingUp,   prompt: "أعطني آخر قيود دفتر اليومية والتحقق من التوازن بين المدين والدائن." },
+    ],
+    accountant: [
+      { label: "معاملات معلقة",   icon: Landmark,     prompt: "ما المعاملات البنكية غير المصنفة التي تحتاج ترحيلاً للمحاسبة؟" },
+      { label: "دفتر اليومية",    icon: FileText,     prompt: "أعطني آخر قيود دفتر اليومية مع التحقق من صحة الميزان." },
+      { label: "إنشاء قائمة",     icon: BarChart2,    prompt: "أنشئ مسودة قائمة دخل للفترة الحالية بناءً على البيانات المتاحة." },
+      { label: "الملخص المالي",   icon: TrendingUp,   prompt: "أعطني ملخصاً سريعاً للوضع المالي: الإيرادات، المصروفات، وصافي الربح." },
+    ],
+    auditor: [
+      { label: "مراجعة الموافقات", icon: CheckCircle2, prompt: "ما القوائم المالية التي تحتاج مراجعتي واعتمادي الآن؟" },
+      { label: "الملخص المالي",    icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للتدقيق." },
+      { label: "حالة الإيداعات",   icon: Upload,       prompt: "ما حالة الإيداعات الرسمية المكتملة والمعلقة؟" },
+    ],
+  },
+  en: {
+    company_admin: [
+      { label: "Financial Status",    icon: BarChart2,    prompt: "Give me a comprehensive financial overview: balance, revenue, expenses, unclassified transactions, and pending approvals." },
+      { label: "AI Classify",         icon: Landmark,     prompt: "Review unclassified bank transactions and classify them automatically." },
+      { label: "Generate Statement",  icon: FileText,     prompt: "Generate a draft income statement for the current month based on classified transactions." },
+      { label: "Pending Approvals",   icon: CheckCircle2, prompt: "What financial statements and filings are pending approval right now?" },
+      { label: "Filings Status",      icon: Upload,       prompt: "What is the status of official filings with the Ministry of Commerce and ZATCA?" },
+      { label: "Journal Report",      icon: TrendingUp,   prompt: "Show me the latest journal entries and verify the debit/credit balance." },
+    ],
+    accountant: [
+      { label: "Pending Transactions", icon: Landmark,   prompt: "What unclassified bank transactions need to be posted to accounting?" },
+      { label: "Journal Entries",      icon: FileText,   prompt: "Show me the latest journal entries and verify the trial balance." },
+      { label: "Generate Statement",   icon: BarChart2,  prompt: "Generate a draft income statement for the current period based on available data." },
+      { label: "Financial Summary",    icon: TrendingUp, prompt: "Give me a quick financial summary: revenue, expenses, and net profit." },
+    ],
+    auditor: [
+      { label: "Review Approvals",   icon: CheckCircle2, prompt: "What financial statements need my review and approval now?" },
+      { label: "Financial Summary",  icon: BarChart2,    prompt: "Give me a comprehensive financial summary for auditing." },
+      { label: "Filings Status",     icon: Upload,       prompt: "What is the status of completed and pending official filings?" },
+    ],
+  },
 };
 
-const ATTENTION_CONFIG = {
-  high:   { label: "يستلزم تدخلاً",  color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" },
-  medium: { label: "يحتاج متابعة",   color: "var(--warning)",     bg: "color-mix(in srgb, var(--warning) 10%, transparent)" },
-  low:    { label: "وضع مستقر",      color: "#1F9A94",            bg: "#1F9A941a" },
+const PAGE_ROUTES = {
+  ar: { bank: "/bank", accounting: "/accounting", statements: "/statements", approvals: "/approvals", filings: "/filings" },
+  en: { bank: "/en/bank", accounting: "/en/accounting", statements: "/en/statements", approvals: "/en/approvals", filings: "/en/filings" },
 };
 
-const QUICK_ACTIONS: Record<string, Array<{ label: string; icon: React.ElementType; prompt: string }>> = {
-  company_admin: [
-    { label: "الوضع المالي",      icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للشركة: الرصيد، الإيرادات، المصروفات، المعاملات غير المصنفة، والموافقات المعلقة." },
-    { label: "تصنيف تلقائي",     icon: Landmark,     prompt: "راجع المعاملات البنكية غير المصنفة وصنّفها تلقائياً." },
-    { label: "إنشاء قائمة دخل",  icon: FileText,     prompt: "أنشئ مسودة قائمة دخل للشهر الحالي بناءً على المعاملات المصنفة." },
-    { label: "موافقات معلقة",    icon: CheckCircle2, prompt: "ما الموافقات المعلقة على القوائم المالية والإيداعات التي تحتاج قراراً الآن؟" },
-    { label: "حالة الإيداعات",   icon: Upload,       prompt: "ما حالة الإيداعات الرسمية لدى وزارة التجارة وهيئة الزكاة؟" },
-    { label: "تقرير اليومية",    icon: TrendingUp,   prompt: "أعطني آخر قيود دفتر اليومية والتحقق من التوازن بين المدين والدائن." },
-  ],
-  accountant: [
-    { label: "معاملات معلقة",    icon: Landmark,     prompt: "ما المعاملات البنكية غير المصنفة التي تحتاج ترحيلاً للمحاسبة؟" },
-    { label: "دفتر اليومية",     icon: FileText,     prompt: "أعطني آخر قيود دفتر اليومية مع التحقق من صحة الميزان." },
-    { label: "إنشاء قائمة",      icon: BarChart2,    prompt: "أنشئ مسودة قائمة دخل للفترة الحالية بناءً على البيانات المتاحة." },
-    { label: "الملخص المالي",    icon: TrendingUp,   prompt: "أعطني ملخصاً سريعاً للوضع المالي: الإيرادات، المصروفات، وصافي الربح." },
-  ],
-  auditor: [
-    { label: "مراجعة الموافقات", icon: CheckCircle2, prompt: "ما القوائم المالية التي تحتاج مراجعتي واعتمادي الآن؟" },
-    { label: "الملخص المالي",    icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للتدقيق." },
-    { label: "حالة الإيداعات",   icon: Upload,       prompt: "ما حالة الإيداعات الرسمية المكتملة والمعلقة؟" },
-  ],
-};
-
-const PAGE_ROUTES: Record<string, string> = {
-  bank:        "/bank",
-  accounting:  "/accounting",
-  statements:  "/statements",
-  approvals:   "/approvals",
-  filings:     "/filings",
+const UI = {
+  ar: {
+    reportTitle:     "التقرير المالي اليومي",
+    reportSubtitle:  "تحليل تلقائي للوضع المالي مع توصيات فورية",
+    refresh:         "تحديث",
+    assistant:       "المساعد المالي",
+    loading:         "جاري تحليل البيانات المالية...",
+    error:           "تعذّر تحميل التقرير.",
+    retry:           "أعد المحاولة",
+    actionsTitle:    "إجراءات المساعد",
+    prioritiesTitle: "الأولويات",
+    nextStepsTitle:  "الخطوات التالية",
+    chatTitle:       "المساعد المالي الذكي",
+    chatEmpty:       "اكتب سؤالاً أو اختر إجراءً من الصفحة الرئيسية",
+    analyzing:       "جاري التحليل المالي...",
+    inputPlaceholder:"اسأل عن الوضع المالي، المعاملات، القوائم...",
+  },
+  en: {
+    reportTitle:     "Daily Financial Report",
+    reportSubtitle:  "Automated financial analysis with instant recommendations",
+    refresh:         "Refresh",
+    assistant:       "AI Assistant",
+    loading:         "Analyzing financial data...",
+    error:           "Failed to load report.",
+    retry:           "Retry",
+    actionsTitle:    "Assistant Actions",
+    prioritiesTitle: "Priorities",
+    nextStepsTitle:  "Next Steps",
+    chatTitle:       "AI Financial Assistant",
+    chatEmpty:       "Ask a question or pick an action from the dashboard",
+    analyzing:       "Analyzing finances...",
+    inputPlaceholder:"Ask about financial status, transactions, statements...",
+  },
 };
 
 // ─── Report Cache ─────────────────────────────────────────────────────────────
 
-const CACHE_KEY = "finstream-daily-report";
+// Single shared cache key — report data is language-agnostic, only display strings differ
+const CACHE_KEY = "finstream-daily-report-v2";
 
 function getCachedReport(): FinanceReport | null {
   try {
@@ -85,13 +155,12 @@ function getCachedReport(): FinanceReport | null {
 }
 
 function setCachedReport(report: FinanceReport) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ date: new Date().toISOString().slice(0, 10), report }));
-  } catch {}
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ date: new Date().toISOString().slice(0, 10), report })); } catch {}
 }
 
 function clearCachedReport() {
-  try { localStorage.removeItem(CACHE_KEY); } catch {}
+  // Clear both old and new cache keys
+  try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem("finstream-daily-report"); } catch {}
 }
 
 // ─── Markdown Renderer ────────────────────────────────────────────────────────
@@ -102,23 +171,19 @@ function renderInline(text: string): React.ReactNode {
 }
 
 function MarkdownText({ text, className }: { text: string; className?: string }) {
-  const lines = text.split("\n");
   return (
     <div className={className}>
-      {lines.map((line, i) => {
+      {text.split("\n").map((line, i) => {
         const t = line.trim();
         if (t === "" || t === "---") return <div key={i} className="h-1.5" />;
-        if (t.startsWith("### ")) return <p key={i} className="font-semibold mt-1">{renderInline(t.slice(4))}</p>;
-        if (t.startsWith("## "))  return <p key={i} className="font-semibold mt-1">{renderInline(t.slice(3))}</p>;
-        if (t.startsWith("# "))   return <p key={i} className="font-bold mt-1">{renderInline(t.slice(2))}</p>;
-        if (t.startsWith("* ") || t.startsWith("- ")) {
-          return (
-            <div key={i} className="flex items-start gap-1.5 my-0.5">
-              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-current opacity-50" />
-              <span>{renderInline(t.slice(2))}</span>
-            </div>
-          );
-        }
+        if (t.startsWith("### ") || t.startsWith("## ")) return <p key={i} className="font-semibold mt-1">{renderInline(t.replace(/^#{2,3} /, ""))}</p>;
+        if (t.startsWith("# ")) return <p key={i} className="font-bold mt-1">{renderInline(t.slice(2))}</p>;
+        if (t.startsWith("* ") || t.startsWith("- ")) return (
+          <div key={i} className="flex items-start gap-1.5 my-0.5">
+            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-current opacity-50" />
+            <span>{renderInline(t.slice(2))}</span>
+          </div>
+        );
         return <p key={i} className="my-0.5">{renderInline(line)}</p>;
       })}
     </div>
@@ -127,8 +192,14 @@ function MarkdownText({ text, className }: { text: string; className?: string })
 
 // ─── Action Item ──────────────────────────────────────────────────────────────
 
-function ActionItem({ item, icon: Icon, color }: { item: ReportItem | string; icon: React.ElementType; color: string }) {
-  const href = typeof item === "string" ? null : item.page ? (PAGE_ROUTES[item.page] ?? null) : null;
+function ActionItem({ item, icon: Icon, color, routes }: {
+  item: ReportItem | string;
+  icon: React.ElementType;
+  color: string;
+  routes: Record<string, string>;
+}) {
+  const page = typeof item === "string" ? null : item.page;
+  const href = page ? (routes[page] ?? null) : null;
   const text = typeof item === "string" ? item : item.text;
 
   const inner = (
@@ -136,7 +207,7 @@ function ActionItem({ item, icon: Icon, color }: { item: ReportItem | string; ic
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px]" style={{ backgroundColor: `${color}18` }}>
         <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
-      <p className="flex-1 text-sm text-[var(--foreground)] font-arabic leading-relaxed">{text}</p>
+      <p className="flex-1 text-sm text-[var(--foreground)] leading-relaxed">{text}</p>
       {href && <ArrowLeft className="h-4 w-4 shrink-0 text-[var(--muted-foreground)] transition-transform group-hover:translate-x-[-3px]" />}
     </div>
   );
@@ -146,20 +217,24 @@ function ActionItem({ item, icon: Icon, color }: { item: ReportItem | string; ic
 
 // ─── Report View ──────────────────────────────────────────────────────────────
 
-function ReportView({ report }: { report: FinanceReport }) {
-  const attn = ATTENTION_CONFIG[report.attention_level];
-  const date = new Date(report.generated_at).toLocaleString("en-GB", {
-    weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+function ReportView({ report, lang }: { report: FinanceReport; lang: "ar" | "en" }) {
+  const attn = ATTENTION[lang][report.attention_level];
+  const ui = UI[lang];
+  const routes = PAGE_ROUTES[lang];
+
+  const date = new Date(report.generated_at).toLocaleString(
+    lang === "en" ? "en-GB" : "ar-SA-u-nu-latn-ca-gregory",
+    { weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }
+  );
 
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-base font-arabic leading-relaxed text-[var(--foreground)]">{report.summary}</p>
-          <p className="mt-1.5 text-sm text-[var(--muted-foreground)] font-arabic" dir="ltr">{date}</p>
+          <p className="text-base leading-relaxed text-[var(--foreground)]">{report.summary}</p>
+          <p className="mt-1.5 text-sm text-[var(--muted-foreground)]" dir="ltr">{date}</p>
         </div>
-        <span className="shrink-0 rounded-full px-3 py-1 text-sm font-semibold font-arabic" style={{ color: attn.color, backgroundColor: attn.bg }}>
+        <span className="shrink-0 rounded-full px-3 py-1 text-sm font-semibold" style={{ color: attn.color, backgroundColor: attn.bg }}>
           {attn.label}
         </span>
       </div>
@@ -168,10 +243,8 @@ function ReportView({ report }: { report: FinanceReport }) {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {report.highlights.map((h, i) => (
             <div key={i} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3">
-              <p className="text-2xl font-bold tabular-nums" dir="ltr" style={{ color: h.alert ? "var(--destructive)" : "var(--foreground)" }}>
-                {h.value}
-              </p>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)] font-arabic leading-snug">{h.label}</p>
+              <p className="text-2xl font-bold tabular-nums" dir="ltr" style={{ color: h.alert ? "var(--destructive)" : "var(--foreground)" }}>{h.value}</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)] leading-snug">{h.label}</p>
             </div>
           ))}
         </div>
@@ -179,12 +252,12 @@ function ReportView({ report }: { report: FinanceReport }) {
 
       {report.actions_taken.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-[var(--muted-foreground)] font-arabic uppercase tracking-wider px-1">إجراءات المساعد</p>
+          <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider px-1">{ui.actionsTitle}</p>
           <div className="space-y-1.5">
             {report.actions_taken.map((action, i) => (
               <div key={i} className="flex items-start gap-3 rounded-[10px] border border-[var(--border)] bg-[color-mix(in_srgb,#1F9A94_6%,var(--card))] px-4 py-3">
                 <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-[#1F9A94]" />
-                <p className="text-sm text-[var(--foreground)] font-arabic leading-relaxed">{action}</p>
+                <p className="text-sm text-[var(--foreground)] leading-relaxed">{action}</p>
               </div>
             ))}
           </div>
@@ -193,18 +266,18 @@ function ReportView({ report }: { report: FinanceReport }) {
 
       {report.priorities.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-[var(--muted-foreground)] font-arabic uppercase tracking-wider px-1">الأولويات</p>
+          <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider px-1">{ui.prioritiesTitle}</p>
           <div className="space-y-2.5 px-1">
-            {report.priorities.map((p, i) => <ActionItem key={i} item={p} icon={AlertTriangle} color="#e07b39" />)}
+            {report.priorities.map((p, i) => <ActionItem key={i} item={p} icon={AlertTriangle} color="#e07b39" routes={routes} />)}
           </div>
         </div>
       )}
 
       {report.next_steps.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-[var(--muted-foreground)] font-arabic uppercase tracking-wider px-1">الخطوات التالية</p>
+          <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider px-1">{ui.nextStepsTitle}</p>
           <div className="space-y-2.5 px-1">
-            {report.next_steps.map((s, i) => <ActionItem key={i} item={s} icon={ArrowLeft} color="#1F9A94" />)}
+            {report.next_steps.map((s, i) => <ActionItem key={i} item={s} icon={ArrowLeft} color="#1F9A94" routes={routes} />)}
           </div>
         </div>
       )}
@@ -214,11 +287,12 @@ function ReportView({ report }: { report: FinanceReport }) {
 
 // ─── Chat Modal ───────────────────────────────────────────────────────────────
 
-function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
+function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   initialPrompt: string;
   onPromptConsumed: () => void;
+  lang: "ar" | "en";
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -227,10 +301,11 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sentInitial = useRef(false);
+  const ui = UI[lang];
+  const toolNames = TOOL_NAMES[lang];
+  const dir = lang === "en" ? "ltr" : "rtl";
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, currentTool]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, currentTool]);
 
   useEffect(() => {
     if (open && initialPrompt && !sentInitial.current) {
@@ -248,18 +323,12 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
   async function sendMessage(prompt: string) {
     if (!prompt.trim() || isLoading) return;
     setInput("");
-
-    const userMsg: Message = { role: "user", text: prompt };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { role: "user", text: prompt }]);
     setIsLoading(true);
     setCurrentTool(null);
 
     try {
-      const history = messages.map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.text }],
-      }));
-
+      const history = messages.map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] }));
       const res = await fetch("/api/ai/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,8 +355,9 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
           try {
             const event: ToolEvent = JSON.parse(line.slice(6));
             if (event.type === "tool_start" && event.toolName) {
-              setCurrentTool(TOOL_NAME_AR[event.toolName] || event.toolName);
-              toolsUsed.push(TOOL_NAME_AR[event.toolName] || event.toolName);
+              const label = (toolNames as any)[event.toolName] || event.toolName;
+              setCurrentTool(label);
+              toolsUsed.push(label);
             } else if (event.type === "tool_done") {
               setCurrentTool(null);
             } else if (event.type === "text" && event.text) {
@@ -297,11 +367,9 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
         }
       }
 
-      if (finalText) {
-        setMessages((prev) => [...prev, { role: "agent", text: finalText, toolCalls: toolsUsed }]);
-      }
+      if (finalText) setMessages((prev) => [...prev, { role: "agent", text: finalText, toolCalls: toolsUsed }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "agent", text: "حدث خطأ في الاتصال. حاول مرة أخرى." }]);
+      setMessages((prev) => [...prev, { role: "agent", text: lang === "en" ? "Connection error. Please try again." : "حدث خطأ في الاتصال. حاول مرة أخرى." }]);
     } finally {
       setIsLoading(false);
       setCurrentTool(null);
@@ -310,33 +378,28 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-2xl max-h-[80vh]" dir="rtl">
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-2xl max-h-[80vh]" dir={dir}>
         <DialogHeader className="shrink-0 border-b border-[var(--border)] px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#1F9A941a]">
               <Bot className="h-4 w-4 text-[#1F9A94]" />
             </div>
-            <DialogTitle className="text-sm font-bold text-[var(--foreground)] font-arabic">
-              المساعد المالي الذكي
-            </DialogTitle>
+            <DialogTitle className="text-sm font-bold text-[var(--foreground)]">{ui.chatTitle}</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 scrollbar-thin min-h-0">
           {messages.length === 0 && !isLoading && (
-            <p className="text-center text-sm text-[var(--muted-foreground)] font-arabic py-8">
-              اكتب سؤالاً أو اختر إجراءً من الصفحة الرئيسية
-            </p>
+            <p className="text-center text-sm text-[var(--muted-foreground)] py-8">{ui.chatEmpty}</p>
           )}
-
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}>
-              <div className={`max-w-[86%] rounded-[12px] px-4 py-3 text-sm font-arabic leading-relaxed ${
+              <div className={`max-w-[86%] rounded-[12px] px-4 py-3 text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
                   : "bg-[#1F9A94] text-white"
               }`}>
-                <MarkdownText text={msg.text} className="text-sm font-arabic leading-relaxed" />
+                <MarkdownText text={msg.text} className="text-sm leading-relaxed" />
                 {msg.toolCalls && msg.toolCalls.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1 border-t border-white/20 pt-2">
                     {msg.toolCalls.map((t, j) => (
@@ -347,13 +410,12 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
               </div>
             </div>
           ))}
-
           {isLoading && (
             <div className="flex justify-end">
               <div className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-arabic">
+                <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1F9A94]" />
-                  {currentTool ? `${currentTool}...` : "جاري التحليل المالي..."}
+                  {currentTool ? `${currentTool}...` : ui.analyzing}
                 </div>
               </div>
             </div>
@@ -366,21 +428,15 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void sendMessage(input); }
-            }}
-            placeholder="اسأل عن الوضع المالي، المعاملات، القوائم..."
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void sendMessage(input); } }}
+            placeholder={ui.inputPlaceholder}
             rows={1}
             disabled={isLoading}
-            className="flex-1 resize-none rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm font-arabic text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[#1F9A94] focus:outline-none disabled:opacity-50"
+            className="flex-1 resize-none rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[#1F9A94] focus:outline-none disabled:opacity-50"
             style={{ maxHeight: "100px" }}
           />
-          <Button
-            size="sm"
-            onClick={() => void sendMessage(input)}
-            disabled={isLoading || !input.trim()}
-            className="h-9 w-9 shrink-0 rounded-[10px] p-0 bg-[#1F9A94] hover:bg-[#1a857f]"
-          >
+          <Button size="sm" onClick={() => void sendMessage(input)} disabled={isLoading || !input.trim()}
+            className="h-9 w-9 shrink-0 rounded-[10px] p-0 bg-[#1F9A94] hover:bg-[#1a857f]">
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -392,6 +448,11 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed }: {
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
 export function AgentPanel({ userRole }: { userRole: string }) {
+  const pathname = usePathname();
+  const lang: "ar" | "en" = pathname.startsWith("/en") ? "en" : "ar";
+  const ui = UI[lang];
+  const dir = lang === "en" ? "ltr" : "rtl";
+
   const [report, setReport] = useState<FinanceReport | null>(() => {
     if (typeof window === "undefined") return null;
     return getCachedReport();
@@ -404,7 +465,7 @@ export function AgentPanel({ userRole }: { userRole: string }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [pendingPrompt, setPendingPrompt] = useState("");
 
-  const quickActions = QUICK_ACTIONS[userRole] || QUICK_ACTIONS["accountant"];
+  const roleActions = (QUICK_ACTIONS[lang] as any)[userRole] || (QUICK_ACTIONS[lang] as any)["accountant"];
 
   const loadReport = useCallback(async (forceRefresh = false) => {
     if (!forceRefresh) {
@@ -413,102 +474,80 @@ export function AgentPanel({ userRole }: { userRole: string }) {
     } else {
       clearCachedReport();
     }
-
     setLoading(true);
     setError(false);
     try {
       const res = await fetch("/api/ai/agent");
       const json = await res.json();
-      if (json.success && json.report) {
-        setReport(json.report);
-        setCachedReport(json.report);
-      } else setError(true);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+      if (json.success && json.report) { setReport(json.report); setCachedReport(json.report); }
+      else setError(true);
+    } catch { setError(true); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { void loadReport(); }, [loadReport]);
 
-  function openChat(prompt = "") {
-    setPendingPrompt(prompt);
-    setChatOpen(true);
-  }
+  function openChat(prompt = "") { setPendingPrompt(prompt); setChatOpen(true); }
 
   return (
     <>
-      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card)] overflow-hidden" dir="rtl">
-        {/* Header */}
+      <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card)] overflow-hidden" dir={dir}>
         <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1F9A941a]">
             <Bot className="h-4 w-4 text-[#1F9A94]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">التقرير المالي اليومي</h2>
-            <p className="text-sm text-[var(--muted-foreground)] font-arabic">تحليل تلقائي للوضع المالي مع توصيات فورية</p>
+            <h2 className="text-base font-bold text-[var(--foreground)]">{ui.reportTitle}</h2>
+            <p className="text-sm text-[var(--muted-foreground)]">{ui.reportSubtitle}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => void loadReport(true)}
-              disabled={loading}
-              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--muted-foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] disabled:opacity-40 font-arabic"
-            >
+            <button onClick={() => void loadReport(true)} disabled={loading}
+              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--muted-foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] disabled:opacity-40">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              تحديث
+              {ui.refresh}
             </button>
-            <button
-              onClick={() => openChat()}
-              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] font-arabic"
-            >
+            <button onClick={() => openChat()}
+              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94]">
               <MessageSquare className="h-3 w-3" />
-              المساعد المالي
+              {ui.assistant}
             </button>
           </div>
         </div>
 
-        {/* AI Report */}
         <div className="px-5 py-4">
           {loading ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-arabic mb-4">
+              <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] mb-4">
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1F9A94]" />
-                جاري تحليل البيانات المالية...
+                {ui.loading}
               </div>
               <div className="h-3 animate-pulse rounded-full bg-[var(--muted)] w-full" />
               <div className="h-3 animate-pulse rounded-full bg-[var(--muted)] w-4/5" />
               <div className="h-3 animate-pulse rounded-full bg-[var(--muted)] w-3/5 mb-4" />
               <div className="grid grid-cols-4 gap-2">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-16 animate-pulse rounded-[10px] bg-[var(--muted)]" />
-                ))}
+                {[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-[10px] bg-[var(--muted)]" />)}
               </div>
             </div>
           ) : error ? (
             <div className="flex items-center gap-2.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
               <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
-              <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-                تعذّر تحميل التقرير.{" "}
-                <button onClick={() => void loadReport()} className="text-[#1F9A94] hover:underline">أعد المحاولة</button>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {ui.error}{" "}
+                <button onClick={() => void loadReport()} className="text-[#1F9A94] hover:underline">{ui.retry}</button>
               </p>
             </div>
           ) : report ? (
-            <ReportView report={report} />
+            <ReportView report={report} lang={lang} />
           ) : null}
         </div>
 
-        {/* Quick actions */}
         <div className="border-t border-[var(--border)] px-5 py-3">
           <div className="flex flex-wrap gap-2">
-            {quickActions.map((action) => {
+            {roleActions.map((action: any) => {
               const Icon = action.icon;
               return (
-                <button
-                  key={action.label}
-                  onClick={() => openChat(action.prompt)}
-                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-sm font-arabic text-[var(--foreground)] transition-all hover:border-[#1F9A94] hover:text-[#1F9A94]"
-                >
+                <button key={action.label} onClick={() => openChat(action.prompt)}
+                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-sm text-[var(--foreground)] transition-all hover:border-[#1F9A94] hover:text-[#1F9A94]">
                   <Icon className="h-3.5 w-3.5" />
                   {action.label}
                 </button>
@@ -523,6 +562,7 @@ export function AgentPanel({ userRole }: { userRole: string }) {
         onOpenChange={setChatOpen}
         initialPrompt={pendingPrompt}
         onPromptConsumed={() => setPendingPrompt("")}
+        lang={lang}
       />
     </>
   );

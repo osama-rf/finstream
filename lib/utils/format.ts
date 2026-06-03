@@ -1,7 +1,8 @@
-// All numbers: English digits (0-9), Gregorian calendar throughout.
+// Dates: Arabic month/weekday names, Gregorian calendar, English digits (u-nu-latn)
+// Currency: English digits, SAR symbol
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-SA', {
+  return new Intl.NumberFormat('ar-SA-u-nu-latn', {
     style: 'currency',
     currency: 'SAR',
     minimumFractionDigits: 2,
@@ -9,23 +10,21 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat('ar-SA-u-nu-latn-ca-gregory', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    calendar: 'gregory',
   }).format(new Date(dateStr));
 }
 
 export function formatDateTime(dateStr: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat('ar-SA-u-nu-latn-ca-gregory', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    calendar: 'gregory',
   }).format(new Date(dateStr));
 }
 
