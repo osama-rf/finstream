@@ -10,6 +10,7 @@ import {
 import { useUser } from "@/lib/contexts/UserContext";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils/format";
+import { AgentPanel } from "@/components/AgentPanel";
 
 const stats = [
   { label: "إجمالي الإيرادات", value: 2_847_500, change: "+12.4%", up: true, icon: TrendingUp, color: "var(--success)" },
@@ -70,6 +71,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* AI Agent Panel */}
+      <AgentPanel userRole={user?.role ?? "accountant"} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
