@@ -13,7 +13,7 @@ import { LangToggle } from "@/components/LangToggle";
 const pathTitles: Record<string, string> = {
   "/en/dashboard":   "Dashboard",
   "/en/bank":        "Bank Data",
-  "/en/accounting":  "Journal",
+  "/en/accounting":  "Journal Entries",
   "/en/statements":  "Financial Statements",
   "/en/approvals":   "Approvals",
   "/en/filings":     "Official Filings",

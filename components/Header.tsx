@@ -13,7 +13,7 @@ import { LangToggle } from "@/components/LangToggle";
 const pathTitles: Record<string, string> = {
   "/dashboard": "لوحة التحكم",
   "/bank": "البيانات البنكية",
-  "/accounting": "دفتر اليومية",
+  "/accounting": "القيود",
   "/statements": "القوائم المالية",
   "/approvals": "الموافقات",
   "/filings": "الإيداع الرسمي",

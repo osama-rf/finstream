@@ -1,0 +1,46 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const supabase = await createRouteHandlerClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return NextResponse.json({ success: false, error: 'غير مصرح' }, { status: 401 });
+
+    const { data: profile } = await supabaseAdmin
+      .from('users')
+      .select('company_id')
+      .eq('id', authUser.id)
+      .single() as { data: any };
+
+    const body = await req.json();
+    const { status } = body;
+
+    const validStatuses = ['draft', 'pending_review', 'approved', 'filed'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ success: false, error: 'حالة غير صالحة' }, { status: 400 });
+    }
+
+    const updateData: any = { status };
+    if (status === 'approved') {
+      updateData.approved_by = authUser.id;
+      updateData.approved_at = new Date().toISOString();
+    }
+
+    const { data: stmt, error } = await supabaseAdmin
+      .from('financial_statements')
+      .update(updateData)
+      .eq('id', id)
+      .eq('company_id', profile?.company_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data: stmt });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}

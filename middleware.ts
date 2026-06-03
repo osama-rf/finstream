@@ -14,6 +14,9 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const hasAuthCookie = hasSupabaseAuthCookie(req);
 
+  // /bank/connecting is part of the OAuth redirect flow — allow without auth check
+  if (path === '/bank/connecting' || path === '/en/bank/connecting') return response;
+
   const protectedRoutes = [
     '/dashboard', '/bank', '/accounting', '/statements', '/approvals', '/filings', '/company', '/settings', '/users',
     '/en/dashboard', '/en/bank', '/en/accounting', '/en/statements', '/en/approvals', '/en/filings', '/en/company', '/en/settings', '/en/users',

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
+import type { InsertBankTransaction } from '@/lib/openbanking/mapper';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -555,3 +556,121 @@ ${JSON.stringify({ summary, unclassified_count: unclassified.unclassified?.lengt
     return { ...fallback, actions_taken: actionsTaken };
   }
 }
+
+// ─── Single Transaction Classifier (fast, focused, for streaming classify route) ─
+
+export type ClassificationResult = {
+  category: string;
+  confidence: number;
+  debit_account: string;
+  credit_account: string;
+  account_code: string;
+  reasoning: string;
+};
+
+export async function classifyTransactionWithGemini(
+  tx: InsertBankTransaction & { id: string }
+): Promise<ClassificationResult> {
+  const apiKey = process.env.GEMENI_KEY || process.env.GEMINI_KEY;
+
+  // Fallback when no Gemini key — deterministic rule-based classification for demo
+  if (!apiKey) {
+    return fallbackClassify(tx);
+  }
+
+  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const typeLabel = tx.type === 'credit' ? 'إيداع / وارد' : 'صرف / صادر';
+
+  const prompt = `صنّف هذه المعاملة البنكية وأعطني JSON فقط بدون أي نص خارجه:
+
+الوصف: ${tx.description}
+المبلغ: ${tx.amount.toLocaleString('en-SA')} ريال
+النوع: ${typeLabel}
+
+أعطني:
+{
+  "category": "اسم التصنيف بالعربية (مثال: رواتب وأجور، إيرادات الخدمات، مصروفات إدارية)",
+  "confidence": رقم من 0 إلى 100,
+  "debit_account": "اسم الحساب المدين بالعربية",
+  "credit_account": "اسم الحساب الدائن بالعربية",
+  "account_code": "رمز الحساب (مثال: 4100، 6100)",
+  "reasoning": "جملة واحدة تشرح سبب التصنيف"
+}`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 256 },
+        }),
+      }
+    );
+
+    if (!res.ok) return fallbackClassify(tx);
+
+    const json = await res.json();
+    const text = json?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '').join('').trim();
+    if (!text) return fallbackClassify(tx);
+
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const raw = (fenced ? fenced[1] : text).trim();
+    const parsed = JSON.parse(raw) as ClassificationResult;
+
+    return {
+      category: parsed.category || 'معاملات متنوعة',
+      confidence: Math.min(100, Math.max(0, Number(parsed.confidence) || 75)),
+      debit_account: parsed.debit_account || (tx.type === 'debit' ? 'المصروفات' : 'النقدية والبنوك'),
+      credit_account: parsed.credit_account || (tx.type === 'credit' ? 'الإيرادات' : 'النقدية والبنوك'),
+      account_code: parsed.account_code || '9999',
+      reasoning: parsed.reasoning || '',
+    };
+  } catch {
+    return fallbackClassify(tx);
+  }
+}
+
+function fallbackClassify(tx: InsertBankTransaction & { id: string }): ClassificationResult {
+  const desc = tx.description.toLowerCase();
+
+  if (desc.includes('راتب') || desc.includes('رواتب') || desc.includes('مكافأة')) {
+    return { category: 'رواتب وأجور', confidence: 95, debit_account: 'مصروفات الرواتب', credit_account: 'النقدية والبنوك', account_code: '6100', reasoning: 'الوصف يشير إلى مصروف رواتب' };
+  }
+  if (desc.includes('إيراد') || desc.includes('تحويل وارد') || desc.includes('مبيعات') || tx.type === 'credit') {
+    return { category: 'إيرادات الخدمات', confidence: 88, debit_account: 'النقدية والبنوك', credit_account: 'إيرادات الخدمات', account_code: '4100', reasoning: 'معاملة إيداع تشير إلى إيراد' };
+  }
+  if (desc.includes('إيجار')) {
+    return { category: 'مصروفات الإيجار', confidence: 97, debit_account: 'مصروفات الإيجار', credit_account: 'النقدية والبنوك', account_code: '6300', reasoning: 'الوصف يشير صراحة إلى إيجار' };
+  }
+  if (desc.includes('عمولة بنكية') || desc.includes('رسوم')) {
+    return { category: 'مصروفات بنكية', confidence: 99, debit_account: 'مصروفات بنكية', credit_account: 'النقدية والبنوك', account_code: '6400', reasoning: 'عمولة بنكية معروفة' };
+  }
+  if (desc.includes('استضافة') || desc.includes('برامج') || desc.includes('تقنية') || desc.includes('microsoft') || desc.includes('aws')) {
+    return { category: 'مصروفات تقنية', confidence: 92, debit_account: 'مصروفات تقنية', credit_account: 'النقدية والبنوك', account_code: '6200', reasoning: 'مصروف تقني أو رقمي' };
+  }
+  if (desc.includes('سفر') || desc.includes('انتقال')) {
+    return { category: 'مصروفات سفر وانتقال', confidence: 90, debit_account: 'مصروفات سفر', credit_account: 'النقدية والبنوك', account_code: '6500', reasoning: 'مصروف سفر أو انتقال' };
+  }
+  if (desc.includes('قسط') || desc.includes('سيارة')) {
+    return { category: 'أصول ثابتة - أقساط', confidence: 85, debit_account: 'أقساط الأصول الثابتة', credit_account: 'النقدية والبنوك', account_code: '1500', reasoning: 'قسط أصل ثابت' };
+  }
+  if (desc.includes('قرطاسية') || desc.includes('مستلزمات')) {
+    return { category: 'مصروفات إدارية وعمومية', confidence: 88, debit_account: 'مصروفات إدارية', credit_account: 'النقدية والبنوك', account_code: '6600', reasoning: 'مصروف إداري عام' };
+  }
+
+  const txType = tx.type as string;
+  return {
+    category: 'مصروفات تشغيلية',
+    confidence: 70,
+    debit_account: txType === 'debit' ? 'مصروفات تشغيلية' : 'النقدية والبنوك',
+    credit_account: txType === 'credit' ? 'إيرادات متنوعة' : 'النقدية والبنوك',
+    account_code: txType === 'debit' ? '6700' : '4900',
+    reasoning: 'تصنيف افتراضي بناءً على نوع المعاملة',
+  };
+}
+
+// execClassifyTransaction and execCreateJournalEntry are defined above in this file
+// and are used directly by the classify API route via the agent context pattern

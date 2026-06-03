@@ -241,3 +241,16 @@ img, picture, video, canvas, svg {
   &::-webkit-scrollbar-track { background: #f9fafb; border-radius: 3px; }
   &::-webkit-scrollbar-thumb { background: #d2d6db; border-radius: 3px; }
 }
+
+@media print {
+  aside, header, .no-print, [data-sidebar], nav {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

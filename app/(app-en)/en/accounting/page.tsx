@@ -36,7 +36,7 @@ export default function AccountingEnPage() {
     <div className="space-y-6 page-transition-shell" dir="ltr">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Journal</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Journal Entries</h1>
           <p className="text-sm text-[var(--muted-foreground)]">Double-entry journal entries posted from bank transactions</p>
         </div>
         <div className="flex gap-2">

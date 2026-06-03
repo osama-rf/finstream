@@ -36,7 +36,7 @@ const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "aud
 const menuItems: SidebarItem[] = [
   { label: "الرئيسية", icon: LayoutDashboard, path: "/dashboard", roles: allRoles },
   { label: "البيانات البنكية", icon: Landmark, path: "/bank", roles: allRoles },
-  { label: "دفتر اليومية", icon: BookOpen, path: "/accounting", roles: ["super_admin", "company_admin", "accountant"] },
+  { label: "قيود اليومية", icon: BookOpen, path: "/accounting", roles: ["super_admin", "company_admin", "accountant"] },
   { label: "القوائم المالية", icon: FileText, path: "/statements", roles: allRoles },
   { label: "الموافقات", icon: CheckCircle, path: "/approvals", roles: ["super_admin", "company_admin", "auditor"] },
   { label: "الإيداع الرسمي", icon: Upload, path: "/filings", roles: ["super_admin", "company_admin"] },

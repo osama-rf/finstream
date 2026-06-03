@@ -16,7 +16,7 @@ import type { UserRole } from "@/lib/types/database";
 const menuItems = [
   { label: "Dashboard",           icon: LayoutDashboard, path: "/en/dashboard",   roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
   { label: "Bank Data",           icon: Landmark,        path: "/en/bank",        roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
-  { label: "Journal",             icon: BookOpen,        path: "/en/accounting",  roles: ["super_admin","company_admin","accountant"] as UserRole[] },
+  { label: "Journal Entries",     icon: BookOpen,        path: "/en/accounting",  roles: ["super_admin","company_admin","accountant"] as UserRole[] },
   { label: "Statements",          icon: FileText,        path: "/en/statements",  roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
   { label: "Approvals",           icon: CheckCircle,     path: "/en/approvals",   roles: ["super_admin","company_admin","auditor"] as UserRole[] },
   { label: "Official Filings",    icon: Upload,          path: "/en/filings",     roles: ["super_admin","company_admin"] as UserRole[] },
