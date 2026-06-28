@@ -70,31 +70,31 @@ function LoginContent() {
           <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--primary)]">
             <Landmark className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-black text-[var(--foreground)] font-arabic">فين ستريم</span>
+          <span className="text-xl font-black text-[var(--foreground)] font-arabic">ركائز</span>
         </div>
 
         {/* Value props */}
         <div className="relative z-10 space-y-8">
           <div className="space-y-4">
             <h2 className="text-4xl font-black leading-[1.4] text-[var(--foreground)] font-arabic xl:text-5xl">
-              من البنك
+              بياناتك البنكية
               <br />
-              <span className="text-[var(--primary)]">إلى وزارة التجارة</span>
+              <span className="text-[var(--primary)]">تحكي قصة نجاحك</span>
               <br />
-              تلقائياً
+              للبنوك
             </h2>
             <p className="text-base leading-8 text-[var(--muted-foreground)] font-arabic max-w-sm">
-              ربط آلي للبيانات البنكية، تصنيف بالذكاء الاصطناعي، قوائم مالية معتمدة، وإيداع رسمي في خطوات.
+              وسيط المصرفية المفتوحة للمنشآت الصغيرة والمتوسطة — اجمع بياناتك من بنوكك المتعددة وحوّلها إلى تقرير ائتماني يمكّنك من الحصول على التمويل.
             </p>
           </div>
 
           {/* Flow cards */}
           <div className="space-y-3">
             {[
-              { step: "1", title: "جلب البيانات البنكية", desc: "ربط مباشر بالحساب البنكي عبر Open Banking" },
-              { step: "2", title: "تصنيف ذكي بالـ AI", desc: "تحليل المعاملات وترحيلها للمحاسبة تلقائياً" },
-              { step: "3", title: "قوائم مالية معتمدة", desc: "قائمة دخل وميزانية وتدفق نقدي جاهزة للمراجعة" },
-              { step: "4", title: "إيداع لدى وزارة التجارة", desc: "تعميد وإرسال رسمي للجهات الحكومية" },
+              { step: "1", title: "ربط البنوك وبوابات الدفع", desc: "اجمع بيانات منشأتك من بنوكك المتعددة في مكان واحد" },
+              { step: "2", title: "تقرير مالي موحد", desc: "تحليل مؤشراتك المالية وإعداد تقرير جاهز للبنوك" },
+              { step: "3", title: "مقارنة بمتوسط القطاع", desc: "قارن أداءك بمتوسطات القطاع عالمياً لدعم التحسين" },
+              { step: "4", title: "قوائم مالية بالذكاء الاصطناعي", desc: "أنشئ قوائمك المالية وشاركها مع البنوك مباشرة" },
             ].map((item) => (
               <div key={item.step} className="flex items-start gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--card)] px-4 py-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-black text-white">
@@ -110,7 +110,7 @@ function LoginContent() {
         </div>
 
         <p className="relative z-10 text-xs text-[var(--muted-foreground)] font-arabic">
-          © 2026 فين ستريم. جميع الحقوق محفوظة.
+          © 2026 ركائز. جميع الحقوق محفوظة.
         </p>
       </div>
 
@@ -124,7 +124,7 @@ function LoginContent() {
           <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--primary)]">
             <Landmark className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-black text-[var(--foreground)] font-arabic">فين ستريم</span>
+          <span className="text-lg font-black text-[var(--foreground)] font-arabic">ركائز</span>
         </div>
 
         <div className="w-full max-w-sm">

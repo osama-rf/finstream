@@ -7,16 +7,16 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Building2,
-  BookOpen,
   FileText,
-  CheckCircle,
-  Upload,
   Settings,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Landmark,
   Users,
+  BarChart3,
+  CreditCard,
+  TrendingUp,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -34,12 +34,12 @@ type SidebarItem = {
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems: SidebarItem[] = [
-  { label: "الرئيسية", icon: LayoutDashboard, path: "/dashboard", roles: allRoles },
-  { label: "البيانات البنكية", icon: Landmark, path: "/bank", roles: allRoles },
-  { label: "دفتر اليومية", icon: BookOpen, path: "/accounting", roles: ["super_admin", "company_admin", "accountant"] },
+  { label: "لوحة التحكم", icon: LayoutDashboard, path: "/dashboard", roles: allRoles },
+  { label: "المصرفية المفتوحة", icon: Landmark, path: "/bank", roles: allRoles },
+  { label: "التقرير الائتماني", icon: CreditCard, path: "/credit", roles: allRoles },
+  { label: "مقارنة القطاع", icon: BarChart3, path: "/benchmarks", roles: allRoles },
   { label: "القوائم المالية", icon: FileText, path: "/statements", roles: allRoles },
-  { label: "الموافقات", icon: CheckCircle, path: "/approvals", roles: ["super_admin", "company_admin", "auditor"] },
-  { label: "الإيداع الرسمي", icon: Upload, path: "/filings", roles: ["super_admin", "company_admin"] },
+  { label: "التحليل المالي", icon: TrendingUp, path: "/analytics", roles: allRoles },
   { label: "الشركة", icon: Building2, path: "/company", roles: ["super_admin", "company_admin"] },
   { label: "فريق العمل", icon: Users, path: "/users", roles: ["super_admin", "company_admin"] },
   { label: "الإعدادات", icon: Settings, path: "/settings", roles: allRoles },
@@ -92,10 +92,10 @@ export function Sidebar({
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)] font-arabic">
-                {user?.companies?.name_ar || user?.companies?.name || "فين ستريم"}
+                {user?.companies?.name_ar || user?.companies?.name || "ركائز"}
               </h1>
               <p className="text-xs text-[var(--muted-foreground)] font-arabic">
-                المحاسبة المفتوحة
+                المصرفية المفتوحة للمنشآت
               </p>
             </div>
           )}

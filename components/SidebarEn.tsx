@@ -5,24 +5,27 @@ let _sidebarNavScroll = 0;
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Building2, BookOpen, FileText, CheckCircle,
-  Upload, Settings, LogOut, PanelLeftClose, PanelLeftOpen, Landmark, Users,
+  LayoutDashboard, Building2, FileText,
+  Settings, LogOut, PanelLeftClose, PanelLeftOpen, Landmark, Users,
+  BarChart3, CreditCard, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import type { UserRole } from "@/lib/types/database";
 
+const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
+
 const menuItems = [
-  { label: "Dashboard",           icon: LayoutDashboard, path: "/en/dashboard",   roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
-  { label: "Bank Data",           icon: Landmark,        path: "/en/bank",        roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
-  { label: "Journal",             icon: BookOpen,        path: "/en/accounting",  roles: ["super_admin","company_admin","accountant"] as UserRole[] },
-  { label: "Statements",          icon: FileText,        path: "/en/statements",  roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
-  { label: "Approvals",           icon: CheckCircle,     path: "/en/approvals",   roles: ["super_admin","company_admin","auditor"] as UserRole[] },
-  { label: "Official Filings",    icon: Upload,          path: "/en/filings",     roles: ["super_admin","company_admin"] as UserRole[] },
-  { label: "Company",             icon: Building2,       path: "/en/company",     roles: ["super_admin","company_admin"] as UserRole[] },
-  { label: "Team",                icon: Users,           path: "/en/users",       roles: ["super_admin","company_admin"] as UserRole[] },
-  { label: "Settings",            icon: Settings,        path: "/en/settings",    roles: ["super_admin","company_admin","accountant","auditor"] as UserRole[] },
+  { label: "Dashboard",        icon: LayoutDashboard, path: "/en/dashboard",   roles: allRoles },
+  { label: "Open Banking",     icon: Landmark,        path: "/en/bank",        roles: allRoles },
+  { label: "Credit Report",    icon: CreditCard,      path: "/en/credit",      roles: allRoles },
+  { label: "Benchmarking",     icon: BarChart3,       path: "/en/benchmarks",  roles: allRoles },
+  { label: "Statements",       icon: FileText,        path: "/en/statements",  roles: allRoles },
+  { label: "Analytics",        icon: TrendingUp,      path: "/en/analytics",   roles: allRoles },
+  { label: "Company",          icon: Building2,       path: "/en/company",     roles: ["super_admin","company_admin"] as UserRole[] },
+  { label: "Team",             icon: Users,           path: "/en/users",       roles: ["super_admin","company_admin"] as UserRole[] },
+  { label: "Settings",         icon: Settings,        path: "/en/settings",    roles: allRoles },
 ];
 
 const roleLabels: Record<UserRole, string> = {
@@ -68,9 +71,9 @@ export function SidebarEn({
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)]">
-                {user?.companies?.name || user?.companies?.name_ar || "FinStream"}
+                {user?.companies?.name || user?.companies?.name_ar || "Raka'ez"}
               </h1>
-              <p className="text-xs text-[var(--muted-foreground)]">Open Banking</p>
+              <p className="text-xs text-[var(--muted-foreground)]">Open Banking for SMEs</p>
             </div>
           )}
         </div>

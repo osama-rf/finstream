@@ -4,179 +4,398 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Landmark, RefreshCw, Search, Filter, Sparkles, CheckCheck } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils/format";
+import {
+  Landmark, RefreshCw, Plus, CheckCircle2, Link2Off,
+  Wallet, TrendingUp, TrendingDown, AlertCircle,
+  ExternalLink, MoreHorizontal, Clock,
+} from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
 
-const transactions = [
-  { id: "1", date: "2026-06-03", desc: "تحويل وارد - شركة الأفق للتجارة", amount: 250000, type: "credit" as const, balance: 1840000, category: "إيرادات", status: "classified" },
-  { id: "2", date: "2026-06-02", desc: "سداد فاتورة استضافة سحابية", amount: -3200, type: "debit" as const, balance: 1590000, category: "مصروفات تقنية", status: "classified" },
-  { id: "3", date: "2026-06-01", desc: "رواتب موظفين - يونيو", amount: -92000, type: "debit" as const, balance: 1593200, category: "رواتب", status: "classified" },
-  { id: "4", date: "2026-05-31", desc: "تحويل صادر مجهول المصدر", amount: -45000, type: "debit" as const, balance: 1685200, category: null, status: "pending" },
-  { id: "5", date: "2026-05-30", desc: "إيراد خدمات استشارية", amount: 65000, type: "credit" as const, balance: 1730200, category: null, status: "pending" },
-  { id: "6", date: "2026-05-29", desc: "إيجار مستودع الرياض", amount: -28000, type: "debit" as const, balance: 1665200, category: null, status: "pending" },
-  { id: "7", date: "2026-05-28", desc: "عمولة بنكية شهرية", amount: -450, type: "debit" as const, balance: 1693200, category: "مصروفات بنكية", status: "classified" },
-  { id: "8", date: "2026-05-27", desc: "دفعة مقدمة مشروع جدة", amount: 120000, type: "credit" as const, balance: 1693650, category: "إيرادات مقدمة", status: "classified" },
+const banks = [
+  {
+    id: "1",
+    name: "بنك الراجحي",
+    code: "RJHI",
+    balance: 1_840_000,
+    currency: "SAR",
+    iban: "SA44 2000 0001 2345 6789 1234",
+    status: "connected" as const,
+    lastSync: "2026-06-28 10:32",
+    monthlyIn: 650_000,
+    monthlyOut: 312_000,
+    color: "#006838",
+    type: "bank",
+  },
+  {
+    id: "2",
+    name: "البنك الأهلي السعودي",
+    code: "ANB",
+    balance: 620_500,
+    currency: "SAR",
+    iban: "SA03 8000 0000 6080 1016 7519",
+    status: "connected" as const,
+    lastSync: "2026-06-28 06:15",
+    monthlyIn: 197_500,
+    monthlyOut: 111_200,
+    color: "#00574B",
+    type: "bank",
+  },
+  {
+    id: "3",
+    name: "STC Pay",
+    code: "STCPAY",
+    balance: 98_200,
+    currency: "SAR",
+    iban: null,
+    status: "connected" as const,
+    lastSync: "2026-06-28 11:05",
+    monthlyIn: 43_000,
+    monthlyOut: 21_800,
+    color: "#7B2D8B",
+    type: "gateway",
+  },
+  {
+    id: "4",
+    name: "بنك الرياض",
+    code: "RIBL",
+    balance: 0,
+    currency: "SAR",
+    iban: "SA04 2000 0001 9999 8888 7777",
+    status: "disconnected" as const,
+    lastSync: null,
+    monthlyIn: 0,
+    monthlyOut: 0,
+    color: "#C8102E",
+    type: "bank",
+  },
 ];
 
-const categories = ["إيرادات", "مصروفات تشغيلية", "رواتب", "مصروفات تقنية", "مصروفات بنكية", "إيرادات مقدمة", "أصول ثابتة", "مدفوعات متفرقة"];
+const availableToConnect = [
+  { name: "Tamara", nameAr: "تمارة", color: "#2B3A8C", type: "gateway" },
+  { name: "Tabby", nameAr: "تابي", color: "#3DBE9E", type: "gateway" },
+  { name: "مصرف الإنماء", color: "#005CA9", type: "bank" },
+  { name: "بنك البلاد", color: "#4A1942", type: "bank" },
+];
+
+const recentTransactions = [
+  { id: "t1", bank: "بنك الراجحي", desc: "تحويل وارد — شركة الأفق للتجارة", amount: 250_000, type: "credit" as const, date: "2026-06-27" },
+  { id: "t2", bank: "البنك الأهلي", desc: "مصروف استضافة سحابية", amount: -3_200, type: "debit" as const, date: "2026-06-27" },
+  { id: "t3", bank: "STC Pay", desc: "إيراد مبيعات إلكترونية", amount: 18_400, type: "credit" as const, date: "2026-06-26" },
+  { id: "t4", bank: "بنك الراجحي", desc: "رواتب موظفين — يونيو", amount: -92_000, type: "debit" as const, date: "2026-06-25" },
+  { id: "t5", bank: "البنك الأهلي", desc: "إيراد خدمات استشارية", amount: 65_000, type: "credit" as const, date: "2026-06-24" },
+];
+
+const connected = banks.filter(b => b.status === "connected");
+const totalBalance = connected.reduce((s, b) => s + b.balance, 0);
+const totalIn = connected.reduce((s, b) => s + b.monthlyIn, 0);
+const totalOut = connected.reduce((s, b) => s + b.monthlyOut, 0);
 
 export default function BankPage() {
-  const [search, setSearch] = useState("");
-  const [syncing, setSyncing] = useState(false);
-  const [classifying, setClassifying] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<string | null>(null);
 
-  const pending = transactions.filter((t) => t.status === "pending");
-  const filtered = transactions.filter((t) =>
-    t.desc.toLowerCase().includes(search.toLowerCase())
-  );
-
-  async function handleSync() {
-    setSyncing(true);
-    await new Promise((r) => setTimeout(r, 1800));
-    setSyncing(false);
-    toast.success("تمت مزامنة 8 معاملات جديدة");
+  async function handleSync(id: string) {
+    setSyncing(id);
+    await new Promise(r => setTimeout(r, 1800));
+    setSyncing(null);
+    toast.success("تمت مزامنة البيانات بنجاح");
   }
 
-  async function handleAIClassify() {
-    setClassifying(true);
-    await new Promise((r) => setTimeout(r, 2200));
-    setClassifying(false);
-    toast.success("صنّف الذكاء الاصطناعي 6 معاملات بنجاح");
+  async function handleConnect(name: string) {
+    setConnecting(name);
+    await new Promise(r => setTimeout(r, 2000));
+    setConnecting(null);
+    toast.success(`تم بدء عملية ربط ${name} — أكمل الإذن في نافذة البنك`);
   }
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">البيانات البنكية</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">مزامنة وتصنيف معاملات الحساب البنكي</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">المصرفية المفتوحة</h1>
+          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
+            اجمع بيانات منشأتك من بنوكها وبوابات الدفع في مكان واحد
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
-            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-            {syncing ? "جاري المزامنة..." : "مزامنة"}
-          </Button>
-          <Button size="sm" onClick={handleAIClassify} disabled={classifying}>
-            <Sparkles className="h-4 w-4" />
-            {classifying ? "يعمل الذكاء الاصطناعي..." : "تصنيف تلقائي بالـ AI"}
-          </Button>
-        </div>
+        <Button size="sm" className="font-arabic gap-2 w-fit" onClick={() => toast.info("سيتم إضافة بنوك جديدة قريباً")}>
+          <Plus className="h-4 w-4" />
+          ربط مصدر جديد
+        </Button>
       </div>
 
-      {/* Account summary */}
+      {/* Aggregated summary */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]">
-                <Landmark className="h-4 w-4 text-[var(--primary)]" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--primary)]">
+                <Wallet className="h-4 w-4 text-white" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">الرصيد الحالي</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--foreground)] tabular-nums" dir="ltr">
-              {formatCurrency(1840000)}
+            <p className="text-2xl font-bold text-[var(--primary)] tabular-nums" dir="ltr">
+              {formatCurrency(totalBalance)}
             </p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">IBAN: SA44 2000 0001 2345 6789 1234</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">من {connected.length} مصادر مربوطة</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)]">
-                <CheckCheck className="h-4 w-4 text-[var(--success)]" />
+                <TrendingUp className="h-4 w-4 text-[var(--success)]" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">معاملات مصنفة</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">الواردات (30 يوم)</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--success)] tabular-nums">
-              {transactions.filter((t) => t.status === "classified").length}
-            </p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">من أصل {transactions.length} معاملة</p>
+            <p className="text-2xl font-bold text-[var(--success)] tabular-nums" dir="ltr">{formatCurrency(totalIn)}</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">عبر كل المصادر</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--warning)_12%,transparent)]">
-                <Filter className="h-4 w-4 text-[var(--warning)]" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)]">
+                <TrendingDown className="h-4 w-4 text-[var(--destructive)]" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">بانتظار التصنيف</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">المدفوعات (30 يوم)</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--warning)] tabular-nums">{pending.length}</p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">تحتاج مراجعة يدوية أو AI</p>
+            <p className="text-2xl font-bold text-[var(--destructive)] tabular-nums" dir="ltr">{formatCurrency(totalOut)}</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">عبر كل المصادر</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Transactions table */}
-      <Card>
-        <CardContent className="p-5">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]" />
-              <Input
-                placeholder="ابحث في المعاملات..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pe-10"
-              />
-            </div>
-          </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
+        {/* Connected sources */}
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-5">
+              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
+                <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
+                المصادر المربوطة
+              </h2>
+              <div className="space-y-3">
+                {banks.map((bank) => (
+                  <div
+                    key={bank.id}
+                    className={`rounded-[14px] border p-4 transition-colors ${
+                      bank.status === "connected"
+                        ? "border-[var(--border)] bg-[var(--surface)]"
+                        : "border-dashed border-[var(--border)] bg-[var(--muted)]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-white font-bold text-sm"
+                          style={{ background: bank.color }}
+                        >
+                          {bank.name[0]}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-[var(--foreground)] font-arabic text-sm">{bank.name}</p>
+                            <Badge
+                              variant={bank.type === "gateway" ? "secondary" : "outline"}
+                              className="font-arabic text-[11px]"
+                            >
+                              {bank.type === "gateway" ? "بوابة دفع" : "بنك"}
+                            </Badge>
+                          </div>
+                          {bank.iban && (
+                            <p className="text-xs text-[var(--muted-foreground)] mt-0.5 font-arabic" dir="ltr">{bank.iban}</p>
+                          )}
+                        </div>
+                      </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="pb-3 text-start text-xs font-semibold text-[var(--muted-foreground)] font-arabic">التاريخ</th>
-                  <th className="pb-3 text-start text-xs font-semibold text-[var(--muted-foreground)] font-arabic">الوصف</th>
-                  <th className="pb-3 text-start text-xs font-semibold text-[var(--muted-foreground)] font-arabic">التصنيف</th>
-                  <th className="pb-3 text-end text-xs font-semibold text-[var(--muted-foreground)] font-arabic">المبلغ</th>
-                  <th className="pb-3 text-end text-xs font-semibold text-[var(--muted-foreground)] font-arabic">الرصيد</th>
-                  <th className="pb-3 text-center text-xs font-semibold text-[var(--muted-foreground)] font-arabic">الحالة</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                {filtered.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-[var(--muted)] transition-colors">
-                    <td className="py-3.5 text-xs text-[var(--muted-foreground)] font-arabic">{formatDate(tx.date)}</td>
-                    <td className="py-3.5 max-w-[220px]">
-                      <p className="truncate text-sm text-[var(--foreground)] font-arabic">{tx.desc}</p>
-                    </td>
-                    <td className="py-3.5">
-                      {tx.category ? (
-                        <Badge variant="secondary" className="font-arabic text-[11px]">{tx.category}</Badge>
+                      {bank.status === "connected" ? (
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleSync(bank.id)}
+                            disabled={syncing === bank.id}
+                          >
+                            <RefreshCw className={`h-3.5 w-3.5 ${syncing === bank.id ? "animate-spin" : ""}`} />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       ) : (
-                        <select className="rounded-[8px] border border-[var(--border)] bg-[var(--surface-strong)] px-2 py-1 text-xs text-[var(--muted-foreground)] font-arabic focus:outline-none focus:ring-1 focus:ring-[var(--ring)]">
-                          <option value="">اختر تصنيف</option>
-                          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                        </select>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="font-arabic text-xs shrink-0"
+                          onClick={() => handleConnect(bank.name)}
+                          disabled={connecting === bank.name}
+                        >
+                          {connecting === bank.name ? (
+                            <span className="flex items-center gap-1.5">
+                              <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              جاري الربط...
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1.5">
+                              <Link2Off className="h-3.5 w-3.5" />
+                              ربط الآن
+                            </span>
+                          )}
+                        </Button>
                       )}
-                    </td>
-                    <td className="py-3.5 text-end">
-                      <span
-                        className="text-sm font-bold tabular-nums"
-                        style={{ color: tx.amount > 0 ? "var(--success)" : "var(--destructive)" }}
-                        dir="ltr"
-                      >
-                        {tx.amount > 0 ? "+" : ""}{formatCurrency(tx.amount)}
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-end text-sm text-[var(--foreground)] tabular-nums font-arabic" dir="ltr">
-                      {formatCurrency(tx.balance)}
-                    </td>
-                    <td className="py-3.5 text-center">
-                      <Badge variant={tx.status === "classified" ? "success" : "warning"} className="font-arabic">
-                        {tx.status === "classified" ? "مصنف" : "معلق"}
-                      </Badge>
-                    </td>
-                  </tr>
+                    </div>
+
+                    {bank.status === "connected" && (
+                      <div className="mt-3 grid grid-cols-3 gap-3">
+                        <div className="rounded-[10px] bg-[var(--card)] border border-[var(--border)] px-3 py-2">
+                          <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">الرصيد</p>
+                          <p className="text-sm font-bold text-[var(--foreground)] tabular-nums" dir="ltr">
+                            {formatCurrency(bank.balance)}
+                          </p>
+                        </div>
+                        <div className="rounded-[10px] bg-[var(--card)] border border-[var(--border)] px-3 py-2">
+                          <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">وارد/شهر</p>
+                          <p className="text-sm font-bold text-[var(--success)] tabular-nums" dir="ltr">
+                            +{formatCurrency(bank.monthlyIn)}
+                          </p>
+                        </div>
+                        <div className="rounded-[10px] bg-[var(--card)] border border-[var(--border)] px-3 py-2">
+                          <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">صادر/شهر</p>
+                          <p className="text-sm font-bold text-[var(--destructive)] tabular-nums" dir="ltr">
+                            -{formatCurrency(bank.monthlyOut)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {bank.status === "connected" && bank.lastSync && (
+                      <p className="mt-2 text-[11px] text-[var(--muted-foreground)] font-arabic flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        آخر مزامنة: {bank.lastSync}
+                      </p>
+                    )}
+
+                    {bank.status === "disconnected" && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-[var(--destructive)] font-arabic">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        يحتاج ربطاً — البيانات غير محدّثة
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent transactions */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-base font-bold text-[var(--foreground)] font-arabic flex items-center gap-2">
+                  <div className="h-5 w-1 rounded-full bg-[var(--border)]" />
+                  آخر المعاملات المجمّعة
+                </h2>
+              </div>
+              <div className="space-y-2">
+                {recentTransactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black"
+                        style={{
+                          background: tx.type === "credit"
+                            ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                            : "color-mix(in srgb, var(--destructive) 12%, transparent)",
+                          color: tx.type === "credit" ? "var(--success)" : "var(--destructive)",
+                        }}
+                      >
+                        {tx.type === "credit" ? "+" : "-"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-[var(--foreground)] font-arabic">{tx.desc}</p>
+                        <p className="text-xs text-[var(--muted-foreground)] font-arabic">{tx.bank} · {tx.date}</p>
+                      </div>
+                    </div>
+                    <span
+                      className="text-sm font-bold tabular-nums shrink-0"
+                      style={{ color: tx.type === "credit" ? "var(--success)" : "var(--destructive)" }}
+                      dir="ltr"
+                    >
+                      {tx.type === "credit" ? "+" : ""}{formatCurrency(tx.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right: add more sources */}
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="p-5">
+              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+                <div className="h-4 w-1 rounded-full bg-[var(--border)]" />
+                إضافة مصادر جديدة
+              </h2>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">
+                كلما زادت المصادر المربوطة، كلما كان التقرير الائتماني أشمل وأدق
+              </p>
+              <div className="space-y-2">
+                {availableToConnect.map((src) => (
+                  <div
+                    key={src.name}
+                    className="flex items-center justify-between rounded-[12px] border border-dashed border-[var(--border)] bg-[var(--muted)] px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] text-white font-bold text-xs"
+                        style={{ background: src.color }}
+                      >
+                        {(src.nameAr ?? src.name)[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--foreground)] font-arabic">{src.nameAr ?? src.name}</p>
+                        <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">
+                          {src.type === "gateway" ? "بوابة دفع" : "بنك"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="font-arabic text-xs h-7 px-3 gap-1"
+                      onClick={() => handleConnect(src.nameAr ?? src.name)}
+                      disabled={connecting === (src.nameAr ?? src.name)}
+                    >
+                      {connecting === (src.nameAr ?? src.name) ? (
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <ExternalLink className="h-3 w-3" />
+                      )}
+                      ربط
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
+            <CardContent className="p-5">
+              <CheckCircle2 className="h-8 w-8 text-[var(--primary)] mb-3" />
+              <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1">
+                بياناتك محمية بالكامل
+              </p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic leading-relaxed">
+                نستخدم بروتوكول Open Banking المعتمد من ساما. لا نخزّن كلمات مرورك — فقط صلاحية قراءة البيانات بموافقتك.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
