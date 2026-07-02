@@ -68,7 +68,7 @@ export function Sidebar({
   const { user, logout } = useUser();
 
   const visibleMenuItems = menuItems.filter((item) =>
-    user?.role ? item.roles.includes(user.role) : false
+    user?.role ? item.roles.includes(user.role) : true
   );
 
   async function handleLogout() {
@@ -125,23 +125,37 @@ export function Sidebar({
       </div>
 
       {/* User info */}
-      {user && (
-        <div className={`shrink-0 border-b border-[var(--border)] ${collapsed ? "p-3" : "p-4"}`}>
-          <div className={`flex items-center rounded-[16px] border border-[var(--border)] bg-[var(--surface)] ${collapsed ? "justify-center p-2.5" : "gap-3 p-3"}`}>
-            <UserAvatar user={user} className="h-10 w-10" textClassName="text-sm" alt={`${user.first_name} ${user.last_name}`} />
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-[var(--foreground)] font-arabic text-sm truncate">
-                  {user.first_name} {user.last_name}
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic">
-                  {roleLabels[user.role]}
-                </p>
+      <div className={`shrink-0 border-b border-[var(--border)] ${collapsed ? "p-3" : "p-4"}`}>
+        <div className={`flex items-center rounded-[16px] border border-[var(--border)] bg-[var(--surface)] ${collapsed ? "justify-center p-2.5" : "gap-3 p-3"}`}>
+          {user ? (
+            <>
+              <UserAvatar user={user} className="h-10 w-10" textClassName="text-sm" alt={`${user.first_name} ${user.last_name}`} />
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-[var(--foreground)] font-arabic text-sm truncate">
+                    {user.first_name} {user.last_name}
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)] font-arabic">
+                    {roleLabels[user.role]}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--muted)] text-[var(--muted-foreground)]">
+                <span className="text-sm font-bold">؟</span>
               </div>
-            )}
-          </div>
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-[var(--foreground)] font-arabic text-sm">زائر</p>
+                  <p className="text-xs text-[var(--muted-foreground)] font-arabic">غير مسجل</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Navigation */}
       <nav
