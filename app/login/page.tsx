@@ -70,7 +70,7 @@ function LoginContent() {
           <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--primary)]">
             <Landmark className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-black text-[var(--foreground)] font-arabic">ركائز</span>
+          <span className="text-xl font-black text-[var(--foreground)] font-arabic">منصة ركائز</span>
         </div>
 
         {/* Value props */}
@@ -110,7 +110,7 @@ function LoginContent() {
         </div>
 
         <p className="relative z-10 text-xs text-[var(--muted-foreground)] font-arabic">
-          © 2026 ركائز. جميع الحقوق محفوظة.
+          © 2026 منصة ركائز. جميع الحقوق محفوظة.
         </p>
       </div>
 
@@ -124,7 +124,7 @@ function LoginContent() {
           <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--primary)]">
             <Landmark className="h-4 w-4 text-white" />
           </div>
-          <span className="text-lg font-black text-[var(--foreground)] font-arabic">ركائز</span>
+          <span className="text-lg font-black text-[var(--foreground)] font-arabic">منصة ركائز</span>
         </div>
 
         <div className="w-full max-w-sm">

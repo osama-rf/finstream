@@ -92,7 +92,7 @@ export function Sidebar({
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)] font-arabic">
-                {user?.companies?.name_ar || user?.companies?.name || "ركائز"}
+                {user?.companies?.name_ar || user?.companies?.name || "منصة ركائز"}
               </h1>
               <p className="text-xs text-[var(--muted-foreground)] font-arabic">
                 المصرفية المفتوحة للمنشآت

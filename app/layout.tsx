@@ -7,10 +7,10 @@ import QueryProvider from "@/lib/providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: {
-    default: "فين ستريم | المحاسبة المفتوحة",
-    template: "%s | فين ستريم",
+    default: "منصة ركائز | المصرفية المفتوحة للمنشآت",
+    template: "%s | منصة ركائز",
   },
-  description: "ربط البيانات البنكية بالمحاسبة وإنشاء القوائم المالية تلقائياً بالذكاء الاصطناعي وإيداعها لدى وزارة التجارة",
+  description: "وسيط المصرفية المفتوحة للمنشآت الصغيرة والمتوسطة — اجمع بياناتك المالية من بنوكك وحوّلها إلى تقرير ائتماني يمكّنك من التمويل",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

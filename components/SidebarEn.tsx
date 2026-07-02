@@ -71,7 +71,7 @@ export function SidebarEn({
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)]">
-                {user?.companies?.name || user?.companies?.name_ar || "Raka'ez"}
+                {user?.companies?.name || user?.companies?.name_ar || "Raka'ez Platform"}
               </h1>
               <p className="text-xs text-[var(--muted-foreground)]">Open Banking for SMEs</p>
             </div>
