@@ -1,27 +1,21 @@
 import { NextRequest } from 'next/server';
-import { createRouteHandlerClient } from '@/lib/supabase/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
 import { runAgent, generateFinanceReport, type AgentMessage, type ToolCallEvent } from '@/lib/ai/finance-agent';
 
-async function getAuthUser() {
-  const supabase = await createRouteHandlerClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  if (!authUser) return null;
+const MOCK_USER = {
+  id: 'mock-001',
+  first_name: 'أسامة',
+  last_name: 'الرفاعي',
+  role: 'company_admin',
+  company_id: 'company-001',
+};
 
-  const { data } = await supabaseAdmin
-    .from('users')
-    .select('id, first_name, last_name, role, company_id')
-    .eq('id', authUser.id)
-    .single() as { data: any };
-
-  return data;
+function getAuthUser() {
+  return MOCK_USER;
 }
 
 // POST: streaming agent chat
 export async function POST(req: NextRequest) {
-  const user = await getAuthUser();
-  if (!user) return new Response(JSON.stringify({ error: 'غير مصرح' }), { status: 401 });
-  if (!user.company_id) return new Response(JSON.stringify({ error: 'لا توجد شركة مرتبطة بحسابك' }), { status: 400 });
+  const user = getAuthUser();
 
   const body = await req.json();
   const { message, history = [] } = body as { message: string; history: AgentMessage[] };
@@ -64,9 +58,7 @@ export async function POST(req: NextRequest) {
 
 // GET: structured daily report for dashboard
 export async function GET() {
-  const user = await getAuthUser();
-  if (!user) return Response.json({ error: 'غير مصرح' }, { status: 401 });
-  if (!user.company_id) return Response.json({ error: 'لا توجد شركة' }, { status: 400 });
+  const user = getAuthUser();
 
   const ctx = {
     companyId: user.company_id,
