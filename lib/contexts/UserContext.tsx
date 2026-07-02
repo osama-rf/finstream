@@ -7,8 +7,8 @@ import type { User } from '@/lib/types/database';
 const MOCK_USER: User = {
   id: 'mock-001',
   email: 'admin@rakaez.sa',
-  first_name: 'أحمد',
-  last_name: 'الزهراني',
+  first_name: 'أسامة',
+  last_name: 'الرفاعي',
   role: 'company_admin',
   status: 'active',
   avatar_url: null,
