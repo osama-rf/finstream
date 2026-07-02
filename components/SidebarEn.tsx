@@ -1,15 +1,12 @@
 "use client";
 
-let _sidebarNavScroll = 0;
-
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Building2, FileText,
-  Settings, LogOut, PanelLeftClose, PanelLeftOpen, Landmark, Users,
+  Settings, PanelLeftClose, PanelLeftOpen, Landmark, Users,
   BarChart3, CreditCard, TrendingUp,
 } from "lucide-react";
-import { toast } from "sonner";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
 import type { UserRole } from "@/lib/types/database";
@@ -44,22 +41,11 @@ export function SidebarEn({
   onMobileOpenChange: (open: boolean) => void;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, logout } = useUser();
+  const { user } = useUser();
 
   const visibleMenuItems = menuItems.filter((item) =>
     user?.role ? item.roles.includes(user.role) : true
   );
-
-  async function handleLogout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      logout();
-      router.push("/login");
-    } catch {
-      toast.error("Sign out failed");
-    }
-  }
 
   const SidebarContent = () => (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
@@ -130,8 +116,6 @@ export function SidebarEn({
       </div>
 
       <nav
-        ref={(el) => { if (el) el.scrollTop = _sidebarNavScroll; }}
-        onScroll={(e) => { _sidebarNavScroll = e.currentTarget.scrollTop; }}
         className={`min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin ${collapsed ? "p-2.5" : "p-4"}`}
       >
         <ul className="space-y-1">
@@ -159,16 +143,6 @@ export function SidebarEn({
         </ul>
       </nav>
 
-      <div className={`shrink-0 border-t border-[var(--border)] ${collapsed ? "p-3" : "p-4"}`}>
-        <button
-          onClick={handleLogout}
-          title="Sign Out"
-          className={`flex w-full items-center rounded-[14px] text-[var(--destructive)] transition-all hover:bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] ${collapsed ? "justify-center p-3" : "gap-3 px-4 py-3"}`}
-        >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="font-medium text-sm">Sign Out</span>}
-        </button>
-      </div>
     </div>
   );
 
