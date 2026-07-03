@@ -10,6 +10,9 @@ import {
   PanelLeftOpen,
   Landmark,
   CreditCard,
+  BarChart3,
+  TrendingUp,
+  Building2,
 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -25,11 +28,14 @@ type SidebarItem = {
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems: SidebarItem[] = [
-  { label: "لوحة التحكم",     icon: LayoutDashboard, path: "/dashboard",  roles: allRoles },
-  { label: "المصرفية المفتوحة", icon: Landmark,   path: "/bank",       roles: allRoles },
-  { label: "التقرير الائتماني", icon: CreditCard, path: "/credit",     roles: allRoles },
-  { label: "القوائم المالية",  icon: FileText,   path: "/statements", roles: allRoles },
-  { label: "الإعدادات",        icon: Settings,   path: "/settings",   roles: allRoles },
+  { label: "لوحة التحكم",       icon: LayoutDashboard, path: "/dashboard",  roles: allRoles },
+  { label: "المصرفية المفتوحة", icon: Landmark,        path: "/bank",       roles: allRoles },
+  { label: "التصنيف الائتماني", icon: CreditCard,      path: "/credit",     roles: allRoles },
+  { label: "التحليل المالي",    icon: TrendingUp,      path: "/analytics",  roles: allRoles },
+  { label: "القوائم المالية",   icon: FileText,        path: "/statements", roles: allRoles },
+  { label: "مقارنة القطاع",     icon: BarChart3,       path: "/benchmarks", roles: allRoles },
+  { label: "بيانات الشركة",     icon: Building2,       path: "/company",    roles: allRoles },
+  { label: "الإعدادات",         icon: Settings,        path: "/settings",   roles: allRoles },
 ];
 
 const roleLabels: Record<UserRole, string> = {

@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   ShieldCheck, Share2, RefreshCw, CheckCircle2,
-  AlertCircle, TrendingUp, TrendingDown, Info,
-  Building2, BarChart3, ArrowUpRight,
+  AlertCircle, TrendingUp, Info,
+  Building2, BarChart3, Send, X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,30 +48,6 @@ const banksList = [
   { name: "مصرف الإنماء",         product: "خط ائتمان متجدد",        maxAmount: "1,500,000", rate: "7.2%" },
 ];
 
-// ─── Benchmarks data ──────────────────────────────────────────────────────────
-
-type MetricStatus = "above" | "below" | "close";
-
-const metrics = [
-  { key: "net_margin",    label: "هامش الربح الصافي",          company: 32.5, sectorAvg: 24.1, topQuartile: 38,  unit: "%",       higherIsBetter: true  },
-  { key: "revenue_growth",label: "نمو الإيرادات السنوي",       company: 18.4, sectorAvg: 12.3, topQuartile: 28,  unit: "%",       higherIsBetter: true  },
-  { key: "gross_margin",  label: "هامش الربح الإجمالي",        company: 61,   sectorAvg: 58,   topQuartile: 72,  unit: "%",       higherIsBetter: true  },
-  { key: "current_ratio", label: "نسبة السيولة الجارية",       company: 1.8,  sectorAvg: 1.5,  topQuartile: 2.4, unit: "x",       higherIsBetter: true  },
-  { key: "dso",           label: "متوسط فترة التحصيل",         company: 42,   sectorAvg: 35,   topQuartile: 22,  unit: "يوم",     higherIsBetter: false },
-  { key: "opex_ratio",    label: "نسبة المصروفات التشغيلية",   company: 48,   sectorAvg: 52,   topQuartile: 38,  unit: "%",       higherIsBetter: false },
-  { key: "rev_employee",  label: "الإيراد لكل موظف",           company: 385,  sectorAvg: 310,  topQuartile: 520, unit: "ألف ر.س", higherIsBetter: true  },
-  { key: "debt_equity",   label: "نسبة الدين إلى حقوق الملكية",company: 0.65, sectorAvg: 0.78, topQuartile: 0.45,unit: "x",       higherIsBetter: false },
-];
-
-function getBenchStatus(m: typeof metrics[0]): MetricStatus {
-  const t = m.sectorAvg * 0.05;
-  if (m.higherIsBetter) {
-    return m.company >= m.sectorAvg + t ? "above" : m.company <= m.sectorAvg - t ? "below" : "close";
-  } else {
-    return m.company <= m.sectorAvg - t ? "above" : m.company >= m.sectorAvg + t ? "below" : "close";
-  }
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function ScoreRing({ score }: { score: number }) {
@@ -92,44 +69,76 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
-function MiniBar({ company, avg, top, higherIsBetter }: { company: number; avg: number; top: number; higherIsBetter: boolean }) {
-  const max = Math.max(company, avg, top) * 1.15;
-  const status: MetricStatus = higherIsBetter
-    ? company >= avg * 1.05 ? "above" : company <= avg * 0.95 ? "below" : "close"
-    : company <= avg * 0.95 ? "above" : company >= avg * 1.05 ? "below" : "close";
-  const barColor = status === "above" ? "var(--success)" : status === "below" ? "var(--destructive)" : "var(--warning)";
+// ─── Share Modal ──────────────────────────────────────────────────────────────
+
+const shareBanks = ["البنك الأهلي السعودي", "بنك الراجحي", "مصرف الإنماء", "بنك الرياض"];
+
+function ShareCreditModal({ onClose }: { onClose: () => void }) {
+  const [selected, setSelected] = useState(shareBanks[0]);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function handleSend() {
+    setSending(true);
+    await new Promise(r => setTimeout(r, 1500));
+    setSending(false);
+    setSent(true);
+    setTimeout(() => { onClose(); toast.success(`تم إرسال التقرير الائتماني A- إلى ${selected}`); }, 700);
+  }
+
   return (
-    <div className="space-y-1.5 mt-2">
-      {[
-        { label: "شركتك",       pct: Math.round((company / max) * 100), val: company, color: barColor },
-        { label: "متوسط القطاع", pct: Math.round((avg / max) * 100),     val: avg,     color: "var(--muted-foreground)" },
-        { label: "الربع الأول",  pct: Math.round((top / max) * 100),     val: top,     color: "var(--primary)" },
-      ].map(row => (
-        <div key={row.label} className="flex items-center gap-1.5">
-          <span className="text-[10px] w-16 shrink-0 text-[var(--muted-foreground)] font-arabic">{row.label}</span>
-          <div className="flex-1 h-1.5 rounded-full bg-[var(--muted)] overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${row.pct}%`, background: row.color }} />
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="w-[95vw] max-w-sm p-0" dir="rtl">
+        <DialogHeader className="border-b border-[var(--border)] px-5 py-4 flex flex-row items-center justify-between">
+          <DialogTitle className="font-arabic">مشاركة التقرير الائتماني</DialogTitle>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--muted)]">
+            <X className="h-4 w-4" />
+          </button>
+        </DialogHeader>
+        <div className="p-5 space-y-4">
+          <div className="rounded-[10px] border border-[var(--success)]/30 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-4 py-3 flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-[var(--success)] shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-[var(--foreground)] font-arabic">التصنيف الائتماني A-</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">سيتلقى البنك تقريراً مشفراً بصلاحية 30 يوماً</p>
+            </div>
           </div>
-          <span className="text-[10px] font-bold tabular-nums w-10 text-end shrink-0" dir="ltr">{row.val}</span>
+          <div>
+            <label className="text-xs font-bold text-[var(--muted-foreground)] font-arabic mb-2 block">اختر البنك</label>
+            <div className="space-y-2">
+              {shareBanks.map(b => (
+                <button key={b} onClick={() => setSelected(b)}
+                  className={`w-full text-right rounded-[10px] border px-4 py-2.5 text-sm font-arabic transition-all ${
+                    selected === b
+                      ? "border-[var(--primary)] bg-[color:color-mix(in_srgb,var(--primary)_8%,transparent)] text-[var(--primary)] font-bold"
+                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)]"
+                  }`}>
+                  {b}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Button className="w-full font-arabic gap-2" onClick={handleSend} disabled={sending || sent}>
+            {sent ? (
+              <><CheckCircle2 className="h-4 w-4" />تم الإرسال</>
+            ) : sending ? (
+              <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />جاري الإرسال...</>
+            ) : (
+              <><Send className="h-4 w-4" />إرسال التقرير</>
+            )}
+          </Button>
         </div>
-      ))}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CreditPage() {
-  const [tab, setTab] = useState<"ratios" | "banks" | "benchmarks">("ratios");
-  const [sharing, setSharing]         = useState(false);
+  const [tab, setTab] = useState<"ratios" | "banks">("ratios");
+  const [showShareModal, setShowShareModal] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
-
-  async function handleShare() {
-    setSharing(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setSharing(false);
-    toast.success("تم إنشاء رابط مشاركة آمن — صالح لمدة 30 يوماً");
-  }
 
   async function handleRegenerate() {
     setRegenerating(true);
@@ -140,11 +149,12 @@ export default function CreditPage() {
 
   const goodCount    = ratios.filter(r => r.status === "good").length;
   const warningCount = ratios.filter(r => r.status === "warning").length;
-  const aboveCount   = metrics.filter(m => getBenchStatus(m) === "above").length;
-  const belowCount   = metrics.filter(m => getBenchStatus(m) === "below").length;
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
+
+      {/* Share modal */}
+      {showShareModal && <ShareCreditModal onClose={() => setShowShareModal(false)} />}
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -159,9 +169,9 @@ export default function CreditPage() {
             <RefreshCw className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`} />
             {regenerating ? "جاري التحديث..." : "تحديث"}
           </Button>
-          <Button size="sm" className="font-arabic gap-2" onClick={handleShare} disabled={sharing}>
+          <Button size="sm" className="font-arabic gap-2" onClick={() => setShowShareModal(true)}>
             <Share2 className="h-4 w-4" />
-            {sharing ? "جاري الإنشاء..." : "مشاركة مع بنك"}
+            مشاركة مع بنك
           </Button>
         </div>
       </div>
@@ -191,7 +201,7 @@ export default function CreditPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <BarChart3 className="h-3.5 w-3.5 text-[var(--primary)]" />
-                    <span className="text-xs font-bold text-[var(--primary)] font-arabic">تتفوق على {aboveCount} من 8 مؤشرات قطاعية</span>
+                    <span className="text-xs font-bold text-[var(--primary)] font-arabic">تتفوق على 6 من 8 مؤشرات قطاعية</span>
                   </div>
                 </div>
               </div>
@@ -226,11 +236,10 @@ export default function CreditPage() {
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-[14px] border border-[var(--border)] bg-[var(--muted)] p-1 w-fit flex-wrap">
+      <div className="flex gap-1 rounded-[14px] border border-[var(--border)] bg-[var(--muted)] p-1 w-fit">
         {[
-          { key: "ratios",      label: "المؤشرات الائتمانية" },
-          { key: "benchmarks",  label: "مقارنة القطاع" },
-          { key: "banks",       label: "عروض تمويل" },
+          { key: "ratios", label: "المؤشرات الائتمانية" },
+          { key: "banks",  label: "عروض تمويل" },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
             className={`rounded-[10px] px-3 py-2 text-xs font-medium font-arabic transition-all sm:px-4 sm:text-sm ${
@@ -290,82 +299,6 @@ export default function CreditPage() {
         </div>
       )}
 
-      {/* Tab: benchmarks */}
-      {tab === "benchmarks" && (
-        <div className="space-y-4">
-          {/* Summary strip */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "فوق المتوسط",  count: aboveCount, color: "var(--success)",    icon: CheckCircle2 },
-              { label: "قريب المتوسط", count: metrics.filter(m => getBenchStatus(m) === "close").length, color: "var(--warning)", icon: BarChart3 },
-              { label: "أدنى المتوسط", count: belowCount,  color: "var(--destructive)", icon: AlertCircle },
-            ].map(s => {
-              const Icon = s.icon;
-              return (
-                <Card key={s.label}>
-                  <CardContent className="p-3 flex items-center gap-2 sm:gap-3 sm:p-4">
-                    <Icon className="h-6 w-6 shrink-0 sm:h-7 sm:w-7" style={{ color: s.color }} />
-                    <div className="min-w-0">
-                      <p className="text-xl font-black tabular-nums sm:text-2xl" style={{ color: s.color }}>{s.count}</p>
-                      <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{s.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-          {/* Metrics grid */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {metrics.map(m => {
-              const status = getBenchStatus(m);
-              const diff = m.higherIsBetter
-                ? ((m.company - m.sectorAvg) / m.sectorAvg * 100).toFixed(1)
-                : ((m.sectorAvg - m.company) / m.sectorAvg * 100).toFixed(1);
-              const isPositive = parseFloat(diff) >= 0;
-              return (
-                <Card key={m.key} className={
-                  status === "above" ? "border-[var(--success)]/20" :
-                  status === "below" ? "border-[var(--destructive)]/15" : ""
-                }>
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-sm font-bold text-[var(--foreground)] font-arabic">{m.label}</p>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {isPositive
-                          ? <ArrowUpRight className="h-4 w-4 text-[var(--success)]" />
-                          : <TrendingDown className="h-4 w-4 text-[var(--destructive)]" />}
-                        <span className="text-xs font-bold tabular-nums" dir="ltr"
-                          style={{ color: isPositive ? "var(--success)" : "var(--destructive)" }}>
-                          {isPositive ? "+" : ""}{diff}%
-                        </span>
-                        <Badge variant={status === "above" ? "success" : status === "below" ? "destructive" : "warning"}
-                          className="font-arabic text-[10px] px-1.5 py-0.5">
-                          {status === "above" ? "أفضل" : status === "below" ? "أدنى" : "متقارب"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <MiniBar company={m.company} avg={m.sectorAvg} top={m.topQuartile} higherIsBetter={m.higherIsBetter} />
-                    <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-2">الوحدة: {m.unit}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-          <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <BarChart3 className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic leading-relaxed">
-                  منشأتك تتفوق على <strong>{aboveCount}</strong> من أصل {metrics.length} مؤشراً مقارنةً بمتوسط قطاع الاستشارات والخدمات.
-                  أبرز نقاط القوة: هامش الربح ونمو الإيرادات. أكبر فرصة للتحسين: تقليل فترة التحصيل (DSO)
-                  التي ستؤثر إيجاباً على تصنيفك الائتماني وتسرّع الحصول على تمويل بشروط أفضل.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Tab: banks */}
       {tab === "banks" && (
         <div className="space-y-4">
@@ -405,7 +338,7 @@ export default function CreditPage() {
                       <p className="text-base font-bold text-[var(--success)]" dir="ltr">{bank.rate}</p>
                     </div>
                     <Button size="sm" className="font-arabic gap-1.5 shrink-0"
-                      onClick={() => toast.success(`تم إرسال تقريرك الائتماني إلى ${bank.name}`)}>
+                      onClick={() => setShowShareModal(true)}>
                       <Share2 className="h-3.5 w-3.5" />
                       إرسال
                     </Button>
