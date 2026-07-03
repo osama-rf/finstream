@@ -275,22 +275,35 @@ export default function CreditPage() {
 
             {/* Score scale */}
             <div className="border-t border-[var(--border)] pt-4">
-              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-2">سلّم التصنيف الائتماني — نطاق 300 إلى 900</p>
-              <div className="relative h-3 rounded-full overflow-hidden flex">
-                {[
-                  { label: "ضعيف",    color: "#ef4444", flex: 2 },
-                  { label: "متوسط",   color: "#f97316", flex: 1 },
-                  { label: "جيد",     color: "#eab308", flex: 1 },
-                  { label: "جيد جداً",color: "#22c55e", flex: 1 },
-                  { label: "ممتاز",   color: "#10b981", flex: 1 },
-                ].map(s => (
-                  <div key={s.label} className="h-full" style={{ flex: s.flex, background: s.color, opacity: 0.75 }} />
-                ))}
-                <div className="absolute top-0 h-full w-0.5 bg-white shadow" style={{ left: `${report.visual_pct}%` }} />
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-3">سلّم التصنيف الائتماني — نطاق 300 إلى 900</p>
+              {/* bar + marker — overflow visible so marker arrow is not clipped */}
+              <div className="relative h-3 rounded-full flex" style={{ overflow: "visible" }}>
+                {/* colored segments */}
+                <div className="absolute inset-0 rounded-full overflow-hidden flex">
+                  {[
+                    { label: "ضعيف",     color: "#ef4444", flex: 2 },
+                    { label: "متوسط",    color: "#f97316", flex: 1 },
+                    { label: "جيد",      color: "#eab308", flex: 1 },
+                    { label: "جيد جداً", color: "#22c55e", flex: 1 },
+                    { label: "ممتاز",    color: "#10b981", flex: 1 },
+                  ].map(s => (
+                    <div key={s.label} className="h-full" style={{ flex: s.flex, background: s.color, opacity: 0.8 }} />
+                  ))}
+                </div>
+                {/* marker — triangle + line, sits above bar */}
+                <div
+                  className="absolute flex flex-col items-center"
+                  style={{ left: `${report.visual_pct}%`, top: "-10px", transform: "translateX(-50%)" }}
+                >
+                  {/* triangle pointing down */}
+                  <div style={{ width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "7px solid #1e293b" }} />
+                  {/* vertical line through bar */}
+                  <div style={{ width: "2px", height: "13px", background: "#1e293b", marginTop: "0px" }} />
+                </div>
               </div>
-              <div className="flex justify-between mt-1">
-                {["ضعيف 300", "متوسط 500", "جيد 600", "جيد جداً 700", "ممتاز 800", "900"].map(l => (
-                  <span key={l} className="text-[9px] text-[var(--muted-foreground)] font-arabic">{l}</span>
+              <div className="flex justify-between mt-2">
+                {["300", "500", "600", "700", "800", "900"].map(l => (
+                  <span key={l} className="text-[9px] text-[var(--muted-foreground)] font-arabic tabular-nums">{l}</span>
                 ))}
               </div>
             </div>
