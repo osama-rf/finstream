@@ -4,102 +4,129 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, FileText, Eye } from "lucide-react";
+import {
+  Building2, CheckCircle2, Clock, Share2, CreditCard,
+  ArrowUpRight, Eye, ShieldCheck, Landmark,
+} from "lucide-react";
 import { toast } from "sonner";
 
-const approvals = [
+const banks = [
   {
     id: "1",
-    title: "قائمة الدخل Q1 2026",
-    description: "مراجعة واعتماد قائمة الدخل للربع الأول من 2026",
-    type: "statement",
-    status: "pending",
-    requestedBy: "أحمد محمد",
-    requestedAt: "2026-06-01",
-    priority: "عالية",
+    name: "مصرف الراجحي",
+    logo: "ر",
+    color: "#006838",
+    type: "تمويل SME",
+    sharedAt: "2026-07-01",
+    status: "viewed",
+    response: "قيد الدراسة",
+    limit: "500,000 – 2,000,000 ريال",
   },
   {
     id: "2",
-    title: "الميزانية العمومية Q1 2026",
-    description: "مراجعة واعتماد الميزانية العمومية للربع الأول",
-    type: "statement",
-    status: "in_review",
-    requestedBy: "سارة الأحمد",
-    requestedAt: "2026-06-01",
-    priority: "عالية",
+    name: "البنك الأهلي",
+    logo: "أ",
+    color: "#00574B",
+    type: "تمويل تشغيلي",
+    sharedAt: null,
+    status: "pending",
+    response: null,
+    limit: "250,000 – 1,500,000 ريال",
   },
   {
     id: "3",
-    title: "إيداع Q4 2025 لوزارة التجارة",
-    description: "الموافقة على إيداع القوائم المالية السنوية 2025",
-    type: "filing",
-    status: "approved",
-    requestedBy: "خالد العمر",
-    requestedAt: "2026-03-15",
-    priority: "عادية",
-    reviewedBy: "م. عبدالله السعد",
+    name: "بنك الإنماء",
+    logo: "إ",
+    color: "#0A3161",
+    type: "تسهيل ائتماني",
+    sharedAt: null,
+    status: "pending",
+    response: null,
+    limit: "300,000 – 1,000,000 ريال",
   },
   {
     id: "4",
-    title: "مبالغ تحويل مجهولة المصدر",
-    description: "الموافقة على تصنيف 3 معاملات بنكية مجهولة المصدر",
-    type: "transaction",
-    status: "pending",
-    requestedBy: "فاطمة علي",
-    requestedAt: "2026-06-03",
-    priority: "متوسطة",
+    name: "بنك الرياض",
+    logo: "ري",
+    color: "#C8102E",
+    type: "تمويل SME",
+    sharedAt: "2026-06-20",
+    status: "approved",
+    response: "تمت الموافقة المبدئية",
+    limit: "400,000 – 1,800,000 ريال",
   },
 ];
 
-const statusMap: Record<string, { label: string; variant: any }> = {
-  pending: { label: "معلق", variant: "warning" },
-  in_review: { label: "قيد المراجعة", variant: "default" },
-  approved: { label: "معتمد", variant: "success" },
-  rejected: { label: "مرفوض", variant: "destructive" },
+const statusMap: Record<string, { label: string; variant: any; icon: any }> = {
+  pending:  { label: "لم تُشارك بعد", variant: "secondary", icon: Clock },
+  viewed:   { label: "تمت المشاهدة", variant: "warning",   icon: Eye },
+  approved: { label: "موافقة مبدئية", variant: "success",  icon: CheckCircle2 },
 };
 
-const typeLabels: Record<string, string> = {
-  statement: "قائمة مالية",
-  filing: "إيداع رسمي",
-  transaction: "معاملة بنكية",
-};
+export default function ShareReportPage() {
+  const [items, setItems] = useState(banks);
 
-export default function ApprovalsPage() {
-  const [items, setItems] = useState(approvals);
-
-  function handleApprove(id: string) {
-    setItems((prev) => prev.map((a) => a.id === id ? { ...a, status: "approved" } : a));
-    toast.success("تمت الموافقة بنجاح");
+  function handleShare(id: string) {
+    setItems((prev) =>
+      prev.map((b) =>
+        b.id === id
+          ? { ...b, status: "viewed", sharedAt: new Date().toISOString().slice(0, 10), response: "قيد الدراسة" }
+          : b
+      )
+    );
+    const bank = items.find((b) => b.id === id);
+    toast.success(`تم مشاركة التقرير الائتماني مع ${bank?.name}`);
   }
 
-  function handleReject(id: string) {
-    setItems((prev) => prev.map((a) => a.id === id ? { ...a, status: "rejected" } : a));
-    toast.error("تم الرفض");
-  }
-
-  const pending = items.filter((a) => a.status === "pending" || a.status === "in_review");
-  const completed = items.filter((a) => a.status === "approved" || a.status === "rejected");
+  const sharedCount = items.filter((b) => b.status !== "pending").length;
+  const approvedCount = items.filter((b) => b.status === "approved").length;
+  const pendingCount = items.filter((b) => b.status === "pending").length;
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">الموافقات</h1>
-        <p className="text-sm text-[var(--muted-foreground)] font-arabic">مراجعة واعتماد القوائم المالية والإيداعات</p>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">مشاركة التقرير الائتماني</h1>
+        <p className="text-sm text-[var(--muted-foreground)] font-arabic">
+          شارك تقريرك الائتماني A- مع البنوك للحصول على عروض تمويل مناسبة
+        </p>
+      </div>
+
+      {/* Credit badge */}
+      <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_6%,transparent)] px-5 py-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--primary)] text-white">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[var(--foreground)] font-arabic">
+                تصنيفك الائتماني: <span className="text-[var(--primary)]">A-</span> · جاهز للمشاركة
+              </p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">
+                3 بنوك مربوطة · تحديث: اليوم · شُورك مع {sharedCount} {sharedCount === 1 ? "بنك" : "بنوك"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 text-xs text-[var(--muted-foreground)] font-arabic">
+            <CreditCard className="h-4 w-4 text-[var(--primary)]" />
+            <span className="font-bold text-[var(--primary)]">{approvedCount}</span> موافقة مبدئية
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "بانتظار الموافقة", count: pending.length, color: "var(--warning)", icon: Clock },
-          { label: "معتمدة", count: items.filter((a) => a.status === "approved").length, color: "var(--success)", icon: CheckCircle },
-          { label: "مرفوضة", count: items.filter((a) => a.status === "rejected").length, color: "var(--destructive)", icon: XCircle },
+          { label: "لم تُشارك", count: pendingCount, color: "var(--muted-foreground)", icon: Clock },
+          { label: "قيد الدراسة", count: items.filter((b) => b.status === "viewed").length, color: "var(--warning)", icon: Eye },
+          { label: "موافقة مبدئية", count: approvedCount, color: "var(--success)", icon: CheckCircle2 },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label}>
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3 mb-2">
-                  <Icon className="h-5 w-5" style={{ color: stat.color }} />
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon className="h-4 w-4" style={{ color: stat.color }} />
                   <p className="text-xs text-[var(--muted-foreground)] font-arabic">{stat.label}</p>
                 </div>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: stat.color }}>{stat.count}</p>
@@ -109,95 +136,85 @@ export default function ApprovalsPage() {
         })}
       </div>
 
-      {/* Pending */}
-      {pending.length > 0 && (
-        <div>
-          <h2 className="text-sm font-bold text-[var(--muted-foreground)] font-arabic mb-3 px-1">بانتظار الموافقة</h2>
-          <div className="space-y-3">
-            {pending.map((item) => {
-              const status = statusMap[item.status];
-              return (
-                <Card key={item.id}>
-                  <CardContent className="p-5">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]">
-                          <FileText className="h-5 w-5 text-[var(--primary)]" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <p className="font-bold text-[var(--foreground)] font-arabic">{item.title}</p>
-                            <Badge variant={status.variant} className="font-arabic text-[11px]">{status.label}</Badge>
-                            <Badge variant="outline" className="font-arabic text-[11px]">{typeLabels[item.type]}</Badge>
-                          </div>
-                          <p className="text-sm text-[var(--muted-foreground)] font-arabic">{item.description}</p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <p className="text-xs text-[var(--muted-foreground)] font-arabic">
-                              طلبه: {item.requestedBy}
-                            </p>
-                            <span className="text-[var(--border)]">·</span>
-                            <p className="text-xs text-[var(--muted-foreground)] font-arabic">{item.requestedAt}</p>
-                            <span className="text-[var(--border)]">·</span>
-                            <Badge variant={item.priority === "عالية" ? "destructive" : item.priority === "متوسطة" ? "warning" : "secondary"} className="font-arabic text-[11px]">
-                              {item.priority}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button variant="outline" size="sm" className="font-arabic gap-1.5">
-                          <Eye className="h-3.5 w-3.5" />
-                          معاينة
-                        </Button>
-                        <Button variant="destructive" size="sm" className="font-arabic" onClick={() => handleReject(item.id)}>
-                          <XCircle className="h-3.5 w-3.5" />
-                          رفض
-                        </Button>
-                        <Button size="sm" className="font-arabic bg-[var(--success)] hover:opacity-90" onClick={() => handleApprove(item.id)}>
-                          <CheckCircle className="h-3.5 w-3.5" />
-                          اعتماد
-                        </Button>
-                      </div>
+      {/* Banks list */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-bold text-[var(--muted-foreground)] font-arabic px-1">البنوك المتاحة للمشاركة</h2>
+        {items.map((bank) => {
+          const status = statusMap[bank.status];
+          const StatusIcon = status.icon;
+          return (
+            <Card key={bank.id}>
+              <CardContent className="p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white text-sm font-bold"
+                      style={{ background: bank.color }}
+                    >
+                      {bank.logo}
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <p className="font-bold text-[var(--foreground)] font-arabic">{bank.name}</p>
+                        <Badge variant={status.variant} className="font-arabic text-[11px] flex items-center gap-1">
+                          <StatusIcon className="h-3 w-3" />
+                          {status.label}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-[var(--muted-foreground)] font-arabic">
+                        {bank.type} · نطاق التمويل: {bank.limit}
+                      </p>
+                      {bank.sharedAt && (
+                        <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-0.5">
+                          شُورك في: {bank.sharedAt}
+                          {bank.response && <> · <span className="text-[var(--warning)]">{bank.response}</span></>}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    {bank.status === "pending" ? (
+                      <Button
+                        size="sm"
+                        className="font-arabic gap-1.5"
+                        onClick={() => handleShare(bank.id)}
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        مشاركة التقرير
+                      </Button>
+                    ) : bank.status === "approved" ? (
+                      <Button size="sm" variant="outline" className="font-arabic gap-1.5 border-[var(--success)] text-[var(--success)]">
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                        تواصل مع البنك
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" className="font-arabic gap-1.5" disabled>
+                        <Clock className="h-3.5 w-3.5" />
+                        انتظار الرد
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
-      {/* Completed */}
-      {completed.length > 0 && (
-        <div>
-          <h2 className="text-sm font-bold text-[var(--muted-foreground)] font-arabic mb-3 px-1">المكتملة</h2>
-          <div className="space-y-3">
-            {completed.map((item) => {
-              const status = statusMap[item.status];
-              return (
-                <Card key={item.id} className="opacity-75">
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[var(--muted)]">
-                          <FileText className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-[var(--foreground)] font-arabic text-sm">{item.title}</p>
-                          <p className="text-xs text-[var(--muted-foreground)] font-arabic">
-                            {item.requestedAt} · {item.requestedBy}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant={status.variant} className="font-arabic shrink-0">{status.label}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+      {/* Info banner */}
+      <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
+        <CardContent className="p-5">
+          <div className="flex items-start gap-3">
+            <Landmark className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1">كيف يعمل نظام مشاركة التقرير؟</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic leading-relaxed">
+                عند المشاركة، يتلقى البنك تقريراً موحداً يتضمن ملخصك المالي من جميع البنوك المربوطة، مؤشرات السيولة والنمو، ومقارنة بمتوسط القطاع — كل هذا دون الحاجة لتقديم كشوف حسابات متعددة يدوياً.
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

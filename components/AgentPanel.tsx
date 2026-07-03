@@ -19,26 +19,26 @@ type ToolEvent = { type: "tool_start" | "tool_done" | "text" | "error"; toolName
 
 const TOOL_NAMES = {
   ar: {
-    get_financial_summary:         "قراءة الملخص المالي",
-    get_unclassified_transactions: "البحث عن معاملات غير مصنفة",
-    get_pending_approvals:         "مراجعة الموافقات المعلقة",
+    get_financial_summary:         "تحليل البيانات المجمّعة من البنوك",
+    get_unclassified_transactions: "فحص المعاملات البنكية",
+    get_pending_approvals:         "مراجعة حالة التقارير",
     get_statements_status:         "قراءة حالة القوائم المالية",
     get_filings_status:            "قراءة حالة الإيداعات",
-    get_journal_entries:           "قراءة دفتر اليومية",
+    get_journal_entries:           "قراءة سجل المعاملات",
     classify_transaction:          "تصنيف معاملة بنكية",
-    create_journal_entry:          "إنشاء قيد محاسبي",
-    generate_income_statement:     "إنشاء قائمة دخل",
+    create_journal_entry:          "إنشاء قائمة مالية",
+    generate_income_statement:     "توليد قائمة دخل بالذكاء الاصطناعي",
   },
   en: {
-    get_financial_summary:         "Reading financial summary",
-    get_unclassified_transactions: "Searching unclassified transactions",
-    get_pending_approvals:         "Reviewing pending approvals",
+    get_financial_summary:         "Aggregating bank data",
+    get_unclassified_transactions: "Scanning bank transactions",
+    get_pending_approvals:         "Reviewing report status",
     get_statements_status:         "Reading statements status",
     get_filings_status:            "Reading filings status",
-    get_journal_entries:           "Reading journal entries",
+    get_journal_entries:           "Reading transaction history",
     classify_transaction:          "Classifying bank transaction",
-    create_journal_entry:          "Creating journal entry",
-    generate_income_statement:     "Generating income statement",
+    create_journal_entry:          "Generating financial statement",
+    generate_income_statement:     "AI-generating income statement",
   },
 } as const;
 
@@ -58,57 +58,56 @@ const ATTENTION = {
 const QUICK_ACTIONS = {
   ar: {
     company_admin: [
-      { label: "الوضع المالي",        icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للمنشأة: الأرصدة المجمّعة، الإيرادات، المصروفات، وصافي الربح من جميع البنوك." },
-      { label: "التصنيف الائتماني",  icon: TrendingUp,   prompt: "حلّل المؤشرات المالية للمنشأة وأعطني تقييماً لجاهزيتها للحصول على تمويل بنكي." },
-      { label: "مقارنة القطاع",       icon: BarChart2,    prompt: "قارن المؤشرات المالية للمنشأة بمتوسطات القطاع وأبرز نقاط القوة ��الضعف." },
-      { label: "إنشاء قائمة مالية",  icon: FileText,     prompt: "أنشئ مسودة ق��ئمة دخل للفترة الحالية من بيانات البنوك المربوطة." },
-      { label: "ربط البنوك",          icon: Landmark,     prompt: "كم عدد البنوك المربوطة حالياً؟ وهل هناك مصادر بيانات ناقصة تؤثر على دقة التقرير؟" },
-      { label: "فرص التمويل",         icon: Upload,       prompt: "بناءً على المؤشرات المالي�� الحالية، ما البنوك التي يمكنني التقدم إليها للحصول على تمويل؟" },
+      { label: "الوضع المالي",        icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للوضع المالي للمنشأة: الأرصدة المجمّعة من جميع البنوك، الإيرادات، المصروفات، وصافي الربح." },
+      { label: "التصنيف الائتماني",  icon: TrendingUp,   prompt: "حلّل المؤشرات المالية للمنشأة وأعطني تقييماً لجاهزيتها للحصول على تمويل بنكي وما هو تصنيفها الائتماني الحالي." },
+      { label: "مقارنة القطاع",       icon: BarChart2,    prompt: "قارن المؤشرات المالية للمنشأة بمتوسطات قطاع الاستشارات والخدمات وأبرز نقاط القوة والفرص." },
+      { label: "إنشاء قائمة مالية",  icon: FileText,     prompt: "أنشئ مسودة قائمة دخل للفترة الحالية من بيانات البنوك المربوطة باستخدام الذكاء الاصطناعي." },
+      { label: "ربط البنوك",          icon: Landmark,     prompt: "كم عدد البنوك المربوطة حالياً؟ وهل هناك مصادر بيانات ناقصة تؤثر على دقة التقرير الائتماني؟" },
+      { label: "فرص التمويل",         icon: Upload,       prompt: "بناءً على التصنيف الائتماني A- والمؤشرات المالية الحالية، ما البنوك التي يمكنني التقدم إليها للحصول على تمويل وبأي شروط؟" },
     ],
     accountant: [
-      { label: "الأرصدة المجمّعة",    icon: Landmark,     prompt: "ما الأرصدة الحالية لكل البنوك والمصادر المربوطة، وما إجمالي التدفقات النقدية هذا الشهر؟" },
-      { label: "الملخص المالي",       icon: BarChart2,    prompt: "أعطني ملخصاً للإيرادات والمصروفات وصافي الربح لهذا الشهر من جميع المصادر." },
-      { label: "إنشاء قائمة مالية",  icon: FileText,     prompt: "أنشئ مسودة قائمة دخل للفترة الح��لية بناءً على البيانات المت��حة." },
+      { label: "الأرصدة المجمّعة",    icon: Landmark,     prompt: "ما الأرصدة الحالية لكل البنوك والمصادر المربوطة وما إجمالي التدفقات النقدية هذا الشهر؟" },
+      { label: "الملخص المالي",       icon: BarChart2,    prompt: "أعطني ملخصاً للإيرادات والمصروفات وصافي الربح لهذا الشهر من جميع المصادر البنكية." },
+      { label: "إنشاء قائمة مالية",  icon: FileText,     prompt: "أنشئ مسودة قائمة دخل للفترة الحالية بناءً على البيانات المجمّعة من البنوك." },
       { label: "تحليل التدفقات",      icon: TrendingUp,   prompt: "حلّل التدفقات النقدية للشهر الماضي وأبرز أكبر مصادر الإيراد والمصروف." },
     ],
     auditor: [
-      { label: "مراجعة الم��افقات",    icon: CheckCircle2, prompt: "ما القوائم المالية التي تحتاج مراجعتي واعتمادي الآن؟" },
-      { label: "التحقق من البيانات",  icon: BarChart2,    prompt: "أعطني م��خصاً شاملاً للبيانات المالية من جميع ��لمصادر للتدقيق والمراجعة." },
-      { label: "التصنيف الائتم��ني",  icon: TrendingUp,   prompt: "راجع المؤشرات المالية وقيّم مدى دقة التصنيف الائتماني الحالي." },
+      { label: "مراجعة التقارير",     icon: CheckCircle2, prompt: "ما القوائم المالية المنشأة بالذكاء الاصطناعي التي تحتاج مراجعتي الآن؟" },
+      { label: "التحقق من البيانات",  icon: BarChart2,    prompt: "أعطني ملخصاً شاملاً للبيانات المالية المجمّعة من جميع البنوك للمراجعة والتدقيق." },
+      { label: "التصنيف الائتماني",  icon: TrendingUp,   prompt: "راجع المؤشرات المالية وقيّم مدى دقة التصنيف الائتماني الحالي A- ومدى جاهزيته للمشاركة مع البنوك." },
     ],
   },
   en: {
     company_admin: [
-      { label: "Financial Status",    icon: BarChart2,    prompt: "Give me a comprehensive financial overview: balance, revenue, expenses, unclassified transactions, and pending approvals." },
-      { label: "AI Classify",         icon: Landmark,     prompt: "Review unclassified bank transactions and classify them automatically." },
-      { label: "Generate Statement",  icon: FileText,     prompt: "Generate a draft income statement for the current month based on classified transactions." },
-      { label: "Pending Approvals",   icon: CheckCircle2, prompt: "What financial statements and filings are pending approval right now?" },
-      { label: "Filings Status",      icon: Upload,       prompt: "What is the status of official filings with the Ministry of Commerce and ZATCA?" },
-      { label: "Journal Report",      icon: TrendingUp,   prompt: "Show me the latest journal entries and verify the debit/credit balance." },
+      { label: "Financial Overview",  icon: BarChart2,    prompt: "Give me a comprehensive overview: aggregated balances from all banks, revenue, expenses, and net profit." },
+      { label: "Credit Report",       icon: TrendingUp,   prompt: "Analyze my financial indicators and assess credit readiness for bank financing. What is my current credit rating?" },
+      { label: "Sector Comparison",   icon: BarChart2,    prompt: "Compare my financial indicators against the consulting sector average and highlight strengths and opportunities." },
+      { label: "Generate Statement",  icon: FileText,     prompt: "Generate a draft income statement for the current period from aggregated bank data using AI." },
+      { label: "Bank Connections",    icon: Landmark,     prompt: "How many banks are connected? Are there any missing data sources affecting the credit report accuracy?" },
+      { label: "Financing Options",   icon: Upload,       prompt: "Based on my A- credit rating and current financials, which banks should I approach for financing and at what terms?" },
     ],
     accountant: [
-      { label: "Pending Transactions", icon: Landmark,   prompt: "What unclassified bank transactions need to be posted to accounting?" },
-      { label: "Journal Entries",      icon: FileText,   prompt: "Show me the latest journal entries and verify the trial balance." },
-      { label: "Generate Statement",   icon: BarChart2,  prompt: "Generate a draft income statement for the current period based on available data." },
-      { label: "Financial Summary",    icon: TrendingUp, prompt: "Give me a quick financial summary: revenue, expenses, and net profit." },
+      { label: "Aggregated Balances", icon: Landmark,   prompt: "What are the current balances across all connected banks and payment gateways this month?" },
+      { label: "Financial Summary",   icon: BarChart2,  prompt: "Give me a summary of revenue, expenses, and net profit this month from all bank sources." },
+      { label: "Generate Statement",  icon: FileText,   prompt: "Generate a draft income statement for the current period from aggregated bank data." },
+      { label: "Cash Flow Analysis",  icon: TrendingUp, prompt: "Analyze cash flows from the past month and highlight the largest revenue and expense sources." },
     ],
     auditor: [
-      { label: "Review Approvals",   icon: CheckCircle2, prompt: "What financial statements need my review and approval now?" },
-      { label: "Financial Summary",  icon: BarChart2,    prompt: "Give me a comprehensive financial summary for auditing." },
-      { label: "Filings Status",     icon: Upload,       prompt: "What is the status of completed and pending official filings?" },
+      { label: "Review Statements",  icon: CheckCircle2, prompt: "Which AI-generated financial statements need my review now?" },
+      { label: "Data Verification",  icon: BarChart2,    prompt: "Give me a comprehensive summary of aggregated financial data from all banks for auditing." },
+      { label: "Credit Assessment",  icon: TrendingUp,   prompt: "Review the financial indicators and assess the accuracy of the current A- credit rating." },
     ],
   },
 };
-
 const PAGE_ROUTES = {
-  ar: { bank: "/bank", accounting: "/accounting", statements: "/statements", approvals: "/approvals", filings: "/filings" },
-  en: { bank: "/en/bank", accounting: "/en/accounting", statements: "/en/statements", approvals: "/en/approvals", filings: "/en/filings" },
+  ar: { bank: "/bank", credit: "/credit", benchmarks: "/benchmarks", statements: "/statements" },
+  en: { bank: "/en/bank", credit: "/en/credit", benchmarks: "/en/benchmarks", statements: "/en/statements" },
 };
 
 const UI = {
   ar: {
     reportTitle:     "تقرير المنشأة اليومي",
-    reportSubtitle:  "تحليل تلقائي للبيانات المجمّعة من جميع البنوك مع توصيات للتحسين",
+    reportSubtitle:  "تحليل تلقائي لبيانات البنوك المربوطة وتقييم جاهزية التمويل",
     refresh:         "تحديث",
     assistant:       "المساعد المالي",
     loading:         "جاري تحليل البيانات المالية...",
@@ -120,7 +119,7 @@ const UI = {
     chatTitle:       "المساعد المالي الذكي",
     chatEmpty:       "اكتب سؤالاً أو اختر إجراءً من الصفحة الرئيسية",
     analyzing:       "جاري التحليل المالي...",
-    inputPlaceholder:"اسأل عن الأرصدة، التصنيف الائتماني، مقارنة القطاع...",
+    inputPlaceholder:"اسأل عن الأرصدة المجمّعة، التصنيف الائتماني، مقارنة القطاع، أو إنشاء قائمة مالية...",
   },
   en: {
     reportTitle:     "Daily Financial Report",
@@ -143,7 +142,7 @@ const UI = {
 // ─── Report Cache ─────────────────────────────────────────────────────────────
 
 // Single shared cache key — report data is language-agnostic, only display strings differ
-const CACHE_KEY = "finstream-daily-report-v2";
+const CACHE_KEY = "rakaez-daily-report-v1";
 
 function getCachedReport(): FinanceReport | null {
   try {
@@ -160,7 +159,7 @@ function setCachedReport(report: FinanceReport) {
 
 function clearCachedReport() {
   // Clear both old and new cache keys
-  try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem("finstream-daily-report"); } catch {}
+  try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem("finstream-daily-report-v2"); localStorage.removeItem("finstream-daily-report"); } catch {}
 }
 
 // ─── Markdown Renderer ────────────────────────────────────────────────────────
