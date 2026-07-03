@@ -4,16 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Building2,
   FileText,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
   Landmark,
-  Users,
-  BarChart3,
   CreditCard,
-  TrendingUp,
 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -30,14 +26,10 @@ const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "aud
 
 const menuItems: SidebarItem[] = [
   { label: "لوحة التحكم",     icon: LayoutDashboard, path: "/dashboard",  roles: allRoles },
-  { label: "المصرفية المفتوحة", icon: Landmark,        path: "/bank",       roles: allRoles },
-  { label: "التقرير الائتماني", icon: CreditCard,      path: "/credit",     roles: allRoles },
-  { label: "مقارنة القطاع",    icon: BarChart3,        path: "/benchmarks", roles: allRoles },
-  { label: "القوائم المالية",  icon: FileText,         path: "/statements", roles: allRoles },
-  { label: "التحليل المالي",   icon: TrendingUp,       path: "/analytics",  roles: allRoles },
-  { label: "الشركة",           icon: Building2,        path: "/company",    roles: ["super_admin", "company_admin"] },
-  { label: "فريق العمل",       icon: Users,            path: "/users",      roles: ["super_admin", "company_admin"] },
-  { label: "الإعدادات",        icon: Settings,         path: "/settings",   roles: allRoles },
+  { label: "المصرفية المفتوحة", icon: Landmark,   path: "/bank",       roles: allRoles },
+  { label: "التقرير الائتماني", icon: CreditCard, path: "/credit",     roles: allRoles },
+  { label: "القوائم المالية",  icon: FileText,   path: "/statements", roles: allRoles },
+  { label: "الإعدادات",        icon: Settings,   path: "/settings",   roles: allRoles },
 ];
 
 const roleLabels: Record<UserRole, string> = {
