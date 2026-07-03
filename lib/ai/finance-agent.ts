@@ -20,6 +20,17 @@ export type ToolCallEvent = {
 
 export type ReportItem = { text: string; page?: string };
 
+export type CreditRatio = {
+  key: string;
+  label: string;
+  value: number;
+  unit: string;
+  benchmark: number;
+  benchmarkLabel: string;
+  status: 'good' | 'warning' | 'bad';
+  description: string;
+};
+
 export type CreditReport = {
   generated_at: string;
   score: number;
@@ -31,6 +42,7 @@ export type CreditReport = {
   strengths: string[];
   risks: string[];
   recommendations: string[];
+  ratios: CreditRatio[];
 };
 
 export type FinanceReport = {
@@ -543,25 +555,35 @@ ${JSON.stringify({
 export async function generateCreditReport(): Promise<CreditReport> {
   const d = PLATFORM_DATA;
 
+  const staticRatios: CreditRatio[] = [
+    { key: 'profit_margin',  label: 'هامش الربح الصافي',           value: d.ratios.profitMargin.value,  unit: '%',    benchmark: d.ratios.profitMargin.benchmark,  benchmarkLabel: `متوسط القطاع: ${d.ratios.profitMargin.benchmark}%`,     status: d.ratios.profitMargin.status  as CreditRatio['status'], description: 'نسبة الربح الصافي من إجمالي الإيرادات' },
+    { key: 'current_ratio',  label: 'نسبة السيولة الجارية',         value: d.ratios.currentRatio.value,  unit: 'x',    benchmark: d.ratios.currentRatio.benchmark,  benchmarkLabel: `معيار البنوك: ≥ ${d.ratios.currentRatio.benchmark}`,    status: d.ratios.currentRatio.status  as CreditRatio['status'], description: 'قدرة الشركة على تغطية التزاماتها قصيرة الأجل' },
+    { key: 'debt_equity',    label: 'نسبة الدين إلى حقوق الملكية',  value: d.ratios.debtEquity.value,    unit: 'x',    benchmark: d.ratios.debtEquity.benchmark,    benchmarkLabel: `معيار البنوك: ≤ ${d.ratios.debtEquity.benchmark}`,     status: d.ratios.debtEquity.status    as CreditRatio['status'], description: 'مستوى الرافعة المالية للشركة' },
+    { key: 'dso',            label: 'متوسط فترة التحصيل',           value: d.ratios.dso.value,           unit: 'يوم',  benchmark: d.ratios.dso.benchmark,           benchmarkLabel: `متوسط القطاع: ${d.ratios.dso.benchmark} يوم`,          status: d.ratios.dso.status           as CreditRatio['status'], description: 'متوسط الأيام اللازمة لتحصيل المستحقات' },
+    { key: 'revenue_growth', label: 'نمو الإيرادات (سنوي)',          value: d.ratios.revenueGrowth.value, unit: '%',    benchmark: d.ratios.revenueGrowth.benchmark, benchmarkLabel: `متوسط القطاع: ${d.ratios.revenueGrowth.benchmark}%`,   status: d.ratios.revenueGrowth.status as CreditRatio['status'], description: 'معدل نمو الإيرادات مقارنةً بالعام الماضي' },
+    { key: 'cash_coverage',  label: 'نسبة تغطية النقد',             value: d.ratios.cashCoverage.value,  unit: 'x',    benchmark: d.ratios.cashCoverage.benchmark,  benchmarkLabel: `معيار البنوك: ≥ ${d.ratios.cashCoverage.benchmark}`,   status: d.ratios.cashCoverage.status  as CreditRatio['status'], description: 'قدرة التدفقات النقدية على تغطية خدمة الدين' },
+  ];
+
   const staticReport: CreditReport = {
     generated_at: new Date().toISOString(),
     score:       d.simahScore,
-    letter:      d.simahRating === 'جيد جداً' ? 'B+' : 'B',
+    letter:      'B+',
     rating:      d.simahLabel,
     percentile:  d.simahPercentile,
     visual_pct:  Math.round(((d.simahScore - 300) / 600) * 100),
     valid_until: d.creditValidUntil,
+    ratios:      staticRatios,
     strengths: [
-      'هامش ربح فوق متوسط القطاع بنسبة 35%',
-      'نمو إيرادات قوي ومستدام منذ 3 سنوات',
-      'نسبة سيولة مريحة تتجاوز متطلبات البنوك',
+      `هامش ربح ${d.ratios.profitMargin.value}% يتجاوز متوسط القطاع ${d.ratios.profitMargin.benchmark}%`,
+      `نمو إيرادات ${d.ratios.revenueGrowth.value}% مقابل متوسط قطاعي ${d.ratios.revenueGrowth.benchmark}%`,
+      `نسبة سيولة ${d.ratios.currentRatio.value}x تتجاوز متطلبات البنوك ${d.ratios.currentRatio.benchmark}x`,
     ],
     risks: [
-      'فترة تحصيل المديونية أعلى من متوسط القطاع بـ 7 أيام',
-      'تركز 40% من الإيرادات في عميل واحد',
+      `فترة تحصيل ${d.ratios.dso.value} يوماً أعلى من متوسط القطاع ${d.ratios.dso.benchmark} يوماً`,
+      'تركز الإيرادات في عدد محدود من العملاء يرفع مخاطر الائتمان',
     ],
     recommendations: [
-      'تطبيق سياسة تحصيل أكثر صرامة لتقليل DSO إلى 35 يوماً',
+      `تطبيق سياسة تحصيل أكثر صرامة لخفض DSO من ${d.ratios.dso.value} إلى ${d.ratios.dso.benchmark} يوماً`,
       'تنويع قاعدة العملاء لتقليل مخاطر التركز',
       'توثيق العقود متعددة السنوات لتعزيز ثقة البنوك',
     ],
@@ -572,39 +594,60 @@ export async function generateCreditReport(): Promise<CreditReport> {
 
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
-  const prompt = `أنت محلل ائتماني لمنشأة صغيرة ومتوسطة في السعودية. بناءً على البيانات التالية، أنتج تقرير ائتماني.
+  const inputData = {
+    total_balance_sar:       d.totalBalance,
+    monthly_inflow:          d.totalMonthlyIn,
+    monthly_outflow:         d.totalMonthlyOut,
+    net_monthly:             d.netMonthly,
+    revenue_growth:          d.revenueGrowth,
+    unclassified_tx:         d.unclassifiedTxCount,
+    credit_score:            d.simahScore,
+    credit_rating:           d.simahLabel,
+    percentile:              d.simahPercentile,
+    sector:                  d.benchmarks.sector,
+    above_sector_avg:        `${d.benchmarks.aboveAverage}/${d.benchmarks.total}`,
+    net_profit_q1:           d.analytics.netProfit,
+    profit_margin_pct:       d.analytics.profitMarginPct,
+    ratios: {
+      profit_margin:   { actual: d.ratios.profitMargin.value,  sector_avg: d.ratios.profitMargin.benchmark,  unit: '%'   },
+      current_ratio:   { actual: d.ratios.currentRatio.value,  bank_min: d.ratios.currentRatio.benchmark,    unit: 'x'   },
+      debt_equity:     { actual: d.ratios.debtEquity.value,    bank_max: d.ratios.debtEquity.benchmark,      unit: 'x'   },
+      dso_days:        { actual: d.ratios.dso.value,           sector_avg: d.ratios.dso.benchmark,           unit: 'day' },
+      revenue_growth:  { actual: d.ratios.revenueGrowth.value, sector_avg: d.ratios.revenueGrowth.benchmark, unit: '%'   },
+      cash_coverage:   { actual: d.ratios.cashCoverage.value,  bank_min: d.ratios.cashCoverage.benchmark,    unit: 'x'   },
+    },
+  };
 
-بيانات المنشأة المجمّعة من البنوك المربوطة:
-${JSON.stringify({
-  total_balance_sar: d.totalBalance,
-  monthly_inflow: d.totalMonthlyIn,
-  monthly_outflow: d.totalMonthlyOut,
-  net_monthly: d.netMonthly,
-  revenue_growth: d.revenueGrowth,
-  unclassified_transactions: d.unclassifiedTxCount,
-  credit_score: d.simahScore,
-  credit_score_max: 900,
-  credit_rating: d.simahLabel,
-  percentile: d.simahPercentile,
-  ratios: d.ratios,
-  sector: d.benchmarks.sector,
-  above_sector_avg: `${d.benchmarks.aboveAverage} من ${d.benchmarks.total} مؤشرات`,
-  net_profit_q1: d.analytics.netProfit,
-  profit_margin_pct: d.analytics.profitMarginPct,
-}, null, 2)}
+  const prompt = `أنت محلل ائتماني لمنشأة في السعودية. بناءً على البيانات التالية، أنتج تقريراً ائتمانياً ديناميكياً.
 
-أنتج JSON فقط (بدون نص خارج الـ JSON):
+${JSON.stringify(inputData, null, 2)}
+
+أنتج JSON فقط بهذا الشكل بالضبط:
 {
-  "strengths": ["نقطة قوة 1 مع رقم من البيانات", "نقطة قوة 2", "نقطة قوة 3"],
-  "risks": ["خطر 1 مع رقم محدد", "خطر 2"],
-  "recommendations": ["توصية عملية 1", "توصية 2", "توصية 3"]
+  "ratios": [
+    {
+      "key": "profit_margin",
+      "label": "هامش الربح الصافي",
+      "value": 32.5,
+      "unit": "%",
+      "benchmark": 24,
+      "benchmarkLabel": "متوسط القطاع: 24%",
+      "status": "good",
+      "description": "جملة تحليلية قصيرة تذكر الرقم الفعلي ومقارنته بالمعيار"
+    }
+  ],
+  "strengths": ["نقطة قوة مع رقم فعلي"],
+  "risks": ["خطر مع رقم فعلي"],
+  "recommendations": ["توصية عملية قصيرة"]
 }
 
-قواعد:
-- كل نقطة قوة أو خطر تحتوي على رقم أو نسبة فعلية من البيانات
-- التوصيات قابلة للتنفيذ وعملية وقصيرة
-- العبارات بالعربية المهنية، الأرقام بالإنجليزية
-- strengths: 3 نقاط، risks: 2-3 نقاط، recommendations: 3 نقاط`;
+قواعد صارمة:
+- ratios: 6 مؤشرات بنفس الـ keys: profit_margin, current_ratio, debt_equity, dso, revenue_growth, cash_coverage
+- القيم (value, benchmark) أرقام فعلية من البيانات — لا تغيّر الأرقام
+- status: "good" إذا كان الأداء أفضل من المعيار، "warning" إذا كان أسوأ، "bad" إذا كان سيئاً جداً
+- description: جملة واحدة تحليلية قصيرة تذكر الرقم الفعلي
+- strengths: 3 نقاط | risks: 2-3 نقاط | recommendations: 3 نقاط
+- الأرقام بالإنجليزية، العبارات بالعربية المهنية`;
 
   try {
     const res = await fetch(
@@ -614,7 +657,7 @@ ${JSON.stringify({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 },
+          generationConfig: { temperature: 0.2 },
         }),
       }
     );
@@ -624,8 +667,24 @@ ${JSON.stringify({
     if (!text) return staticReport;
     const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
     const parsed = JSON.parse((fenced ? fenced[1] : text).trim());
+
+    const validStatuses = ['good', 'warning', 'bad'];
+    const aiRatios: CreditRatio[] = Array.isArray(parsed.ratios)
+      ? parsed.ratios.slice(0, 6).map((r: any, i: number) => ({
+          key:            r.key            || staticRatios[i]?.key || `ratio_${i}`,
+          label:          r.label          || staticRatios[i]?.label || '',
+          value:          typeof r.value === 'number' ? r.value : staticRatios[i]?.value ?? 0,
+          unit:           r.unit           || staticRatios[i]?.unit || '',
+          benchmark:      typeof r.benchmark === 'number' ? r.benchmark : staticRatios[i]?.benchmark ?? 0,
+          benchmarkLabel: r.benchmarkLabel || staticRatios[i]?.benchmarkLabel || '',
+          status:         validStatuses.includes(r.status) ? r.status : staticRatios[i]?.status ?? 'good',
+          description:    r.description   || staticRatios[i]?.description || '',
+        }))
+      : staticRatios;
+
     return {
       ...staticReport,
+      ratios:          aiRatios,
       strengths:       Array.isArray(parsed.strengths)       ? parsed.strengths.slice(0, 4)       : staticReport.strengths,
       risks:           Array.isArray(parsed.risks)           ? parsed.risks.slice(0, 3)           : staticReport.risks,
       recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 4) : staticReport.recommendations,

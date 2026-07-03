@@ -11,9 +11,9 @@ import {
   Building2, BarChart3, Send, X,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { CreditReport } from "@/lib/ai/finance-agent";
+import type { CreditReport, CreditRatio } from "@/lib/ai/finance-agent";
 
-// ─── Static data (score/ratios never change — only AI narrative refreshes) ───
+// ─── Static score constants (score itself is fixed; narrative is AI) ─────────
 
 const SCORE      = 720;
 const LETTER     = "B+";
@@ -21,13 +21,13 @@ const RATING     = "جيد جداً";
 const PERCENTILE = 71;
 const VISUAL_PCT = Math.round(((SCORE - 300) / 600) * 100);
 
-const ratios = [
-  { key: "profit_margin",  label: "هامش الربح الصافي",          value: 32.5, unit: "%",    benchmark: 24,  benchmarkLabel: "متوسط القطاع: 24%",      status: "good"    as const, description: "نسبة الربح الصافي من إجمالي الإيرادات" },
-  { key: "current_ratio",  label: "نسبة السيولة الجارية",        value: 1.8,  unit: "x",    benchmark: 1.5, benchmarkLabel: "معيار البنوك: ≥ 1.5",     status: "good"    as const, description: "قدرة الشركة على تغطية التزاماتها قصيرة الأجل" },
-  { key: "debt_equity",    label: "نسبة الدين إلى حقوق الملكية", value: 0.65, unit: "x",    benchmark: 0.8, benchmarkLabel: "معيار البنوك: ≤ 0.8",     status: "good"    as const, description: "مستوى الرافعة المالية للشركة" },
-  { key: "dso",            label: "متوسط فترة التحصيل",          value: 42,   unit: "يوم",  benchmark: 35,  benchmarkLabel: "متوسط القطاع: 35 يوم",    status: "warning" as const, description: "متوسط الأيام اللازمة لتحصيل المستحقات" },
-  { key: "revenue_growth", label: "نمو الإيرادات (سنوي)",        value: 18.4, unit: "%",    benchmark: 12,  benchmarkLabel: "متوسط القطاع: 12%",       status: "good"    as const, description: "معدل نمو الإيرادات مقارنةً بالعام الماضي" },
-  { key: "cash_coverage",  label: "نسبة تغطية النقد",            value: 2.1,  unit: "x",    benchmark: 1.5, benchmarkLabel: "معيار البنوك: ≥ 1.5",     status: "good"    as const, description: "قدرة التدفقات النقدية على تغطية خدمة الدين" },
+const STATIC_RATIOS: CreditRatio[] = [
+  { key: "profit_margin",  label: "هامش الربح الصافي",           value: 32.5, unit: "%",   benchmark: 24,  benchmarkLabel: "متوسط القطاع: 24%",    status: "good",    description: "نسبة الربح الصافي من إجمالي الإيرادات" },
+  { key: "current_ratio",  label: "نسبة السيولة الجارية",         value: 1.8,  unit: "x",   benchmark: 1.5, benchmarkLabel: "معيار البنوك: ≥ 1.5",  status: "good",    description: "قدرة الشركة على تغطية التزاماتها قصيرة الأجل" },
+  { key: "debt_equity",    label: "نسبة الدين إلى حقوق الملكية",  value: 0.65, unit: "x",   benchmark: 0.8, benchmarkLabel: "معيار البنوك: ≤ 0.8",  status: "good",    description: "مستوى الرافعة المالية للشركة" },
+  { key: "dso",            label: "متوسط فترة التحصيل",           value: 42,   unit: "يوم", benchmark: 35,  benchmarkLabel: "متوسط القطاع: 35 يوم", status: "warning", description: "متوسط الأيام اللازمة لتحصيل المستحقات" },
+  { key: "revenue_growth", label: "نمو الإيرادات (سنوي)",          value: 18.4, unit: "%",   benchmark: 12,  benchmarkLabel: "متوسط القطاع: 12%",    status: "good",    description: "معدل نمو الإيرادات مقارنةً بالعام الماضي" },
+  { key: "cash_coverage",  label: "نسبة تغطية النقد",             value: 2.1,  unit: "x",   benchmark: 1.5, benchmarkLabel: "معيار البنوك: ≥ 1.5",  status: "good",    description: "قدرة التدفقات النقدية على تغطية خدمة الدين" },
 ];
 
 const banksList = [
@@ -44,6 +44,7 @@ const STATIC_REPORT: CreditReport = {
   percentile:  PERCENTILE,
   visual_pct:  VISUAL_PCT,
   valid_until: "2026-08-01",
+  ratios:      STATIC_RATIOS,
   strengths: [
     "هامش ربح فوق متوسط القطاع بنسبة 35%",
     "نمو إيرادات قوي ومستدام منذ 3 سنوات",
@@ -183,8 +184,8 @@ export default function CreditPage() {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  const goodCount    = ratios.filter(r => r.status === "good").length;
-  const warningCount = ratios.filter(r => r.status === "warning").length;
+  const goodCount    = report.ratios.filter(r => r.status === "good").length;
+  const warningCount = report.ratios.filter(r => r.status !== "good").length;
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
@@ -318,29 +319,32 @@ export default function CreditPage() {
       {tab === "ratios" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ratios.map(ratio => (
-              <Card key={ratio.key} className={ratio.status === "warning" ? "border-[var(--warning)]/30" : ""}>
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <p className="text-sm font-bold text-[var(--foreground)] font-arabic leading-snug">{ratio.label}</p>
-                    {ratio.status === "good"
-                      ? <CheckCircle2 className="h-4 w-4 text-[var(--success)] shrink-0" />
-                      : <AlertCircle  className="h-4 w-4 text-[var(--warning)] shrink-0" />}
-                  </div>
-                  <p className="text-2xl font-black tabular-nums mb-1"
-                    style={{ color: ratio.status === "good" ? "var(--success)" : "var(--warning)" }} dir="ltr">
-                    {ratio.value}{ratio.unit}
-                  </p>
-                  <div className="h-1.5 rounded-full bg-[var(--muted)] overflow-hidden mb-2">
-                    <div className="h-full rounded-full"
-                      style={{ width: `${Math.min(100, Math.round((ratio.value / (ratio.benchmark * 1.6)) * 100))}%`,
-                        background: ratio.status === "good" ? "var(--success)" : "var(--warning)" }} />
-                  </div>
-                  <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">{ratio.benchmarkLabel}</p>
-                  <p className="text-[11px] text-[var(--muted-foreground)] font-arabic mt-1 leading-relaxed">{ratio.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {(loading ? STATIC_RATIOS : report.ratios).map(ratio => {
+              const isGood = ratio.status === "good";
+              const isBad  = ratio.status === "bad";
+              const color  = isGood ? "var(--success)" : isBad ? "var(--destructive)" : "var(--warning)";
+              const barPct = Math.min(100, Math.round((ratio.value / (ratio.benchmark * 1.6)) * 100));
+              return (
+                <Card key={ratio.key} className={`transition-opacity ${loading ? "opacity-40" : ""} ${!isGood ? "border-[var(--warning)]/30" : ""}`}>
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <p className="text-sm font-bold text-[var(--foreground)] font-arabic leading-snug">{ratio.label}</p>
+                      {isGood
+                        ? <CheckCircle2 className="h-4 w-4 text-[var(--success)] shrink-0" />
+                        : <AlertCircle  className="h-4 w-4 shrink-0" style={{ color }} />}
+                    </div>
+                    <p className="text-2xl font-black tabular-nums mb-1" style={{ color }} dir="ltr">
+                      {ratio.value}{ratio.unit}
+                    </p>
+                    <div className="h-1.5 rounded-full bg-[var(--muted)] overflow-hidden mb-2">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${barPct}%`, background: color }} />
+                    </div>
+                    <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">{ratio.benchmarkLabel}</p>
+                    <p className="text-[11px] text-[var(--muted-foreground)] font-arabic mt-1 leading-relaxed">{ratio.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           {/* AI Recommendations */}
