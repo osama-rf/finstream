@@ -55,7 +55,7 @@ const PLATFORM_DATA = {
   simahScore:   720,
   simahRating:  'B+',
   simahLabel:   'جيد جداً',
-  simahSource:  'سمة (SIMAH) — مرخصة من ساما',
+  simahSource:  'تصنيف ائتماني معتمد',
   simahPercentile: 71,
   creditValidUntil: '2026-08-01',
 
@@ -113,7 +113,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'get_credit_report',
-    description: 'احصل على تقرير التصنيف الائتماني من سمة (SIMAH): الدرجة، التقييم، المؤشرات المالية، وجاهزية التمويل.',
+    description: 'احصل على التصنيف الائتماني المعتمد: الدرجة، التقييم، المؤشرات المالية، وجاهزية التمويل.',
     parameters: { type: 'OBJECT', properties: {} },
   },
   {
@@ -300,7 +300,7 @@ function buildSystemPrompt(ctx: AgentContext) {
 تعمل لصالح ${ctx.userName}، ${roleLabel[ctx.userRole] || 'مستخدم النظام'}.
 
 دور ركائز (من عرض هاكاثون امد):
-ركائز تجمع بيانات المنشأة من بنوكها المتعددة وبوابات الدفع عبر Open Banking المعتمد من ساما، وتصبّها في تقرير ائتماني موحد من سمة (SIMAH)، يُتيح للبنوك تحليل المؤشرات المالية بهدف الإقراض. كما تتيح للمنشأة مقارنة مؤشراتها بمتوسط القطاع عالمياً، وإنشاء قوائم مالية بالذكاء الاصطناعي لإيداعها أو مشاركتها مع البنوك — كل ذلك من لوحة تحكم واحدة.
+ركائز تجمع بيانات المنشأة من بنوكها المتعددة وبوابات الدفع عبر Open Banking المعتمد من ساما، وتصبّها في تقرير ائتماني موحد معتمد، يُتيح للبنوك تحليل المؤشرات المالية بهدف الإقراض. كما تتيح للمنشأة مقارنة مؤشراتها بمتوسط القطاع عالمياً، وإنشاء قوائم مالية بالذكاء الاصطناعي لإيداعها أو مشاركتها مع البنوك — كل ذلك من لوحة تحكم واحدة.
 
 بيانات المنشأة الحالية (مجمّعة من البنوك المربوطة):
 - إجمالي الأرصدة: ${d.totalBalance.toLocaleString()} ريال من 3 بنوك (الراجحي · الأهلي · STC Pay)
@@ -308,7 +308,7 @@ function buildSystemPrompt(ctx: AgentContext) {
 - التدفق الشهري الوارد: ${d.totalMonthlyIn.toLocaleString()} ريال | الصادر: ${d.totalMonthlyOut.toLocaleString()} ريال
 - نمو الإيرادات: ${d.revenueGrowth} مقارنة بالعام الماضي
 - معاملات غير مصنفة: ${d.unclassifiedTxCount} معاملات بإجمالي ${d.unclassifiedTxValue.toLocaleString()} ريال — تصنيفها يرفع دقة التقرير
-- التصنيف الائتماني (سمة/SIMAH): ${d.simahScore}/900 — ${d.simahRating} "${d.simahLabel}"
+- التصنيف الائتماني المعتمد: ${d.simahScore}/900 — ${d.simahRating} "${d.simahLabel}"
 - المنشأة أعلى من ${d.simahPercentile}% من شركات القطاع
 - التصنيف يؤهل للحصول على تمويل حتى 3,000,000 ريال بمعدل 6.5%
 - مقارنة القطاع: تتفوق على ${d.benchmarks.aboveAverage} من ${d.benchmarks.total} مؤشرات
@@ -316,7 +316,7 @@ function buildSystemPrompt(ctx: AgentContext) {
 
 أدواتك:
 - get_aggregated_banking_data: بيانات البنوك والأرصدة والمعاملات
-- get_credit_report: تصنيف سمة والمؤشرات الائتمانية
+- get_credit_report: التصنيف الائتماني المعتمد والمؤشرات
 - get_sector_benchmarks: مقارنة القطاع
 - get_financial_statements: حالة القوائم المالية
 - get_analytics_summary: التحليل المالي والإيرادات
@@ -327,7 +327,7 @@ function buildSystemPrompt(ctx: AgentContext) {
 قواعد أساسية:
 - دائماً استخدم الأدوات أولاً لجلب البيانات قبل التحليل
 - الأرقام بالإنجليزية (2,558,700 لا ٢٬٥٥٨٬٧٠٠)
-- اذكر مصدر التصنيف (سمة/SIMAH) دائماً ولا تخترع أرقاماً
+- لا تخترع أرقاماً — استخدم البيانات المجمّعة فقط
 - ركّز على قيمة ركائز: توحيد البيانات البنكية → تصنيف ائتماني → تمويل أفضل
 - التاريخ اليوم: ${new Date().toLocaleDateString('ar-SA-u-nu-latn-ca-gregory', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
 }
@@ -419,21 +419,21 @@ export async function generateFinanceReport(ctx: AgentContext): Promise<FinanceR
   const staticReport: FinanceReport = {
     generated_at: new Date().toISOString(),
     attention_level: 'medium',
-    summary: `الوضع المالي للمنشأة إيجابي: إجمالي الأرصدة المجمّعة ${d.totalBalance.toLocaleString()} ريال من 3 بنوك. التصنيف الائتماني من سمة ${d.simahScore}/900 (${d.simahRating}) جاهز للمشاركة مع البنوك. يوجد ${d.unclassifiedTxCount} معاملات تحتاج تصنيفاً لتعزيز دقة التقرير.`,
+    summary: `الوضع المالي للمنشأة إيجابي: إجمالي الأرصدة المجمّعة ${d.totalBalance.toLocaleString()} ريال من 3 بنوك. التصنيف الائتماني ${d.simahScore}/900 (${d.simahRating}) جاهز للمشاركة مع البنوك. يوجد ${d.unclassifiedTxCount} معاملات تحتاج تصنيفاً لتعزيز دقة التقرير.`,
     highlights: [
       { label: 'إجمالي الرصيد المجمّع', value: `${d.totalBalance.toLocaleString()} ريال`, alert: false },
-      { label: 'تصنيف سمة (SIMAH)',       value: `${d.simahScore}/900 — ${d.simahRating}`,   alert: false },
+      { label: 'التصنيف الائتماني',      value: `${d.simahScore}/900 — ${d.simahRating}`,   alert: false },
       { label: 'معاملات تحتاج تصنيفاً',  value: `${d.unclassifiedTxCount} معاملات`,           alert: true  },
       { label: 'نمو الإيرادات السنوي',    value: d.revenueGrowth,                               alert: false },
     ],
     priorities: [
       { text: `تصنيف ${d.unclassifiedTxCount} معاملات بنكية بإجمالي ${d.unclassifiedTxValue.toLocaleString()} ريال لتعزيز دقة التقرير الائتماني`, page: 'bank' },
-      { text: 'مشاركة تقرير سمة الائتماني مع البنك الأهلي للحصول على تمويل بمعدل 6.5%', page: 'credit' },
+      { text: 'مشاركة التقرير الائتماني مع البنك الأهلي للحصول على تمويل بمعدل 6.5%', page: 'credit' },
       { text: 'ربط بنك الرياض لاكتمال الصورة المالية المجمّعة وتحسين التصنيف', page: 'bank' },
     ],
     actions_taken: [
       `تحليل بيانات 3 بنوك مربوطة: الراجحي (${(1_840_000).toLocaleString()} ر.س) · الأهلي (${(620_500).toLocaleString()} ر.س) · STC Pay (${(98_200).toLocaleString()} ر.س)`,
-      `استرداد تصنيف سمة: ${d.simahScore}/900 — أعلى من ${d.simahPercentile}% من شركات ${d.benchmarks.sector}`,
+      `استرداد التصنيف الائتماني: ${d.simahScore}/900 — أعلى من ${d.simahPercentile}% من شركات ${d.benchmarks.sector}`,
     ],
     next_steps: [
       { text: `مشاركة التقرير الائتماني ${d.simahRating} مع البنوك للحصول على تمويل حتى 3,000,000 ريال`, page: 'credit' },
@@ -458,7 +458,7 @@ ${JSON.stringify({
   monthly_outflow: d.totalMonthlyOut,
   revenue_growth: d.revenueGrowth,
   unclassified_transactions: { count: d.unclassifiedTxCount, total_value_sar: d.unclassifiedTxValue },
-  credit_score_simah: { score: d.simahScore, out_of: 900, rating: d.simahRating, label: d.simahLabel, source: d.simahSource, percentile: d.simahPercentile },
+  credit_score: { score: d.simahScore, out_of: 900, rating: d.simahRating, label: d.simahLabel, percentile: d.simahPercentile },
   sector_benchmarks: { above_average: d.benchmarks.aboveAverage, total: d.benchmarks.total, sector: d.benchmarks.sector },
   statements: d.statements,
   analytics: d.analytics,
@@ -468,10 +468,10 @@ ${JSON.stringify({
 أنتج JSON فقط (بدون نص خارج الـ JSON):
 {
   "attention_level": "low|medium|high",
-  "summary": "جملتان عن الوضع الفعلي مع أرقام من البيانات — اذكر سمة/SIMAH كمصدر التصنيف",
+  "summary": "جملتان عن الوضع الفعلي مع أرقام من البيانات",
   "highlights": [
     {"label": "إجمالي الرصيد المجمّع", "value": "X ريال", "alert": false},
-    {"label": "تصنيف سمة (SIMAH)", "value": "720/900 — B+", "alert": false},
+    {"label": "التصنيف الائتماني", "value": "720/900 — B+", "alert": false},
     {"label": "معاملات تحتاج تصنيفاً", "value": "7 معاملات", "alert": true},
     {"label": "نمو الإيرادات السنوي", "value": "+18.4%", "alert": false}
   ],
@@ -483,7 +483,6 @@ ${JSON.stringify({
 قواعد:
 - attention_level: high إذا معاملات غير مصنفة كثيرة؛ medium إذا التصنيف جيد لكن يمكن تحسينه؛ low إذا كل شيء ممتاز
 - استخدم الأرقام الفعلية من البيانات فقط — لا تخترع أرقاماً
-- اذكر سمة (SIMAH) كمصدر التصنيف دائماً
 - الأرقام بالإنجليزية، العبارات بالعربية المهنية`;
 
   try {

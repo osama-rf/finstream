@@ -14,24 +14,18 @@ import { toast } from "sonner";
 
 // ─── Credit data ─────────────────────────────────────────────────────────────
 
-// التصنيف مصدره سمة (SIMAH) — منصة المعلومات الائتمانية المرخصة من ساما
-// يُحسب بناءً على: سجل السداد، نسب الدين، نمو الإيرادات، وبيانات البنوك المربوطة
-// نطاق سمة للشركات: 300–900 | المعادل الحرفي وفق إطار ساما للمصرفية المفتوحة
-const SIMAH_SCORE   = 720;  // نطاق سمة: 300–900
-const SIMAH_RATING  = "جيد جداً";
-const SIMAH_LETTER  = "B+";  // معادل حرفي وفق إطار Open Banking السعودي
-const SIMAH_PERCENTILE = 71; // أعلى من 71% من الشركات في نفس القطاع
+const SIMAH_SCORE      = 720;
+const SIMAH_RATING     = "جيد جداً";
+const SIMAH_LETTER     = "B+";
+const SIMAH_PERCENTILE = 71;
 
 const creditScore = {
   simahScore:  SIMAH_SCORE,
   simahRating: SIMAH_RATING,
   letter:      SIMAH_LETTER,
   percentile:  SIMAH_PERCENTILE,
-  source:      "سمة (SIMAH)",
-  sourceUrl:   "simah.com",
   generatedAt: "2026-07-01",
   validUntil:  "2026-08-01",
-  // درجة مئوية للعرض البصري في الحلقة (300-900 → 0-100)
   visualPct:   Math.round(((SIMAH_SCORE - 300) / 600) * 100),
 };
 
@@ -199,15 +193,6 @@ export default function CreditPage() {
       <Card>
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col gap-4 sm:gap-6">
-            {/* SIMAH source badge */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 rounded-full border border-[var(--success)]/30 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-3 py-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-[var(--success)]" />
-                <span className="text-xs font-bold text-[var(--success)] font-arabic">مصدر التصنيف: سمة (SIMAH)</span>
-              </div>
-              <span className="text-xs text-[var(--muted-foreground)] font-arabic">مرخصة من ساما · معيار Open Banking السعودي</span>
-            </div>
-
             <div className="flex items-center gap-4 sm:gap-6">
               <ScoreRing pct={creditScore.visualPct} score={creditScore.simahScore} />
               <div className="flex-1 min-w-0">
@@ -262,7 +247,7 @@ export default function CreditPage() {
 
             {/* SIMAH scale */}
             <div className="border-t border-[var(--border)] pt-4">
-              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-2">سلّم تصنيف سمة (SIMAH) — نطاق 300 إلى 900</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-2">سلّم التصنيف الائتماني — نطاق 300 إلى 900</p>
               <div className="relative h-3 rounded-full overflow-hidden flex">
                 {[
                   { label: "ضعيف",    range: "300–499", color: "#ef4444", flex: 2 },
