@@ -14,7 +14,26 @@ import { toast } from "sonner";
 
 // ─── Credit data ─────────────────────────────────────────────────────────────
 
-const creditScore = { score: 74, rating: "A-", generatedAt: "2026-06-28", validUntil: "2026-07-28" };
+// التصنيف مصدره سمة (SIMAH) — منصة المعلومات الائتمانية المرخصة من ساما
+// يُحسب بناءً على: سجل السداد، نسب الدين، نمو الإيرادات، وبيانات البنوك المربوطة
+// نطاق سمة للشركات: 300–900 | المعادل الحرفي وفق إطار ساما للمصرفية المفتوحة
+const SIMAH_SCORE   = 720;  // نطاق سمة: 300–900
+const SIMAH_RATING  = "جيد جداً";
+const SIMAH_LETTER  = "B+";  // معادل حرفي وفق إطار Open Banking السعودي
+const SIMAH_PERCENTILE = 71; // أعلى من 71% من الشركات في نفس القطاع
+
+const creditScore = {
+  simahScore:  SIMAH_SCORE,
+  simahRating: SIMAH_RATING,
+  letter:      SIMAH_LETTER,
+  percentile:  SIMAH_PERCENTILE,
+  source:      "سمة (SIMAH)",
+  sourceUrl:   "simah.com",
+  generatedAt: "2026-07-01",
+  validUntil:  "2026-08-01",
+  // درجة مئوية للعرض البصري في الحلقة (300-900 → 0-100)
+  visualPct:   Math.round(((SIMAH_SCORE - 300) / 600) * 100),
+};
 
 const ratios = [
   { key: "profit_margin",  label: "هامش الربح الصافي",          value: 32.5, unit: "%",    benchmark: 24,  benchmarkLabel: "متوسط القطاع: 24%",      status: "good"    as const, description: "نسبة الربح الصافي من إجمالي الإيرادات" },
@@ -50,20 +69,20 @@ const banksList = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function ScoreRing({ score }: { score: number }) {
+function ScoreRing({ pct, score }: { pct: number; score: number }) {
   const r = 54, circ = 2 * Math.PI * r;
-  const color = score >= 70 ? "var(--success)" : score >= 50 ? "var(--warning)" : "var(--destructive)";
+  const color = pct >= 65 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--destructive)";
   return (
     <div className="relative flex h-36 w-36 items-center justify-center shrink-0">
       <svg className="absolute inset-0 -rotate-90" width="144" height="144" viewBox="0 0 144 144">
         <circle cx="72" cy="72" r={r} fill="none" stroke="var(--muted)" strokeWidth="10" />
         <circle cx="72" cy="72" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
-          strokeDasharray={circ} strokeDashoffset={circ - (score / 100) * circ}
+          strokeDasharray={circ} strokeDashoffset={circ - (pct / 100) * circ}
           style={{ transition: "stroke-dashoffset 1s ease" }} />
       </svg>
       <div className="text-center">
-        <p className="text-3xl font-black tabular-nums" style={{ color }}>{score}</p>
-        <p className="text-xs text-[var(--muted-foreground)] font-arabic">من 100</p>
+        <p className="text-2xl font-black tabular-nums" style={{ color }}>{score}</p>
+        <p className="text-[10px] text-[var(--muted-foreground)] font-arabic">من 900</p>
       </div>
     </div>
   );
@@ -180,12 +199,21 @@ export default function CreditPage() {
       <Card>
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col gap-4 sm:gap-6">
+            {/* SIMAH source badge */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-[var(--success)]/30 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-3 py-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-[var(--success)]" />
+                <span className="text-xs font-bold text-[var(--success)] font-arabic">مصدر التصنيف: سمة (SIMAH)</span>
+              </div>
+              <span className="text-xs text-[var(--muted-foreground)] font-arabic">مرخصة من ساما · معيار Open Banking السعودي</span>
+            </div>
+
             <div className="flex items-center gap-4 sm:gap-6">
-              <ScoreRing score={creditScore.score} />
+              <ScoreRing pct={creditScore.visualPct} score={creditScore.simahScore} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 sm:gap-3 sm:mb-2">
-                  <span className="text-3xl font-black text-[var(--success)] sm:text-4xl">{creditScore.rating}</span>
-                  <Badge variant="success" className="font-arabic text-xs px-2 py-0.5">جيد جداً</Badge>
+                  <span className="text-3xl font-black text-[var(--success)] sm:text-4xl">{creditScore.letter}</span>
+                  <Badge variant="success" className="font-arabic text-xs px-2 py-0.5">{creditScore.simahRating}</Badge>
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)] font-arabic sm:text-sm">
                   صدر: {creditScore.generatedAt} · صالح حتى: {creditScore.validUntil}
@@ -201,7 +229,7 @@ export default function CreditPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <BarChart3 className="h-3.5 w-3.5 text-[var(--primary)]" />
-                    <span className="text-xs font-bold text-[var(--primary)] font-arabic">تتفوق على 6 من 8 مؤشرات قطاعية</span>
+                    <span className="text-xs font-bold text-[var(--primary)] font-arabic">أعلى من {creditScore.percentile}% من شركات القطاع</span>
                   </div>
                 </div>
               </div>
@@ -229,6 +257,32 @@ export default function CreditPage() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            </div>
+
+            {/* SIMAH scale */}
+            <div className="border-t border-[var(--border)] pt-4">
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-2">سلّم تصنيف سمة (SIMAH) — نطاق 300 إلى 900</p>
+              <div className="relative h-3 rounded-full overflow-hidden flex">
+                {[
+                  { label: "ضعيف",    range: "300–499", color: "#ef4444", flex: 2 },
+                  { label: "متوسط",   range: "500–599", color: "#f97316", flex: 1 },
+                  { label: "جيد",     range: "600–699", color: "#eab308", flex: 1 },
+                  { label: "جيد جداً",range: "700–799", color: "#22c55e", flex: 1 },
+                  { label: "ممتاز",   range: "800–900", color: "#10b981", flex: 1 },
+                ].map(s => (
+                  <div key={s.label} className="h-full" style={{ flex: s.flex, background: s.color, opacity: 0.75 }} />
+                ))}
+                {/* Marker for current score */}
+                <div
+                  className="absolute top-0 h-full w-0.5 bg-white shadow"
+                  style={{ left: `${creditScore.visualPct}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                {["ضعيف 300", "متوسط 500", "جيد 600", "جيد جداً 700", "ممتاز 800", "900"].map(l => (
+                  <span key={l} className="text-[9px] text-[var(--muted-foreground)] font-arabic">{l}</span>
+                ))}
               </div>
             </div>
           </div>

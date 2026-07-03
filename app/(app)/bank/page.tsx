@@ -34,25 +34,25 @@ interface BankSource {
 // ─── Initial data ─────────────────────────────────────────────────────────────
 
 const initialBanks: BankSource[] = [
-  { id: "1", name: "بنك الراجحي",       code: "RJHI",   balance: 1_840_000, currency: "SAR", iban: "SA44 2000 0001 2345 6789 1234", status: "connected",    lastSync: "2026-07-02 10:32", monthlyIn: 650_000, monthlyOut: 312_000, color: "#006838", type: "bank" },
-  { id: "2", name: "البنك الأهلي السعودي", code: "ANB",  balance: 620_500,   currency: "SAR", iban: "SA03 8000 0000 6080 1016 7519", status: "connected",    lastSync: "2026-07-02 06:15", monthlyIn: 197_500, monthlyOut: 111_200, color: "#00574B", type: "bank" },
-  { id: "3", name: "STC Pay",            code: "STCPAY", balance: 98_200,    currency: "SAR", iban: null,                            status: "connected",    lastSync: "2026-07-02 11:05", monthlyIn:  43_000, monthlyOut:  21_800, color: "#7B2D8B", type: "gateway" },
-  { id: "4", name: "بنك الرياض",         code: "RIBL",   balance: 0,         currency: "SAR", iban: "SA04 2000 0001 9999 8888 7777", status: "disconnected", lastSync: null,               monthlyIn: 0, monthlyOut: 0, color: "#C8102E", type: "bank" },
+  { id: "1", name: "بنك الراجحي", code: "RJHI", balance: 1_840_000, currency: "SAR", iban: "SA44 2000 0001 2345 6789 1234", status: "connected", lastSync: "2026-07-02 10:32", monthlyIn: 650_000, monthlyOut: 312_000, color: "#006838", type: "bank" },
+  { id: "2", name: "البنك الأهلي السعودي", code: "ANB", balance: 620_500, currency: "SAR", iban: "SA03 8000 0000 6080 1016 7519", status: "connected", lastSync: "2026-07-02 06:15", monthlyIn: 197_500, monthlyOut: 111_200, color: "#00574B", type: "bank" },
+  { id: "3", name: "STC Pay", code: "STCPAY", balance: 98_200, currency: "SAR", iban: null, status: "connected", lastSync: "2026-07-02 11:05", monthlyIn: 43_000, monthlyOut: 21_800, color: "#7B2D8B", type: "gateway" },
+  { id: "4", name: "بنك الرياض", code: "RIBL", balance: 0, currency: "SAR", iban: "SA04 2000 0001 9999 8888 7777", status: "disconnected", lastSync: null, monthlyIn: 0, monthlyOut: 0, color: "#C8102E", type: "bank" },
 ];
 
 const availableToConnect = [
-  { name: "مصرف الإنماء", color: "#005CA9", type: "bank"    as const },
-  { name: "بنك البلاد",   color: "#4A1942", type: "bank"    as const },
-  { name: "تمارة",         color: "#2B3A8C", type: "gateway" as const },
-  { name: "تابي",          color: "#3DBE9E", type: "gateway" as const },
+  { name: "مصرف الإنماء", color: "#005CA9", type: "bank" as const },
+  { name: "بنك البلاد", color: "#4A1942", type: "bank" as const },
+  { name: "تمارا", color: "#2B3A8C", type: "gateway" as const },
+  { name: "تابي", color: "#3DBE9E", type: "gateway" as const },
 ];
 
 const recentTransactions = [
-  { id: "t1", bank: "بنك الراجحي",       desc: "تحويل وارد — شركة الأفق للتجارة", amount:  250_000, type: "credit" as const, date: "2026-07-01" },
-  { id: "t2", bank: "البنك الأهلي",       desc: "مصروف استضافة سحابية",           amount:   -3_200, type: "debit"  as const, date: "2026-07-01" },
-  { id: "t3", bank: "STC Pay",            desc: "إيراد مبيعات إلكترونية",          amount:   18_400, type: "credit" as const, date: "2026-06-30" },
-  { id: "t4", bank: "بنك الراجحي",       desc: "رواتب موظفين — يونيو",            amount:  -92_000, type: "debit"  as const, date: "2026-06-29" },
-  { id: "t5", bank: "البنك الأهلي",       desc: "إيراد خدمات استشارية",           amount:   65_000, type: "credit" as const, date: "2026-06-28" },
+  { id: "t1", bank: "بنك الراجحي", desc: "تحويل وارد — شركة الأفق للتجارة", amount: 250_000, type: "credit" as const, date: "2026-07-01" },
+  { id: "t2", bank: "البنك الأهلي", desc: "مصروف استضافة سحابية", amount: -3_200, type: "debit" as const, date: "2026-07-01" },
+  { id: "t3", bank: "STC Pay", desc: "إيراد مبيعات إلكترونية", amount: 18_400, type: "credit" as const, date: "2026-06-30" },
+  { id: "t4", bank: "بنك الراجحي", desc: "رواتب موظفين — يونيو", amount: -92_000, type: "debit" as const, date: "2026-06-29" },
+  { id: "t5", bank: "البنك الأهلي", desc: "إيراد خدمات استشارية", amount: 65_000, type: "credit" as const, date: "2026-06-28" },
 ];
 
 // ─── Connect Modal (3 steps) ──────────────────────────────────────────────────
@@ -112,20 +112,18 @@ function ConnectModal({
         <div className="flex items-center justify-center gap-2 px-5 pt-4">
           {(["permissions", "auth", "success"] as ConnectStep[]).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all ${
-                step === s
+              <div className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all ${step === s
                   ? "bg-[var(--primary)] text-white"
                   : (["permissions", "auth", "success"].indexOf(step) > i)
                     ? "bg-[var(--success)] text-white"
                     : "bg-[var(--muted)] text-[var(--muted-foreground)]"
-              }`}>
+                }`}>
                 {(["permissions", "auth", "success"].indexOf(step) > i)
                   ? <CheckCircle2 className="h-3.5 w-3.5" />
                   : i + 1}
               </div>
-              {i < 2 && <div className={`h-0.5 w-8 rounded-full transition-all ${
-                (["permissions", "auth", "success"].indexOf(step) > i) ? "bg-[var(--success)]" : "bg-[var(--border)]"
-              }`} />}
+              {i < 2 && <div className={`h-0.5 w-8 rounded-full transition-all ${(["permissions", "auth", "success"].indexOf(step) > i) ? "bg-[var(--success)]" : "bg-[var(--border)]"
+                }`} />}
             </div>
           ))}
         </div>
@@ -332,11 +330,10 @@ export default function BankPage() {
               <div className="space-y-3">
                 {banks.map((bank) => (
                   <div key={bank.id}
-                    className={`rounded-[14px] border p-4 transition-colors ${
-                      bank.status === "connected"
+                    className={`rounded-[14px] border p-4 transition-colors ${bank.status === "connected"
                         ? "border-[var(--border)] bg-[var(--surface)]"
                         : "border-dashed border-[var(--border)] bg-[var(--muted)]"
-                    }`}>
+                      }`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] text-white font-bold text-sm"
