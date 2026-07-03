@@ -160,11 +160,13 @@ function NarrativeSkeleton() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const SESSION_KEY = "credit_report_cache";
+
 export default function CreditPage() {
   const [tab, setTab] = useState<"ratios" | "banks">("ratios");
   const [showShareModal, setShowShareModal] = useState(false);
   const [report, setReport] = useState<CreditReport>(STATIC_REPORT);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchReport = useCallback(async (isRefresh = false) => {
     setLoading(true);
@@ -173,6 +175,7 @@ export default function CreditPage() {
       const data = await res.json();
       if (data.success) {
         setReport(data.report);
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(data.report));
         if (isRefresh) toast.success("تم تحديث التقرير بآخر بيانات بنكية");
       }
     } catch {
@@ -182,7 +185,13 @@ export default function CreditPage() {
     }
   }, []);
 
-  useEffect(() => { fetchReport(); }, [fetchReport]);
+  useEffect(() => {
+    const cached = sessionStorage.getItem(SESSION_KEY);
+    if (cached) {
+      try { setReport(JSON.parse(cached)); return; } catch { /* ignore */ }
+    }
+    fetchReport();
+  }, [fetchReport]);
 
   const goodCount    = report.ratios.filter(r => r.status === "good").length;
   const warningCount = report.ratios.filter(r => r.status !== "good").length;
