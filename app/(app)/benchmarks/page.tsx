@@ -153,33 +153,19 @@ function MiniBar({ company, avg, top, higherIsBetter }: {
 
   return (
     <div className="space-y-2 mt-3">
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] w-24 text-[var(--muted-foreground)] font-arabic shrink-0">شركتك</span>
-        <div className="flex-1 h-2.5 rounded-full bg-[var(--muted)] overflow-hidden">
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${companyPct}%`,
-              background: status === "above" ? "var(--success)" : status === "below" ? "var(--destructive)" : "var(--warning)",
-            }}
-          />
+      {[
+        { label: "شركتك", pct: companyPct, val: company, cls: "", style: { background: status === "above" ? "var(--success)" : status === "below" ? "var(--destructive)" : "var(--warning)" } as React.CSSProperties },
+        { label: "متوسط القطاع", pct: avgPct, val: avg, cls: "bg-[var(--muted-foreground)]/40", style: undefined },
+        { label: "الربع الأول", pct: topPct, val: top, cls: "bg-[var(--primary)]/30", style: undefined },
+      ].map(row => (
+        <div key={row.label} className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-[10px] w-16 shrink-0 text-[var(--muted-foreground)] font-arabic sm:text-[11px] sm:w-24">{row.label}</span>
+          <div className="flex-1 h-2 rounded-full bg-[var(--muted)] overflow-hidden sm:h-2.5">
+            <div className={`h-full rounded-full ${row.cls}`} style={{ width: `${row.pct}%`, ...row.style }} />
+          </div>
+          <span className="text-[10px] font-bold tabular-nums w-8 text-end shrink-0 sm:text-xs sm:w-14" dir="ltr">{row.val}</span>
         </div>
-        <span className="text-xs font-bold tabular-nums w-14 text-end" dir="ltr">{company}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] w-24 text-[var(--muted-foreground)] font-arabic shrink-0">متوسط القطاع</span>
-        <div className="flex-1 h-2.5 rounded-full bg-[var(--muted)] overflow-hidden">
-          <div className="h-full rounded-full bg-[var(--muted-foreground)]/40" style={{ width: `${avgPct}%` }} />
-        </div>
-        <span className="text-xs tabular-nums text-[var(--muted-foreground)] w-14 text-end" dir="ltr">{avg}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] w-24 text-[var(--muted-foreground)] font-arabic shrink-0">الربع الأول</span>
-        <div className="flex-1 h-2.5 rounded-full bg-[var(--muted)] overflow-hidden">
-          <div className="h-full rounded-full bg-[var(--primary)]/30" style={{ width: `${topPct}%` }} />
-        </div>
-        <span className="text-xs tabular-nums text-[var(--muted-foreground)] w-14 text-end" dir="ltr">{top}</span>
-      </div>
+      ))}
     </div>
   );
 }
@@ -257,31 +243,31 @@ export default function BenchmarksPage() {
       </Card>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         <Card className="border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_4%,transparent)]">
-          <CardContent className="p-4 flex items-center gap-3">
-            <CheckCircle2 className="h-8 w-8 text-[var(--success)]" />
-            <div>
-              <p className="text-2xl font-black text-[var(--success)] tabular-nums">{aboveCount}</p>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">فوق المتوسط</p>
+          <CardContent className="p-3 flex items-center gap-2 sm:gap-3 sm:p-4">
+            <CheckCircle2 className="h-6 w-6 shrink-0 text-[var(--success)] sm:h-8 sm:w-8" />
+            <div className="min-w-0">
+              <p className="text-xl font-black text-[var(--success)] tabular-nums sm:text-2xl">{aboveCount}</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">فوق المتوسط</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <BarChart3 className="h-8 w-8 text-[var(--warning)]" />
-            <div>
-              <p className="text-2xl font-black text-[var(--warning)] tabular-nums">{closeCount}</p>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">قريب من المتوسط</p>
+          <CardContent className="p-3 flex items-center gap-2 sm:gap-3 sm:p-4">
+            <BarChart3 className="h-6 w-6 shrink-0 text-[var(--warning)] sm:h-8 sm:w-8" />
+            <div className="min-w-0">
+              <p className="text-xl font-black text-[var(--warning)] tabular-nums sm:text-2xl">{closeCount}</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">قريب المتوسط</p>
             </div>
           </CardContent>
         </Card>
         <Card className="border-[var(--destructive)]/15">
-          <CardContent className="p-4 flex items-center gap-3">
-            <AlertCircle className="h-8 w-8 text-[var(--destructive)]" />
-            <div>
-              <p className="text-2xl font-black text-[var(--destructive)] tabular-nums">{belowCount}</p>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">أدنى من المتوسط</p>
+          <CardContent className="p-3 flex items-center gap-2 sm:gap-3 sm:p-4">
+            <AlertCircle className="h-6 w-6 shrink-0 text-[var(--destructive)] sm:h-8 sm:w-8" />
+            <div className="min-w-0">
+              <p className="text-xl font-black text-[var(--destructive)] tabular-nums sm:text-2xl">{belowCount}</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">أدنى المتوسط</p>
             </div>
           </CardContent>
         </Card>

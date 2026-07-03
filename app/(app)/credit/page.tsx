@@ -193,55 +193,55 @@ export default function CreditPage() {
 
       {/* Score hero */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-6">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            {/* Score + rating row */}
+            <div className="flex items-center gap-4 sm:gap-6">
               <ScoreRing score={creditScore.score} />
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-4xl font-black text-[var(--success)]">{creditScore.rating}</span>
-                  <Badge variant="success" className="font-arabic text-sm px-3 py-1">جيد جداً</Badge>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 sm:gap-3 sm:mb-2">
+                  <span className="text-3xl font-black text-[var(--success)] sm:text-4xl">{creditScore.rating}</span>
+                  <Badge variant="success" className="font-arabic text-xs px-2 py-0.5 sm:text-sm sm:px-3 sm:py-1">جيد جداً</Badge>
                 </div>
-                <p className="text-sm text-[var(--muted-foreground)] font-arabic">
+                <p className="text-xs text-[var(--muted-foreground)] font-arabic sm:text-sm">
                   صدر: {creditScore.generatedAt} · صالح حتى: {creditScore.validUntil}
                 </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-[var(--success)]" />
-                    <span className="text-sm font-bold text-[var(--success)] font-arabic">{goodCount} مؤشر إيجابي</span>
+                <div className="flex flex-wrap items-center gap-3 mt-2 sm:mt-3">
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[var(--success)]" />
+                    <span className="text-xs font-bold text-[var(--success)] font-arabic sm:text-sm">{goodCount} مؤشر إيجابي</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <AlertCircle className="h-4 w-4 text-[var(--warning)]" />
-                    <span className="text-sm font-bold text-[var(--warning)] font-arabic">{warningCount} تحتاج تحسين</span>
+                  <div className="flex items-center gap-1">
+                    <AlertCircle className="h-3.5 w-3.5 text-[var(--warning)]" />
+                    <span className="text-xs font-bold text-[var(--warning)] font-arabic sm:text-sm">{warningCount} تحتاج تحسين</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 sm:border-r sm:border-[var(--border)] sm:pe-6 sm:me-2">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2 font-bold">نقاط القوة</p>
-                  <ul className="space-y-1.5">
-                    {strengths.slice(0, 2).map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)] font-arabic">
-                        <TrendingUp className="h-3.5 w-3.5 text-[var(--success)] mt-0.5 shrink-0" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2 font-bold">مخاطر تحتاج معالجة</p>
-                  <ul className="space-y-1.5">
-                    {risks.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)] font-arabic">
-                        <AlertCircle className="h-3.5 w-3.5 text-[var(--warning)] mt-0.5 shrink-0" />
-                        {r}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            {/* Strengths & risks */}
+            <div className="grid grid-cols-1 gap-3 border-t border-[var(--border)] pt-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2 font-bold">نقاط القوة</p>
+                <ul className="space-y-1.5">
+                  {strengths.slice(0, 2).map((s, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)] font-arabic">
+                      <TrendingUp className="h-3.5 w-3.5 text-[var(--success)] mt-0.5 shrink-0" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2 font-bold">مخاطر تحتاج معالجة</p>
+                <ul className="space-y-1.5">
+                  {risks.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)] font-arabic">
+                      <AlertCircle className="h-3.5 w-3.5 text-[var(--warning)] mt-0.5 shrink-0" />
+                      {r}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>

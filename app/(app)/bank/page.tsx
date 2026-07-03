@@ -125,43 +125,43 @@ export default function BankPage() {
       </div>
 
       {/* Aggregated summary */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3">
         <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--primary)]">
-                <Wallet className="h-4 w-4 text-white" />
+          <CardContent className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[var(--primary)] sm:h-9 sm:w-9 sm:rounded-[12px]">
+                <Wallet className="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">إجمالي الأرصدة</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--primary)] tabular-nums" dir="ltr">
+            <p className="text-sm font-bold text-[var(--primary)] tabular-nums break-all sm:text-2xl" dir="ltr">
               {formatCurrency(totalBalance)}
             </p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">من {connected.length} مصادر مربوطة</p>
+            <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">من {connected.length} مصادر</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)]">
-                <TrendingUp className="h-4 w-4 text-[var(--success)]" />
+          <CardContent className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)] sm:h-9 sm:w-9 sm:rounded-[12px]">
+                <TrendingUp className="h-3.5 w-3.5 text-[var(--success)] sm:h-4 sm:w-4" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">الواردات (30 يوم)</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">الواردات (30 يوم)</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--success)] tabular-nums" dir="ltr">{formatCurrency(totalIn)}</p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">عبر كل المصادر</p>
+            <p className="text-sm font-bold text-[var(--success)] tabular-nums break-all sm:text-2xl" dir="ltr">{formatCurrency(totalIn)}</p>
+            <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">عبر كل المصادر</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)]">
-                <TrendingDown className="h-4 w-4 text-[var(--destructive)]" />
+          <CardContent className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] sm:h-9 sm:w-9 sm:rounded-[12px]">
+                <TrendingDown className="h-3.5 w-3.5 text-[var(--destructive)] sm:h-4 sm:w-4" />
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">المدفوعات (30 يوم)</p>
+              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">المدفوعات (30 يوم)</p>
             </div>
-            <p className="text-2xl font-bold text-[var(--destructive)] tabular-nums" dir="ltr">{formatCurrency(totalOut)}</p>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">عبر كل المصادر</p>
+            <p className="text-sm font-bold text-[var(--destructive)] tabular-nums break-all sm:text-2xl" dir="ltr">{formatCurrency(totalOut)}</p>
+            <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">عبر كل المصادر</p>
           </CardContent>
         </Card>
       </div>
@@ -300,26 +300,24 @@ export default function BankPage() {
               </div>
               <div className="space-y-2">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black"
-                        style={{
-                          background: tx.type === "credit"
-                            ? "color-mix(in srgb, var(--success) 14%, transparent)"
-                            : "color-mix(in srgb, var(--destructive) 12%, transparent)",
-                          color: tx.type === "credit" ? "var(--success)" : "var(--destructive)",
-                        }}
-                      >
-                        {tx.type === "credit" ? "+" : "-"}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-[var(--foreground)] font-arabic">{tx.desc}</p>
-                        <p className="text-xs text-[var(--muted-foreground)] font-arabic">{tx.bank} · {tx.date}</p>
-                      </div>
+                  <div key={tx.id} className="flex items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 sm:px-4 sm:py-3">
+                    <div
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black sm:h-8 sm:w-8"
+                      style={{
+                        background: tx.type === "credit"
+                          ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                          : "color-mix(in srgb, var(--destructive) 12%, transparent)",
+                        color: tx.type === "credit" ? "var(--success)" : "var(--destructive)",
+                      }}
+                    >
+                      {tx.type === "credit" ? "+" : "-"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-xs font-medium text-[var(--foreground)] font-arabic sm:text-sm">{tx.desc}</p>
+                      <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{tx.bank} · {tx.date}</p>
                     </div>
                     <span
-                      className="text-sm font-bold tabular-nums shrink-0"
+                      className="text-xs font-bold tabular-nums shrink-0 sm:text-sm"
                       style={{ color: tx.type === "credit" ? "var(--success)" : "var(--destructive)" }}
                       dir="ltr"
                     >

@@ -90,22 +90,22 @@ export default function DashboardPage() {
       <AgentPanel userRole={user?.role ?? "company_admin"} />
 
       {/* KPI stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
             <Card key={kpi.label}>
-              <CardContent className="p-5">
-                <div className="mb-3 flex items-center justify-between">
+              <CardContent className="p-3 sm:p-5">
+                <div className="mb-2 flex items-center justify-between sm:mb-3">
                   <div
-                    className="flex h-9 w-9 items-center justify-center rounded-[12px]"
+                    className="flex h-8 w-8 items-center justify-center rounded-[10px] sm:h-9 sm:w-9 sm:rounded-[12px]"
                     style={{ background: `color-mix(in srgb, ${kpi.color} 14%, transparent)` }}
                   >
-                    <Icon className="h-4 w-4" style={{ color: kpi.color }} />
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: kpi.color }} />
                   </div>
                   {kpi.up !== null && (
                     <span
-                      className="text-xs font-medium font-arabic"
+                      className="text-[10px] font-medium font-arabic sm:text-xs"
                       style={{ color: kpi.up ? "var(--success)" : "var(--destructive)" }}
                     >
                       {kpi.change}
@@ -113,15 +113,15 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <p
-                  className="text-xl font-bold tabular-nums"
+                  className="text-sm font-bold tabular-nums leading-tight break-all sm:text-xl"
                   style={{ color: kpi.color }}
                   dir="ltr"
                 >
                   {kpi.unit === "SAR" ? formatCurrency(kpi.value as number) : kpi.value}
                 </p>
-                <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{kpi.label}</p>
+                <p className="mt-1 text-[10px] text-[var(--muted-foreground)] font-arabic leading-snug sm:text-xs">{kpi.label}</p>
                 {kpi.up === null && (
-                  <p className="mt-0.5 text-[11px] text-[var(--success)] font-arabic">{kpi.change}</p>
+                  <p className="mt-0.5 text-[10px] text-[var(--success)] font-arabic sm:text-[11px]">{kpi.change}</p>
                 )}
               </CardContent>
             </Card>
@@ -147,47 +147,45 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2">
               {bankConnections.map((bank) => (
-                <div key={bank.name} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white text-xs font-bold"
-                      style={{ background: bank.color }}
-                    >
-                      {bank.name[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--foreground)] font-arabic">{bank.name}</p>
-                      {bank.lastSync ? (
-                        <p className="text-xs text-[var(--muted-foreground)] font-arabic flex items-center gap-1">
-                          <RefreshCw className="h-3 w-3" />
-                          {bank.lastSync}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-[var(--destructive)] font-arabic flex items-center gap-1">
-                          <Link2Off className="h-3 w-3" />
-                          غير مربوط
-                        </p>
-                      )}
-                    </div>
+                <div key={bank.name} className="flex items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 sm:px-4 sm:py-3">
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white text-xs font-bold sm:h-9 sm:w-9"
+                    style={{ background: bank.color }}
+                  >
+                    {bank.name[0]}
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-[var(--foreground)] font-arabic truncate sm:text-sm">{bank.name}</p>
+                    {bank.lastSync ? (
+                      <p className="text-[10px] text-[var(--muted-foreground)] font-arabic flex items-center gap-1 sm:text-xs">
+                        <RefreshCw className="h-2.5 w-2.5" />
+                        {bank.lastSync}
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-[var(--destructive)] font-arabic flex items-center gap-1 sm:text-xs">
+                        <Link2Off className="h-2.5 w-2.5" />
+                        غير مربوط
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
                     {bank.status === "connected" ? (
                       <>
-                        <span className="text-sm font-bold tabular-nums text-[var(--foreground)]" dir="ltr">
+                        <span className="text-xs font-bold tabular-nums text-[var(--foreground)] sm:text-sm" dir="ltr">
                           {formatCurrency(bank.balance)}
                         </span>
-                        <Badge variant="success" className="font-arabic text-[11px]">مربوط</Badge>
+                        <Badge variant="success" className="font-arabic text-[10px] hidden sm:inline-flex">مربوط</Badge>
                       </>
                     ) : (
-                      <Button size="sm" variant="outline" className="font-arabic text-xs h-7 px-3">ربط</Button>
+                      <Button size="sm" variant="outline" className="font-arabic text-xs h-7 px-2 sm:px-3">ربط</Button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex items-center justify-between rounded-[12px] border-2 border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-4 py-3">
-              <span className="text-sm font-bold text-[var(--foreground)] font-arabic">إجمالي الأرصدة المجمّعة</span>
-              <span className="text-base font-black text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(totalBalance)}</span>
+            <div className="mt-3 flex items-center justify-between rounded-[12px] border-2 border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-3 py-2.5 sm:mt-4 sm:px-4 sm:py-3">
+              <span className="text-xs font-bold text-[var(--foreground)] font-arabic sm:text-sm">إجمالي الأرصدة المجمّعة</span>
+              <span className="text-sm font-black text-[var(--primary)] tabular-nums sm:text-base" dir="ltr">{formatCurrency(totalBalance)}</span>
             </div>
           </CardContent>
         </Card>

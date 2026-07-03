@@ -59,12 +59,12 @@ export default function AnalyticsPage() {
             تحليل شامل للأداء المالي مجمّعاً من جميع مصادرك البنكية
           </p>
         </div>
-        <div className="flex gap-1 rounded-[12px] border border-[var(--border)] bg-[var(--muted)] p-1">
+        <div className="flex flex-wrap gap-1 rounded-[12px] border border-[var(--border)] bg-[var(--muted)] p-1 w-fit max-w-full">
           {periods.map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`rounded-[8px] px-3 py-1.5 text-xs font-medium font-arabic transition-all ${
+              className={`rounded-[8px] px-2.5 py-1.5 text-xs font-medium font-arabic transition-all sm:px-3 ${
                 period === p
                   ? "bg-[var(--card)] text-[var(--foreground)] shadow-[var(--shadow-soft)]"
                   : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -77,33 +77,33 @@ export default function AnalyticsPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map(kpi => {
           const Icon = kpi.icon;
           return (
             <Card key={kpi.label}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
+              <CardContent className="p-3 sm:p-5">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <div
-                    className="flex h-9 w-9 items-center justify-center rounded-[12px]"
+                    className="flex h-8 w-8 items-center justify-center rounded-[10px] sm:h-9 sm:w-9 sm:rounded-[12px]"
                     style={{ background: `color-mix(in srgb, ${kpi.color} 14%, transparent)` }}
                   >
-                    <Icon className="h-4 w-4" style={{ color: kpi.color }} />
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: kpi.color }} />
                   </div>
                   <div className="flex items-center gap-1">
                     {kpi.up
-                      ? <ArrowUpRight className="h-3.5 w-3.5 text-[var(--success)]" />
-                      : <ArrowDownRight className="h-3.5 w-3.5 text-[var(--destructive)]" />
+                      ? <ArrowUpRight className="h-3 w-3 text-[var(--success)] sm:h-3.5 sm:w-3.5" />
+                      : <ArrowDownRight className="h-3 w-3 text-[var(--destructive)] sm:h-3.5 sm:w-3.5" />
                     }
-                    <span className="text-xs font-medium" style={{ color: kpi.up ? "var(--success)" : "var(--destructive)" }}>
+                    <span className="text-[10px] font-medium sm:text-xs" style={{ color: kpi.up ? "var(--success)" : "var(--destructive)" }}>
                       {kpi.change}
                     </span>
                   </div>
                 </div>
-                <p className="text-xl font-bold tabular-nums" style={{ color: kpi.color }} dir="ltr">
+                <p className="text-sm font-bold tabular-nums break-all leading-tight sm:text-xl" style={{ color: kpi.color }} dir="ltr">
                   {formatCurrency(kpi.value)}
                 </p>
-                <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{kpi.label}</p>
+                <p className="mt-1 text-[10px] text-[var(--muted-foreground)] font-arabic leading-snug sm:text-xs">{kpi.label}</p>
               </CardContent>
             </Card>
           );

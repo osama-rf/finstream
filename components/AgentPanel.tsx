@@ -228,13 +228,13 @@ function ReportView({ report, lang }: { report: FinanceReport; lang: "ar" | "en"
   );
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-start gap-3">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-base leading-relaxed text-[var(--foreground)]">{report.summary}</p>
-          <p className="mt-1.5 text-sm text-[var(--muted-foreground)]" dir="ltr">{date}</p>
+          <p className="text-sm leading-relaxed text-[var(--foreground)] sm:text-base">{report.summary}</p>
+          <p className="mt-1.5 text-xs text-[var(--muted-foreground)] sm:text-sm" dir="ltr">{date}</p>
         </div>
-        <span className="shrink-0 rounded-full px-3 py-1 text-sm font-semibold" style={{ color: attn.color, backgroundColor: attn.bg }}>
+        <span className="self-start shrink-0 rounded-full px-3 py-1 text-xs font-semibold sm:text-sm" style={{ color: attn.color, backgroundColor: attn.bg }}>
           {attn.label}
         </span>
       </div>
@@ -243,8 +243,8 @@ function ReportView({ report, lang }: { report: FinanceReport; lang: "ar" | "en"
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {report.highlights.map((h, i) => (
             <div key={i} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3">
-              <p className="text-2xl font-bold tabular-nums" dir="ltr" style={{ color: h.alert ? "var(--destructive)" : "var(--foreground)" }}>{h.value}</p>
-              <p className="mt-1 text-sm text-[var(--muted-foreground)] leading-snug">{h.label}</p>
+              <p className="text-base font-bold tabular-nums leading-tight break-all sm:text-xl" dir="ltr" style={{ color: h.alert ? "var(--destructive)" : "var(--foreground)" }}>{h.value}</p>
+              <p className="mt-1 text-xs text-[var(--muted-foreground)] leading-snug sm:text-sm">{h.label}</p>
             </div>
           ))}
         </div>
@@ -378,7 +378,7 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 sm:max-w-2xl max-h-[80vh]" dir={dir}>
+      <DialogContent className="flex flex-col gap-0 p-0 max-h-[95dvh] w-[95vw] rounded-[16px] sm:max-w-2xl sm:max-h-[80vh]" dir={dir}>
         <DialogHeader className="shrink-0 border-b border-[var(--border)] px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#1F9A941a]">
@@ -492,29 +492,29 @@ export function AgentPanel({ userRole }: { userRole: string }) {
   return (
     <>
       <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card)] overflow-hidden" dir={dir}>
-        <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
+        <div className="flex flex-wrap items-start gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1F9A941a]">
             <Bot className="h-4 w-4 text-[#1F9A94]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold text-[var(--foreground)]">{ui.reportTitle}</h2>
-            <p className="text-sm text-[var(--muted-foreground)]">{ui.reportSubtitle}</p>
+            <h2 className="text-sm font-bold text-[var(--foreground)] sm:text-base">{ui.reportTitle}</h2>
+            <p className="text-xs text-[var(--muted-foreground)] sm:text-sm leading-snug">{ui.reportSubtitle}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => void loadReport(true)} disabled={loading}
-              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--muted-foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] disabled:opacity-40">
+              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] px-2.5 py-1.5 text-xs text-[var(--muted-foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] disabled:opacity-40 sm:gap-1.5 sm:px-3 sm:text-sm">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              {ui.refresh}
+              <span className="hidden sm:inline">{ui.refresh}</span>
             </button>
             <button onClick={() => openChat()}
-              className="flex items-center gap-1.5 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm text-[var(--foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94]">
-              <MessageSquare className="h-3 w-3" />
+              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] sm:gap-1.5 sm:px-3 sm:text-sm">
+              <MessageSquare className="h-3.5 w-3.5" />
               {ui.assistant}
             </button>
           </div>
         </div>
 
-        <div className="px-5 py-4">
+        <div className="px-4 py-4 sm:px-5">
           {loading ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] mb-4">
@@ -541,14 +541,14 @@ export function AgentPanel({ userRole }: { userRole: string }) {
           ) : null}
         </div>
 
-        <div className="border-t border-[var(--border)] px-5 py-3">
-          <div className="flex flex-wrap gap-2">
+        <div className="border-t border-[var(--border)] px-4 py-3 sm:px-5">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {roleActions.map((action: any) => {
               const Icon = action.icon;
               return (
                 <button key={action.label} onClick={() => openChat(action.prompt)}
-                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-sm text-[var(--foreground)] transition-all hover:border-[#1F9A94] hover:text-[#1F9A94]">
-                  <Icon className="h-3.5 w-3.5" />
+                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-all hover:border-[#1F9A94] hover:text-[#1F9A94] sm:px-3.5 sm:py-2 sm:text-sm">
+                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   {action.label}
                 </button>
               );
