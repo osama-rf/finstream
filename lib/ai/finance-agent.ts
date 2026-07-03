@@ -20,6 +20,19 @@ export type ToolCallEvent = {
 
 export type ReportItem = { text: string; page?: string };
 
+export type CreditReport = {
+  generated_at: string;
+  score: number;
+  letter: string;
+  rating: string;
+  percentile: number;
+  visual_pct: number;
+  valid_until: string;
+  strengths: string[];
+  risks: string[];
+  recommendations: string[];
+};
+
 export type FinanceReport = {
   generated_at: string;
   attention_level: 'low' | 'medium' | 'high';
@@ -519,6 +532,103 @@ ${JSON.stringify({
       priorities: Array.isArray(parsed.priorities) ? toItems(parsed.priorities).slice(0, 4) : staticReport.priorities,
       actions_taken: Array.isArray(parsed.actions_taken) ? parsed.actions_taken : staticReport.actions_taken,
       next_steps: Array.isArray(parsed.next_steps) ? toItems(parsed.next_steps).slice(0, 3) : staticReport.next_steps,
+    };
+  } catch {
+    return staticReport;
+  }
+}
+
+// ─── AI Credit Report ────────────────────────────────────────────────────────
+
+export async function generateCreditReport(): Promise<CreditReport> {
+  const d = PLATFORM_DATA;
+
+  const staticReport: CreditReport = {
+    generated_at: new Date().toISOString(),
+    score:       d.simahScore,
+    letter:      d.simahRating === 'جيد جداً' ? 'B+' : 'B',
+    rating:      d.simahLabel,
+    percentile:  d.simahPercentile,
+    visual_pct:  Math.round(((d.simahScore - 300) / 600) * 100),
+    valid_until: d.creditValidUntil,
+    strengths: [
+      'هامش ربح فوق متوسط القطاع بنسبة 35%',
+      'نمو إيرادات قوي ومستدام منذ 3 سنوات',
+      'نسبة سيولة مريحة تتجاوز متطلبات البنوك',
+    ],
+    risks: [
+      'فترة تحصيل المديونية أعلى من متوسط القطاع بـ 7 أيام',
+      'تركز 40% من الإيرادات في عميل واحد',
+    ],
+    recommendations: [
+      'تطبيق سياسة تحصيل أكثر صرامة لتقليل DSO إلى 35 يوماً',
+      'تنويع قاعدة العملاء لتقليل مخاطر التركز',
+      'توثيق العقود متعددة السنوات لتعزيز ثقة البنوك',
+    ],
+  };
+
+  const apiKey = process.env.GEMENI_KEY || process.env.GEMINI_KEY;
+  if (!apiKey) return staticReport;
+
+  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+  const prompt = `أنت محلل ائتماني لمنشأة صغيرة ومتوسطة في السعودية. بناءً على البيانات التالية، أنتج تقرير ائتماني.
+
+بيانات المنشأة المجمّعة من البنوك المربوطة:
+${JSON.stringify({
+  total_balance_sar: d.totalBalance,
+  monthly_inflow: d.totalMonthlyIn,
+  monthly_outflow: d.totalMonthlyOut,
+  net_monthly: d.netMonthly,
+  revenue_growth: d.revenueGrowth,
+  unclassified_transactions: d.unclassifiedTxCount,
+  credit_score: d.simahScore,
+  credit_score_max: 900,
+  credit_rating: d.simahLabel,
+  percentile: d.simahPercentile,
+  ratios: d.ratios,
+  sector: d.benchmarks.sector,
+  above_sector_avg: `${d.benchmarks.aboveAverage} من ${d.benchmarks.total} مؤشرات`,
+  net_profit_q1: d.analytics.netProfit,
+  profit_margin_pct: d.analytics.profitMarginPct,
+}, null, 2)}
+
+أنتج JSON فقط (بدون نص خارج الـ JSON):
+{
+  "strengths": ["نقطة قوة 1 مع رقم من البيانات", "نقطة قوة 2", "نقطة قوة 3"],
+  "risks": ["خطر 1 مع رقم محدد", "خطر 2"],
+  "recommendations": ["توصية عملية 1", "توصية 2", "توصية 3"]
+}
+
+قواعد:
+- كل نقطة قوة أو خطر تحتوي على رقم أو نسبة فعلية من البيانات
+- التوصيات قابلة للتنفيذ وعملية وقصيرة
+- العبارات بالعربية المهنية، الأرقام بالإنجليزية
+- strengths: 3 نقاط، risks: 2-3 نقاط، recommendations: 3 نقاط`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 },
+        }),
+      }
+    );
+    if (!res.ok) return staticReport;
+    const json = await res.json();
+    const text = json?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '').join('').trim();
+    if (!text) return staticReport;
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const parsed = JSON.parse((fenced ? fenced[1] : text).trim());
+    return {
+      ...staticReport,
+      strengths:       Array.isArray(parsed.strengths)       ? parsed.strengths.slice(0, 4)       : staticReport.strengths,
+      risks:           Array.isArray(parsed.risks)           ? parsed.risks.slice(0, 3)           : staticReport.risks,
+      recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 4) : staticReport.recommendations,
     };
   } catch {
     return staticReport;
