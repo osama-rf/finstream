@@ -282,37 +282,48 @@ export default function CreditPage() {
               </div>
             </div>
 
-            {/* Score scale */}
+            {/* Score scale
+                Range 300-900 = 600 pts total, split into segments:
+                300-500 = 200pts (33.33%), 500-600 = 100pts (16.67%),
+                600-700 = 100pts (16.67%), 700-800 = 100pts (16.67%), 800-900 = 100pts (16.67%)
+                Marker left% = (score - 300) / 600 * 100  ← proportional, matches flex widths */}
             <div className="border-t border-[var(--border)] pt-4">
               <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mb-3">سلّم التصنيف الائتماني — نطاق 300 إلى 900</p>
-              {/* bar + marker — overflow visible so marker arrow is not clipped */}
               <div className="relative h-3 rounded-full flex" style={{ overflow: "visible" }}>
-                {/* colored segments */}
+                {/* segments — flex proportional to point range */}
                 <div className="absolute inset-0 rounded-full overflow-hidden flex">
-                  {[
-                    { label: "ضعيف",     color: "#ef4444", flex: 2 },
-                    { label: "متوسط",    color: "#f97316", flex: 1 },
-                    { label: "جيد",      color: "#eab308", flex: 1 },
-                    { label: "جيد جداً", color: "#22c55e", flex: 1 },
-                    { label: "ممتاز",    color: "#10b981", flex: 1 },
-                  ].map(s => (
-                    <div key={s.label} className="h-full" style={{ flex: s.flex, background: s.color, opacity: 0.8 }} />
-                  ))}
+                  <div className="h-full" style={{ flex: 200, background: "#ef4444", opacity: 0.8 }} />
+                  <div className="h-full" style={{ flex: 100, background: "#f97316", opacity: 0.8 }} />
+                  <div className="h-full" style={{ flex: 100, background: "#eab308", opacity: 0.8 }} />
+                  <div className="h-full" style={{ flex: 100, background: "#22c55e", opacity: 0.8 }} />
+                  <div className="h-full" style={{ flex: 100, background: "#10b981", opacity: 0.8 }} />
                 </div>
-                {/* marker — triangle + line, sits above bar */}
+                {/* marker at exact proportional position */}
                 <div
                   className="absolute flex flex-col items-center"
-                  style={{ left: `${report.visual_pct}%`, top: "-10px", transform: "translateX(-50%)" }}
+                  style={{ left: `${((report.score - 300) / 600) * 100}%`, top: "-10px", transform: "translateX(-50%)" }}
                 >
-                  {/* triangle pointing down */}
                   <div style={{ width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "7px solid #1e293b" }} />
-                  {/* vertical line through bar */}
-                  <div style={{ width: "2px", height: "13px", background: "#1e293b", marginTop: "0px" }} />
+                  <div style={{ width: "2px", height: "13px", background: "#1e293b" }} />
                 </div>
               </div>
-              <div className="flex justify-between mt-2">
-                {["300", "500", "600", "700", "800", "900"].map(l => (
-                  <span key={l} className="text-[9px] text-[var(--muted-foreground)] font-arabic tabular-nums">{l}</span>
+              {/* labels at their exact proportional positions */}
+              <div className="relative mt-2 h-3">
+                {[
+                  { val: 300,  pct: 0     },
+                  { val: 500,  pct: 33.33 },
+                  { val: 600,  pct: 50    },
+                  { val: 700,  pct: 66.67 },
+                  { val: 800,  pct: 83.33 },
+                  { val: 900,  pct: 100   },
+                ].map(({ val, pct }) => (
+                  <span
+                    key={val}
+                    className="absolute text-[9px] text-[var(--muted-foreground)] tabular-nums"
+                    style={{ left: `${pct}%`, transform: pct === 0 ? "none" : pct === 100 ? "translateX(-100%)" : "translateX(-50%)" }}
+                  >
+                    {val}
+                  </span>
                 ))}
               </div>
             </div>
