@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { UserProvider } from "@/lib/contexts/UserContext";
 import { ThemeProvider } from "@/lib/contexts/ThemeContext";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </UserProvider>
           </ThemeProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
