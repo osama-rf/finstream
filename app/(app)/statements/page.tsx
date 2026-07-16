@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   FileText, Plus, Sparkles, TrendingUp, TrendingDown,
   ArrowLeftRight, Share2, Download, Eye, CheckCircle2,
-  Building2, Clock, Send, X, Printer, ShieldCheck, ClipboardCheck,
+  Building2, Clock, Send, X,
   AlertTriangle, Lock, BarChart2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
@@ -460,12 +460,7 @@ export default function StatementsPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">القوائم المالية</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-            أنشئ قوائمك المالية بالذكاء الاصطناعي من بيانات بنوكك وشاركها مع البنوك
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">القوائم المالية</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="font-arabic gap-2" onClick={handleQuickGenerate} disabled={generating}>
             <Sparkles className="h-4 w-4" />
@@ -475,17 +470,6 @@ export default function StatementsPage() {
             <Plus className="h-4 w-4" />
             قائمة جديدة
           </Button>
-        </div>
-      </div>
-
-      {/* Info banner */}
-      <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4">
-        <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-          <p className="text-sm text-[var(--foreground)] font-arabic leading-relaxed">
-            <span className="font-bold">إنشاء القوائم المالية بالذكاء الاصطناعي — </span>
-            يحلل الذكاء الاصطناعي بياناتك من 3 بنوك مربوطة ويولّد قوائم مالية دقيقة جاهزة للمشاركة مع البنوك للحصول على تمويل.
-          </p>
         </div>
       </div>
 
@@ -581,11 +565,8 @@ export default function StatementsPage() {
                   <TrendingUp className="h-5 w-5 text-[var(--primary)]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="font-bold text-[var(--foreground)] font-arabic text-sm">قائمة تدفقات تنبؤية</p>
-                    <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-                  </div>
-                  <p className="text-xs text-[var(--muted-foreground)] font-arabic">توقّع الذكاء الاصطناعي لثلاثة أشهر قادمة</p>
+                  <p className="font-bold text-[var(--foreground)] font-arabic text-sm">قائمة تدفقات تنبؤية</p>
+                  <p className="text-xs text-[var(--muted-foreground)] font-arabic">توقّع ثلاثة أشهر قادمة</p>
                 </div>
               </div>
               <Badge variant="secondary" className="font-arabic shrink-0 text-[11px]">تجريبية</Badge>
@@ -613,10 +594,7 @@ export default function StatementsPage() {
 
       {/* ZATCA readiness */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          جاهزية الفوترة الإلكترونية (ZATCA)
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">جاهزية الفوترة الإلكترونية (ZATCA)</h2>
         <Card>
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
@@ -637,19 +615,7 @@ export default function StatementsPage() {
 
       {/* Internal audit center */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          مركز التحقق الداخلي
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
-        <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4 mb-4">
-          <div className="flex items-start gap-3">
-            <ClipboardCheck className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-            <p className="text-sm text-[var(--foreground)] font-arabic leading-relaxed">
-              <span className="font-bold">أداة تدقيق داخلي مالي — </span>
-              تصنّف كل قائمة حسب درجة الخطورة قبل مشاركتها مع البنك، وتكشف الحسابات غير المطابقة تلقائياً.
-            </p>
-          </div>
-        </div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">مركز التحقق الداخلي</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {AUDIT_CENTER_KPIS.map(kpi => {
             const Icon = kpi.icon === "check" ? CheckCircle2 : kpi.icon === "warning" ? AlertTriangle : kpi.icon === "lock" ? Lock : BarChart2;

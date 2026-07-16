@@ -84,10 +84,7 @@ export default function CompanyEnPage() {
   return (
     <div className="space-y-6 page-transition-shell" dir="ltr">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Company & Team</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">Company details, bank accounts, and team permissions</p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Company & Team</h1>
         <Button size="sm" className="gap-2 w-fit" onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4" />
           Invite member
@@ -121,10 +118,7 @@ export default function CompanyEnPage() {
                 <Input defaultValue="Technology & Consulting Services" />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label>Services offered</Label>
-                  <Badge variant="default" className="text-[10px]">New</Badge>
-                </div>
+                <Label>Services offered</Label>
                 <Input defaultValue="Technical consulting, software development, training & workshops" />
               </div>
             </div>
@@ -142,14 +136,10 @@ export default function CompanyEnPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)]">
                   <Landmark className="h-5 w-5 text-[var(--success)]" />
                 </div>
-                <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
-                  Bank Accounts
-                  <Badge variant="default" className="text-[10px]">New</Badge>
-                </h2>
+                <h2 className="text-base font-bold text-[var(--foreground)]">Bank Accounts</h2>
               </div>
               <a href="/en/bank" className="text-xs font-bold text-[var(--primary)]">Manage connections</a>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">{BANKS.length} accounts linked via the Open Banking tab</p>
             <div className="space-y-2">
               {BANKS.map(bank => (
                 <div key={bank.id} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
@@ -173,10 +163,7 @@ export default function CompanyEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          Team
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Team</h2>
         <Card>
           <CardContent className="p-5">
             <Table>
@@ -214,10 +201,7 @@ export default function CompanyEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          Activity Log
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Activity Log</h2>
         <Card>
           <CardContent className="p-5 space-y-2">
             {ACTIVITY_LOG.map(entry => (

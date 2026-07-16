@@ -67,14 +67,9 @@ export default function SettingsEnPage() {
                 <Settings className="h-5 w-5 text-[var(--warning)]" />
               </div>
               <h2 className="text-base font-bold text-[var(--foreground)]">Appearance</h2>
-              <Badge variant="default" className="text-[10px]">New</Badge>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">Choose your preferred interface appearance</p>
             <div className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-[var(--foreground)]">Dark / Light mode</p>
-                <p className="text-xs text-[var(--muted-foreground)]">Toggle the application theme</p>
-              </div>
+              <p className="text-sm font-medium text-[var(--foreground)]">Dark / Light mode</p>
               <ThemeToggle />
             </div>
           </CardContent>
@@ -147,7 +142,6 @@ export default function SettingsEnPage() {
                 <CreditCard className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <h2 className="text-base font-bold text-[var(--foreground)]">Subscription & Billing</h2>
-              <Badge variant="default" className="text-[10px]">New</Badge>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -172,11 +166,9 @@ export default function SettingsEnPage() {
         <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-[var(--primary)]" />
           Services & Pricing
-          <Badge variant="default" className="text-[10px]">New</Badge>
         </h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">Services shown to clients on quotes and invoices</p>
             <Table>
               <TableHead>
                 <TableRow>
@@ -209,11 +201,9 @@ export default function SettingsEnPage() {
         <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
           <Users2 className="h-4 w-4 text-[var(--primary)]" />
           Client Management
-          <Badge variant="default" className="text-[10px]">New</Badge>
         </h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">Clients linked to your invoices and financial statements</p>
             <Table>
               <TableHead>
                 <TableRow>

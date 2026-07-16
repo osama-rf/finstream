@@ -258,8 +258,7 @@ export default function CreditEnPage() {
             <div className="flex items-center gap-4 border-t border-[var(--border)] pt-4 sm:gap-6">
               <SharedScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={96} colorOverride="#0f766e" />
               <div>
-                <p className="text-sm font-bold text-[var(--foreground)] mb-1">Financial Sustainability Score</p>
-                <p className="text-xs text-[var(--muted-foreground)] mb-2">Complements the credit rating — measures the long-term robustness of the financial model</p>
+                <p className="text-sm font-bold text-[var(--foreground)] mb-2">Financial Sustainability Score</p>
                 <Badge variant="secondary" className="text-xs">Stable</Badge>
               </div>
             </div>
@@ -376,7 +375,6 @@ export default function CreditEnPage() {
                       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${barPct}%`, background: color }} />
                     </div>
                     <p className="text-[11px] text-[var(--muted-foreground)]">{ratio.benchmarkLabel}</p>
-                    <p className="text-[11px] text-[var(--muted-foreground)] mt-1 leading-relaxed">{ratio.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -422,16 +420,11 @@ export default function CreditEnPage() {
       {tab === "banks" && (
         <div className="space-y-4">
           <div className="rounded-[14px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-bold text-[var(--foreground)]">
-                  Based on your {report.letter} rating, you qualify for financing up to SAR 3,000,000
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                  Share your credit report with any bank in one click to accelerate your financing request
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0" />
+              <p className="text-sm font-bold text-[var(--foreground)]">
+                Based on your {report.letter} rating, you qualify for financing up to SAR 3,000,000
+              </p>
             </div>
           </div>
           {banksList.map(bank => (

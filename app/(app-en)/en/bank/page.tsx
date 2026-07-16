@@ -241,12 +241,7 @@ export default function BankEnPage() {
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Open Banking</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Collect your company's data from its banks and payment gateways in one place
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Open Banking</h1>
         <Button size="sm" className="gap-2 w-fit"
           onClick={() => openConnect("Alinma Bank", "#005CA9")}>
           <Plus className="h-4 w-4" />
@@ -256,12 +251,12 @@ export default function BankEnPage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
-          { label: "Total aggregated balance", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `from ${connected.length} sources`, isCurrency: true },
-          { label: "Inflows (30 days)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: "across all sources", isCurrency: true },
-          { label: "Outflows (30 days)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: "across all sources", isCurrency: true },
-          { label: "Avg. daily net balance (30 days)", value: BANKING_SUMMARY.avgDailyNetBalance, color: "var(--primary)", icon: Gauge, sub: "New", isCurrency: true, isNew: true },
-          { label: "Liquidity ratio", value: BANKING_SUMMARY.liquidityRatio, color: "var(--success)", icon: Droplets, sub: "New", isCurrency: false, isNew: true },
-        ].map(({ label, value, color, icon: Icon, sub, isCurrency, isNew }) => (
+          { label: "Total aggregated balance", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `${connected.length} sources`, isCurrency: true },
+          { label: "Inflows (30 days)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: null, isCurrency: true },
+          { label: "Outflows (30 days)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: null, isCurrency: true },
+          { label: "Avg. daily net balance (30 days)", value: BANKING_SUMMARY.avgDailyNetBalance, color: "var(--primary)", icon: Gauge, sub: null, isCurrency: true },
+          { label: "Liquidity ratio", value: BANKING_SUMMARY.liquidityRatio, color: "var(--success)", icon: Droplets, sub: null, isCurrency: false },
+        ].map(({ label, value, color, icon: Icon, sub, isCurrency }) => (
           <Card key={label} className={label === "Total aggregated balance" ? "border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]" : ""}>
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center gap-2 mb-2">
@@ -274,11 +269,7 @@ export default function BankEnPage() {
               <p className="text-sm font-bold tabular-nums break-all sm:text-2xl" style={{ color }} dir="ltr">
                 {isCurrency ? formatCurrency(value) : `${value}x`}
               </p>
-              {isNew ? (
-                <Badge variant="secondary" className="mt-1 text-[10px]">{sub}</Badge>
-              ) : (
-                <p className="text-[10px] text-[var(--muted-foreground)] mt-1 sm:text-xs">{sub}</p>
-              )}
+              {sub && <p className="text-[10px] text-[var(--muted-foreground)] mt-1 sm:text-xs">{sub}</p>}
             </CardContent>
           </Card>
         ))}
@@ -405,12 +396,10 @@ export default function BankEnPage() {
           {/* AI-categorized transactions */}
           <Card>
             <CardContent className="p-5">
-              <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
+              <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[var(--primary)]" />
                 Automatic transaction categorization
-                <Badge variant="default" className="text-[10px]">New</Badge>
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)] mb-4">Recent aggregated transactions, auto-categorized by AI</p>
               <div className="space-y-2">
                 {categorizedTransactions.map((tx) => (
                   <ListItemRow
@@ -436,13 +425,10 @@ export default function BankEnPage() {
         <div className="space-y-4">
           <Card>
             <CardContent className="p-5">
-              <h2 className="text-sm font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <div className="h-4 w-1 rounded-full bg-[var(--border)]" />
                 Connect new sources
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)] mb-4">
-                The more sources you connect, the more comprehensive and accurate your credit report becomes
-              </p>
               <div className="space-y-2">
                 {availableToConnect.map((src) => (
                   <div key={src.name}
@@ -469,13 +455,10 @@ export default function BankEnPage() {
           </Card>
 
           <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
-            <CardContent className="p-5">
-              <CheckCircle2 className="h-8 w-8 text-[var(--primary)] mb-3" />
-              <p className="text-sm font-bold text-[var(--foreground)] mb-1">
-                Your data is fully protected
-              </p>
+            <CardContent className="p-5 flex items-center gap-3">
+              <CheckCircle2 className="h-6 w-6 text-[var(--primary)] shrink-0" />
               <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                We use SAMA-certified Open Banking. We never store your passwords — only read access, with your consent.
+                SAMA-certified Open Banking — we never store your passwords
               </p>
             </CardContent>
           </Card>

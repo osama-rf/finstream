@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   FileText, Plus, Sparkles, TrendingUp, TrendingDown,
   ArrowLeftRight, Download, Eye, CheckCircle2,
-  Building2, Clock, Send, X, ClipboardCheck,
+  Building2, Clock, Send, X,
   AlertTriangle, Lock, BarChart2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
@@ -452,12 +452,7 @@ export default function StatementsEnPage() {
       {showNew && <NewStatementModal onClose={() => setShowNew(false)} onAdd={s => setStmts(prev => [s, ...prev])} />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Statements</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Generate financial statements with AI from your bank data and share them with banks
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Statements</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-2" onClick={handleQuickGenerate} disabled={generating}>
             <Sparkles className="h-4 w-4" />
@@ -467,16 +462,6 @@ export default function StatementsEnPage() {
             <Plus className="h-4 w-4" />
             New statement
           </Button>
-        </div>
-      </div>
-
-      <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4">
-        <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-          <p className="text-sm text-[var(--foreground)] leading-relaxed">
-            <span className="font-bold">AI-generated financial statements — </span>
-            AI analyzes your data from 3 connected banks and produces accurate statements ready to share with banks for financing.
-          </p>
         </div>
       </div>
 
@@ -570,11 +555,8 @@ export default function StatementsEnPage() {
                   <TrendingUp className="h-5 w-5 text-[var(--primary)]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <p className="font-bold text-[var(--foreground)] text-sm">Pro-forma cash flow forecast</p>
-                    <Badge variant="default" className="text-[10px]">New</Badge>
-                  </div>
-                  <p className="text-xs text-[var(--muted-foreground)]">AI forecast for the next three months</p>
+                  <p className="font-bold text-[var(--foreground)] text-sm">Pro-forma cash flow forecast</p>
+                  <p className="text-xs text-[var(--muted-foreground)]">Next three months</p>
                 </div>
               </div>
               <Badge variant="secondary" className="shrink-0 text-[11px]">Beta</Badge>
@@ -602,10 +584,7 @@ export default function StatementsEnPage() {
 
       {/* ZATCA readiness */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          E-invoicing readiness (ZATCA)
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">E-invoicing readiness (ZATCA)</h2>
         <Card>
           <CardContent className="p-5 space-y-3">
             <div className="flex items-center justify-between">
@@ -626,19 +605,7 @@ export default function StatementsEnPage() {
 
       {/* Internal audit center */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          Internal Audit Center
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
-        <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4 mb-4">
-          <div className="flex items-start gap-3">
-            <ClipboardCheck className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-            <p className="text-sm text-[var(--foreground)] leading-relaxed">
-              <span className="font-bold">Internal financial audit tool — </span>
-              classifies every statement by risk level before sharing it with a bank, and automatically flags unreconciled accounts.
-            </p>
-          </div>
-        </div>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Internal Audit Center</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {AUDIT_CENTER_KPIS.map(kpi => {
             const Icon = kpi.icon === "check" ? CheckCircle2 : kpi.icon === "warning" ? AlertTriangle : kpi.icon === "lock" ? Lock : BarChart2;

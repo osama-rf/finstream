@@ -118,12 +118,7 @@ export default function IndicatorsPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">المؤشرات المالية ومدخلات التحكم</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-            نظرة عامة حيّة على وضع منشأتك، مع أدوات تحكم لضبط الأهداف والتنبيهات
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">المؤشرات المالية ومدخلات التحكم</h1>
         <Button variant="outline" size="sm" className="font-arabic gap-2 w-fit" onClick={handleRefresh} disabled={refreshing}>
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           {refreshing ? "جاري التحديث..." : "تحديث الآن"}
@@ -163,11 +158,7 @@ export default function IndicatorsPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
-              مؤشر الاستدامة المالية
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">مقياس مركّب يجمع السيولة، الربحية، الانضباط، والتنويع</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">مؤشر الاستدامة المالية</h2>
             <div className="flex items-center gap-5">
               <ScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={110} colorOverride="var(--primary)" />
               <div className="flex-1 space-y-2.5">
@@ -184,11 +175,7 @@ export default function IndicatorsPage() {
 
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
-              أهداف مالية
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">حدّد أهدافك وتابع التقدّم نحوها</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">أهداف مالية</h2>
             <div className="space-y-4">
               {FINANCIAL_GOALS.map(g => (
                 <ProgressBar
@@ -205,11 +192,7 @@ export default function IndicatorsPage() {
 
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
-              حدود التنبيه
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">أوقف المفاجآت — نبّهنا عند تجاوز الحدود</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">حدود التنبيه</h2>
             <div className="space-y-1">
               {thresholds.map(t => (
                 <div key={t.key} className="flex items-center justify-between py-2.5 border-b border-[var(--border)] last:border-0">
@@ -227,15 +210,9 @@ export default function IndicatorsPage() {
 
       {/* Scenario simulator */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          محاكي السيناريوهات
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">محاكي السيناريوهات</h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-5">
-              حرّك المتغيرات لترى أثرها الفوري على المدار النقدي والتصنيف الائتماني — أداة تخطيط، لا تُغيّر بياناتك الفعلية
-            </p>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
                 <div className="flex items-center justify-between mb-2 text-sm">
@@ -288,13 +265,9 @@ export default function IndicatorsPage() {
 
       {/* Manual entries */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          مدخلات يدوية
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">مدخلات يدوية</h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">لبيانات غير مرتبطة عبر Open Banking (نقد، عهدة، تحويلات خارجية)</p>
             <Table>
               <TableHead>
                 <TableRow>

@@ -129,12 +129,7 @@ export default function AnalyticsEnPage() {
     <div className="space-y-6 page-transition-shell" dir="ltr">
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Analyze revenue, expenses, and their distribution from your connected bank data
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1>
         <div className="flex items-center gap-2">
           <select
             value={period}
@@ -159,13 +154,13 @@ export default function AnalyticsEnPage() {
               <Flame className="h-5 w-5 text-[var(--destructive)]" />
             </div>
             <div>
-              <p className="text-xs text-[var(--muted-foreground)]">Monthly cash burn rate</p>
+              <p className="text-xs text-[var(--muted-foreground)]">Monthly burn rate</p>
               <p className="text-xl font-bold text-[var(--foreground)] tabular-nums">{formatCurrency(ANALYTICS_OVERVIEW.burnRatePerMonth)} / month</p>
             </div>
           </div>
           <div className="text-end">
-            <Badge variant="default" className="text-[10px]">New</Badge>
-            <p className="text-xs text-[var(--muted-foreground)] mt-1.5">Projected runway: {ANALYTICS_OVERVIEW.projectedRunwayMonths} months</p>
+            <p className="text-xs text-[var(--muted-foreground)]">Projected runway</p>
+            <p className="text-sm font-bold text-[var(--foreground)]">{ANALYTICS_OVERVIEW.projectedRunwayMonths} months</p>
           </div>
         </CardContent>
       </Card>
@@ -213,23 +208,7 @@ export default function AnalyticsEnPage() {
             </h2>
             <Badge variant="secondary" className="text-xs">{period}</Badge>
           </div>
-          <p className="text-xs text-[var(--muted-foreground)] mb-1">Monthly · aggregated from all connected banks</p>
           <BarChartSection data={monthlyData} />
-
-          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-[var(--border)] pt-4">
-            {[
-              { label: "Total revenue", value: monthlyData.reduce((s, d) => s + d.revenue, 0), color: "var(--primary)" },
-              { label: "Total expenses", value: monthlyData.reduce((s, d) => s + d.expenses, 0), color: "var(--destructive)" },
-              { label: "Net profit", value: monthlyData.reduce((s, d) => s + d.revenue - d.expenses, 0), color: "var(--success)" },
-            ].map(s => (
-              <div key={s.label} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
-                <p className="text-[10px] text-[var(--muted-foreground)] sm:text-xs">{s.label}</p>
-                <p className="text-sm font-bold tabular-nums mt-0.5 sm:text-base" style={{ color: s.color }}>
-                  {formatCurrency(s.value)}
-                </p>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
@@ -274,9 +253,7 @@ export default function AnalyticsEnPage() {
             <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
               Revenue by source
-              <Badge variant="default" className="text-[10px]">New</Badge>
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)] mb-3">Quarter total: {formatCurrency(ANALYTICS_OVERVIEW.totalRevenueQuarter)}</p>
             <div className="space-y-3">
               {revenueBySource.map(r => (
                 <div key={r.label}>
@@ -301,25 +278,17 @@ export default function AnalyticsEnPage() {
       {/* Net profit trend */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
+          <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
             <div className="h-5 w-1 rounded-full bg-[var(--success)]" />
             Monthly net profit trend
-            <Badge variant="default" className="text-[10px]">New</Badge>
           </h2>
-          <p className="text-xs text-[var(--muted-foreground)] mb-4">31.2% growth vs. the prior quarter</p>
           <MiniBarsChart
             data={ANALYTICS_OVERVIEW.netProfitTrend.map(m => ({ label: m.label, value: m.revenue }))}
             formatValue={formatCurrency}
           />
           <div className="mt-4 rounded-[12px] border border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-[var(--muted-foreground)]">Total net profit — {period}</p>
-              <p className="text-lg font-black text-[var(--success)] tabular-nums">{formatCurrency(netProfit)}</p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-5 w-5 text-[var(--success)]" />
-              <span className="text-sm font-bold text-[var(--success)]">+31.2% vs. last year</span>
-            </div>
+            <p className="text-sm text-[var(--muted-foreground)]">Total net profit — {period}</p>
+            <span className="text-lg font-black text-[var(--success)] tabular-nums">{formatCurrency(netProfit)}</span>
           </div>
         </CardContent>
       </Card>
@@ -327,11 +296,7 @@ export default function AnalyticsEnPage() {
       {/* Anomaly detection */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
-            Automatic anomaly detection
-            <Badge variant="default" className="text-[10px]">New</Badge>
-          </h2>
-          <p className="text-xs text-[var(--muted-foreground)] mb-4">AI alerts about unusual patterns</p>
+          <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Automatic anomaly detection</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {ANALYTICS_OVERVIEW.anomalies.map((a, i) => (
               <div key={i} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">

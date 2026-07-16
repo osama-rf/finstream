@@ -72,10 +72,7 @@ export default function CompanyPage() {
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">الشركة والفريق</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">بيانات الشركة، الحسابات البنكية، وإدارة صلاحيات فريق العمل</p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">الشركة والفريق</h1>
         <Button size="sm" className="font-arabic gap-2 w-fit" onClick={() => setOpen(true)}>
           <Plus className="h-4 w-4" />
           دعوة عضو
@@ -110,10 +107,7 @@ export default function CompanyPage() {
                 <Input defaultValue={COMPANY_PROFILE.sector} />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label>الخدمات المقدمة</Label>
-                  <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-                </div>
+                <Label>الخدمات المقدمة</Label>
                 <Input defaultValue={COMPANY_PROFILE.servicesOffered} />
               </div>
             </div>
@@ -132,14 +126,10 @@ export default function CompanyPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)]">
                   <Landmark className="h-5 w-5 text-[var(--success)]" />
                 </div>
-                <h2 className="text-base font-bold text-[var(--foreground)] font-arabic flex items-center gap-2">
-                  الحسابات البنكية
-                  <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-                </h2>
+                <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2>
               </div>
               <a href="/bank" className="text-xs font-bold text-[var(--primary)] font-arabic">إدارة الربط</a>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">{BANKS.length} حسابات مرتبطة عبر تبويبة المصرفية المفتوحة</p>
             <div className="space-y-2">
               {BANKS.map(bank => (
                 <div key={bank.id} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
@@ -164,10 +154,7 @@ export default function CompanyPage() {
 
       {/* Team table */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          فريق العمل
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">فريق العمل</h2>
         <Card>
           <CardContent className="p-5">
             <Table>
@@ -206,10 +193,7 @@ export default function CompanyPage() {
 
       {/* Activity log */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
-          سجلّ النشاط
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">سجلّ النشاط</h2>
         <Card>
           <CardContent className="p-5 space-y-2">
             {ACTIVITY_LOG.map(entry => (

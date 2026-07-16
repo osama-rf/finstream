@@ -132,12 +132,7 @@ export default function AnalyticsPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التحليل المالي</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-            تحليل الإيرادات والمصروفات وتوزيعها من بيانات بنوكك المربوطة
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التحليل المالي</h1>
         <div className="flex items-center gap-2">
           <select
             value={period}
@@ -162,13 +157,13 @@ export default function AnalyticsPage() {
               <Flame className="h-5 w-5 text-[var(--destructive)]" />
             </div>
             <div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">معدل الاستنزاف النقدي الشهري (Burn Rate)</p>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">معدل الاستنزاف الشهري</p>
               <p className="text-xl font-bold text-[var(--foreground)] tabular-nums" dir="ltr">{formatCurrency(ANALYTICS_OVERVIEW.burnRatePerMonth)} / شهر</p>
             </div>
           </div>
           <div className="text-end">
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1.5">مدار نقدي متوقّع: {ANALYTICS_OVERVIEW.projectedRunwayMonths} أشهر</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic">مدار نقدي متوقّع</p>
+            <p className="text-sm font-bold text-[var(--foreground)] font-arabic">{ANALYTICS_OVERVIEW.projectedRunwayMonths} أشهر</p>
           </div>
         </CardContent>
       </Card>
@@ -216,24 +211,7 @@ export default function AnalyticsPage() {
             </h2>
             <Badge variant="secondary" className="font-arabic text-xs">{period}</Badge>
           </div>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-1">شهرياً · مجمّع من جميع البنوك المربوطة</p>
           <BarChartSection data={monthlyData} />
-
-          {/* Summary row */}
-          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-[var(--border)] pt-4">
-            {[
-              { label: "إجمالي الإيرادات",  value: monthlyData.reduce((s,d)=>s+d.revenue,0),  color: "var(--primary)"    },
-              { label: "إجمالي المصروفات",  value: monthlyData.reduce((s,d)=>s+d.expenses,0), color: "var(--destructive)" },
-              { label: "صافي الربح",         value: monthlyData.reduce((s,d)=>s+d.revenue-d.expenses,0), color: "var(--success)" },
-            ].map(s => (
-              <div key={s.label} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
-                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{s.label}</p>
-                <p className="text-sm font-bold tabular-nums mt-0.5 sm:text-base" style={{ color: s.color }} dir="ltr">
-                  {formatCurrency(s.value)}
-                </p>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
@@ -280,9 +258,7 @@ export default function AnalyticsPage() {
             <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
               الإيرادات حسب المصدر
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-3">إجمالي الربع: {formatCurrency(ANALYTICS_OVERVIEW.totalRevenueQuarter)}</p>
             <div className="space-y-3">
               {revenueBySource.map(r => (
                 <div key={r.label}>
@@ -307,25 +283,17 @@ export default function AnalyticsPage() {
       {/* Net profit trend */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
             <div className="h-5 w-1 rounded-full bg-[var(--success)]" />
             اتجاه صافي الربح الشهري
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
           </h2>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">نمو 31.2% مقارنة بالربع السابق</p>
           <MiniBarsChart
             data={ANALYTICS_OVERVIEW.netProfitTrend.map(m => ({ label: m.label, value: m.revenue }))}
             formatValue={formatCurrency}
           />
           <div className="mt-4 rounded-[12px] border border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-4 py-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي صافي الربح — {period}</p>
-              <p className="text-lg font-black text-[var(--success)] tabular-nums" dir="ltr">{formatCurrency(netProfit)}</p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-5 w-5 text-[var(--success)]" />
-              <span className="text-sm font-bold text-[var(--success)] font-arabic">+31.2% مقارنة بالعام الماضي</span>
-            </div>
+            <p className="text-sm text-[var(--muted-foreground)] font-arabic">إجمالي صافي الربح — {period}</p>
+            <span className="text-lg font-black text-[var(--success)] tabular-nums" dir="ltr">{formatCurrency(netProfit)}</span>
           </div>
         </CardContent>
       </Card>
@@ -333,11 +301,7 @@ export default function AnalyticsPage() {
       {/* Anomaly detection */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
-            كشف شذوذ تلقائي
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-          </h2>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">تنبيهات ذكاء اصطناعي حول أنماط غير معتادة</p>
+          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">كشف شذوذ تلقائي</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {ANALYTICS_OVERVIEW.anomalies.map((a, i) => (
               <div key={i} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">

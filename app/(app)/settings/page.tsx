@@ -71,14 +71,9 @@ export default function SettingsPage() {
                 <Settings className="h-5 w-5 text-[var(--warning)]" />
               </div>
               <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">المظهر</h2>
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">اختر مظهر الواجهة المفضّل لديك</p>
             <div className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-[var(--foreground)] font-arabic">الوضع الداكن / الفاتح</p>
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic">تبديل مظهر واجهة التطبيق</p>
-              </div>
+              <p className="text-sm font-medium text-[var(--foreground)] font-arabic">الوضع الداكن / الفاتح</p>
               <ThemeToggle />
             </div>
           </CardContent>
@@ -164,7 +159,6 @@ export default function SettingsPage() {
                 <CreditCard className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الاشتراك والفوترة</h2>
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -189,12 +183,10 @@ export default function SettingsPage() {
       <div>
         <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
           <Briefcase className="h-4 w-4 text-[var(--primary)]" />
-          إدارة قائمة الخدمات والأسعار
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+          الخدمات والأسعار
         </h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">الخدمات الظاهرة للعملاء عند إصدار عروض الأسعار والفواتير</p>
             <Table>
               <TableHead>
                 <TableRow>
@@ -225,12 +217,10 @@ export default function SettingsPage() {
       <div>
         <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
           <Users2 className="h-4 w-4 text-[var(--primary)]" />
-          إدارة العملاء
-          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+          العملاء
         </h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">قائمة العملاء المرتبطين بفواتيرك وقوائمك المالية</p>
             <Table>
               <TableHead>
                 <TableRow>

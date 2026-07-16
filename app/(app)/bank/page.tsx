@@ -249,12 +249,7 @@ export default function BankPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">المصرفية المفتوحة</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-            اجمع بيانات منشأتك من بنوكها وبوابات الدفع في مكان واحد
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">المصرفية المفتوحة</h1>
         <Button size="sm" className="font-arabic gap-2 w-fit"
           onClick={() => openConnect("مصرف الإنماء", "#005CA9")}>
           <Plus className="h-4 w-4" />
@@ -265,12 +260,12 @@ export default function BankPage() {
       {/* Aggregated summary */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
-          { label: "إجمالي الأرصدة المجمّعة", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `من ${connected.length} مصادر`, isCurrency: true },
-          { label: "الواردات (30 يوم)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: "عبر كل المصادر", isCurrency: true },
-          { label: "المدفوعات (30 يوم)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: "عبر كل المصادر", isCurrency: true },
-          { label: "متوسط صافي الرصيد اليومي (30 يوم)", value: BANKING_SUMMARY.avgDailyNetBalance, color: "var(--primary)", icon: Gauge, sub: "جديد", isCurrency: true, isNew: true },
-          { label: "نسبة السيولة", value: BANKING_SUMMARY.liquidityRatio, color: "var(--success)", icon: Droplets, sub: "جديد", isCurrency: false, isNew: true },
-        ].map(({ label, value, color, icon: Icon, sub, isCurrency, isNew }) => (
+          { label: "إجمالي الأرصدة المجمّعة", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `${connected.length} مصادر`, isCurrency: true },
+          { label: "الواردات (30 يوم)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: null, isCurrency: true },
+          { label: "المدفوعات (30 يوم)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: null, isCurrency: true },
+          { label: "متوسط صافي الرصيد اليومي (30 يوم)", value: BANKING_SUMMARY.avgDailyNetBalance, color: "var(--primary)", icon: Gauge, sub: null, isCurrency: true },
+          { label: "نسبة السيولة", value: BANKING_SUMMARY.liquidityRatio, color: "var(--success)", icon: Droplets, sub: null, isCurrency: false },
+        ].map(({ label, value, color, icon: Icon, sub, isCurrency }) => (
           <Card key={label} className={label === "إجمالي الأرصدة المجمّعة" ? "border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]" : ""}>
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center gap-2 mb-2">
@@ -283,11 +278,7 @@ export default function BankPage() {
               <p className="text-sm font-bold tabular-nums break-all sm:text-2xl" style={{ color }} dir="ltr">
                 {isCurrency ? formatCurrency(value) : `${value}x`}
               </p>
-              {isNew ? (
-                <Badge variant="secondary" className="mt-1 font-arabic text-[10px]">{sub}</Badge>
-              ) : (
-                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">{sub}</p>
-              )}
+              {sub && <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">{sub}</p>}
             </CardContent>
           </Card>
         ))}
@@ -414,12 +405,10 @@ export default function BankPage() {
           {/* AI-categorized transactions */}
           <Card>
             <CardContent className="p-5">
-              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[var(--primary)]" />
                 تصنيف تلقائي للمعاملات
-                <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">آخر المعاملات المجمّعة، مصنّفة تلقائياً بالذكاء الاصطناعي</p>
               <div className="space-y-2">
                 {categorizedTransactions.map((tx) => (
                   <ListItemRow
@@ -445,13 +434,10 @@ export default function BankPage() {
         <div className="space-y-4">
           <Card>
             <CardContent className="p-5">
-              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
                 <div className="h-4 w-1 rounded-full bg-[var(--border)]" />
                 إضافة مصادر جديدة
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">
-                كلما زادت المصادر المربوطة، كلما كان التقرير الائتماني أشمل وأدق
-              </p>
               <div className="space-y-2">
                 {availableToConnect.map((src) => (
                   <div key={src.name}
@@ -478,13 +464,10 @@ export default function BankPage() {
           </Card>
 
           <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
-            <CardContent className="p-5">
-              <CheckCircle2 className="h-8 w-8 text-[var(--primary)] mb-3" />
-              <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1">
-                بياناتك محمية بالكامل
-              </p>
+            <CardContent className="p-5 flex items-center gap-3">
+              <CheckCircle2 className="h-6 w-6 text-[var(--primary)] shrink-0" />
               <p className="text-xs text-[var(--muted-foreground)] font-arabic leading-relaxed">
-                نستخدم بروتوكول Open Banking المعتمد من ساما. لا نخزّن كلمات مرورك — فقط صلاحية قراءة البيانات بموافقتك.
+                Open Banking معتمد من ساما — لا نخزّن كلمات مرورك
               </p>
             </CardContent>
           </Card>

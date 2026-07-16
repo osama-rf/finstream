@@ -117,12 +117,7 @@ export default function IndicatorsEnPage() {
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Indicators & Controls</h1>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            A live overview of your company's position, with controls to set goals and alerts
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Indicators & Controls</h1>
         <Button variant="outline" size="sm" className="gap-2 w-fit" onClick={handleRefresh} disabled={refreshing}>
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
           {refreshing ? "Refreshing..." : "Refresh now"}
@@ -160,11 +155,7 @@ export default function IndicatorsEnPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
-              Financial Sustainability Score
-              <Badge variant="default" className="text-[10px]">New</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">A composite measure of liquidity, profitability, discipline, and diversification</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Financial Sustainability Score</h2>
             <div className="flex items-center gap-5">
               <ScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={110} colorOverride="var(--primary)" />
               <div className="flex-1 space-y-2.5">
@@ -181,11 +172,7 @@ export default function IndicatorsEnPage() {
 
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
-              Financial Goals
-              <Badge variant="default" className="text-[10px]">New</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">Set your goals and track progress toward them</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Financial Goals</h2>
             <div className="space-y-4">
               {FINANCIAL_GOALS.map(g => (
                 <ProgressBar
@@ -202,11 +189,7 @@ export default function IndicatorsEnPage() {
 
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
-              Alert Thresholds
-              <Badge variant="default" className="text-[10px]">New</Badge>
-            </h2>
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">Stop surprises — get notified when thresholds are crossed</p>
+            <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Alert Thresholds</h2>
             <div className="space-y-1">
               {thresholds.map(t => (
                 <div key={t.key} className="flex items-center justify-between py-2.5 border-b border-[var(--border)] last:border-0">
@@ -227,15 +210,9 @@ export default function IndicatorsEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          Scenario Simulator
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Scenario Simulator</h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] mb-5">
-              Move the variables to see their immediate impact on runway and credit rating — a planning tool, it does not change your actual data
-            </p>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
               <div>
                 <div className="flex items-center justify-between mb-2 text-sm">
@@ -287,13 +264,9 @@ export default function IndicatorsEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-          Manual Entries
-          <Badge variant="default" className="text-[10px]">New</Badge>
-        </h2>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Manual Entries</h2>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs text-[var(--muted-foreground)] mb-4">For data not connected via Open Banking (cash, custody, external transfers)</p>
             <Table>
               <TableHead>
                 <TableRow>

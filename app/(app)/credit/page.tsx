@@ -259,8 +259,7 @@ export default function CreditPage() {
             <div className="flex items-center gap-4 border-t border-[var(--border)] pt-4 sm:gap-6">
               <SharedScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={96} colorOverride="#0f766e" />
               <div>
-                <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1">مؤشر الاستدامة المالية</p>
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2">مكمّل للتصنيف الائتماني — يقيس صلابة النموذج المالي طويل الأمد</p>
+                <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-2">مؤشر الاستدامة المالية</p>
                 <Badge variant="secondary" className="font-arabic text-xs">مستقر</Badge>
               </div>
             </div>
@@ -386,7 +385,6 @@ export default function CreditPage() {
                       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${barPct}%`, background: color }} />
                     </div>
                     <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">{ratio.benchmarkLabel}</p>
-                    <p className="text-[11px] text-[var(--muted-foreground)] font-arabic mt-1 leading-relaxed">{ratio.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -434,16 +432,11 @@ export default function CreditPage() {
       {tab === "banks" && (
         <div className="space-y-4">
           <div className="rounded-[14px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-bold text-[var(--foreground)] font-arabic">
-                  بناءً على تصنيفك {report.letter}، أنت مؤهل للحصول على تمويل يصل إلى 3 مليون ريال
-                </p>
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1">
-                  شارك تقريرك الائتماني مع أي بنك بنقرة واحدة لتسريع طلب التمويل
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0" />
+              <p className="text-sm font-bold text-[var(--foreground)] font-arabic">
+                بناءً على تصنيفك {report.letter}، أنت مؤهل للحصول على تمويل يصل إلى 3 مليون ريال
+              </p>
             </div>
           </div>
           {banksList.map(bank => (
