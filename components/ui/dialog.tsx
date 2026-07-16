@@ -39,7 +39,8 @@ const DialogContent = React.forwardRef<
     >
       <DialogPrimitive.Close
         onClick={onClose}
-        className="absolute end-4 top-4 cursor-pointer rounded-full p-1.5 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+        aria-label="Close dialog"
+        className="absolute end-4 top-4 z-20 cursor-pointer rounded-full p-1.5 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)] hover:text-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
       >
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>

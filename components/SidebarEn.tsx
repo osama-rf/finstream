@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Building2, FileText,
-  Settings, PanelLeftClose, PanelLeftOpen, Landmark,
-  Gauge, CreditCard, TrendingUp,
+  Settings, PanelLeftClose, PanelLeftOpen,
+  LayoutGrid, TrendingUp,
 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -14,10 +15,9 @@ import type { UserRole } from "@/lib/types/database";
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems = [
-  { label: "Control Center",             icon: Gauge,      path: "/en/control-center", roles: allRoles },
+  { label: "Control Center",             icon: LayoutGrid, path: "/en/control-center", roles: allRoles },
   { label: "Financial Statements",       icon: FileText,   path: "/en/statements", roles: allRoles },
   { label: "Financial Analysis",         icon: TrendingUp, path: "/en/analytics",  roles: allRoles },
-  { label: "Credit Rating & Benchmarking", icon: CreditCard, path: "/en/credit",   roles: allRoles },
   { label: "Company & Team",             icon: Building2,  path: "/en/company",    roles: allRoles },
   { label: "Settings",                   icon: Settings,   path: "/en/settings",   roles: allRoles },
 ];
@@ -48,9 +48,7 @@ export function SidebarEn({
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className={`shrink-0 border-b border-[var(--border)] ${collapsed ? "p-3" : "p-6"}`}>
         <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[var(--primary)]">
-            <Landmark className="h-6 w-6 text-white" />
-          </div>
+          <Image src="/logo.png" alt="Rakaez" width={48} height={59} className="h-12 w-auto shrink-0 object-contain" />
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)]">
@@ -127,7 +125,7 @@ export function SidebarEn({
                   title={item.label}
                   className={`flex items-center rounded-[10px] transition-all ${
                     isActive
-                      ? "bg-[var(--primary)] text-white shadow-[var(--shadow-soft)]"
+                      ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--shadow-soft)]"
                       : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)]"
                   } ${collapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3"}`}
                 >

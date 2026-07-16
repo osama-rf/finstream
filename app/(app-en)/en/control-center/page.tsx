@@ -2,11 +2,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight, Clock3, CircleAlert, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/shared/ScoreRing";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { BANKING_SUMMARY, BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
+import { BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
 
 export default function ControlCenterEnPage() {
   const connected = BANKS.filter(b => b.status === "connected");
@@ -14,6 +14,9 @@ export default function ControlCenterEnPage() {
   const totalIn = connected.reduce((s, b) => s + b.monthlyIn, 0);
   const totalOut = connected.reduce((s, b) => s + b.monthlyOut, 0);
   const netBalance = totalIn - totalOut;
+  const monthlyCoverage = totalOut > 0 ? totalBalance / totalOut : 0;
+  const largestBank = connected.reduce((largest, bank) => bank.balance > largest.balance ? bank : largest, connected[0]);
+  const largestBankShare = largestBank && totalBalance > 0 ? Math.round((largestBank.balance / totalBalance) * 100) : 0;
 
   const kpis = [
     { label: "Total balances", value: totalBalance, color: "var(--primary)", icon: Wallet },
@@ -24,7 +27,14 @@ export default function ControlCenterEnPage() {
 
   return (
     <div className="space-y-6 page-transition-shell" dir="ltr">
-      <h1 className="text-2xl font-bold text-[var(--foreground)]">Control Center</h1>
+      <div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Control Center</h1>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)]">A unified executive view of liquidity, banking activity, and financial risk</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)]">
+          <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />Last updated: Jul 2, 2026 at 11:05 AM</span>
+          <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />{connected.length} sources connected</span>
+        </div>
+      </div>
 
       <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
         <CardContent className="p-5 flex items-center gap-4">
@@ -34,6 +44,7 @@ export default function ControlCenterEnPage() {
           <div>
             <p className="text-xs text-[var(--muted-foreground)]">Total balances</p>
             <p className="text-2xl font-bold text-[var(--primary)] tabular-nums">{formatCurrency(totalBalance)}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Covers {monthlyCoverage.toFixed(1)} months of payments at the current run rate</p>
           </div>
         </CardContent>
       </Card>
@@ -54,10 +65,22 @@ export default function ControlCenterEnPage() {
                 <p className="text-2xl font-bold tabular-nums" style={{ color: kpi.color }}>
                   {formatCurrency(kpi.value)}
                 </p>
+                <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
+                  {kpi.label.includes("Revenue") ? "+8.4% vs. previous period" : kpi.label.includes("Payments") ? "+3.1% vs. previous period" : `${Math.round((netBalance / totalIn) * 100)}% of revenue retained`}
+                </p>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Executive Readout</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Card><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">Cash-flow strength</p><p className="mt-1 text-lg font-bold text-[var(--success)]">Positive and stable</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">Net inflow of {formatCurrency(netBalance)} over the last 30 days.</p></CardContent></Card>
+          <Card className={largestBankShare > 60 ? "border-[var(--warning)]/30" : ""}><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">Liquidity concentration</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{largestBankShare}% at {largestBank?.name}</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">Monitor reliance on one account and diversify operating reserves when needed.</p></CardContent></Card>
+          <Card><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">This week’s priority</p><p className="mt-1 text-lg font-bold text-[var(--warning)]">Accelerate collections</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">DSO is 42 days; reducing it to 35 days supports liquidity and credit strength.</p></CardContent></Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -106,7 +129,10 @@ export default function ControlCenterEnPage() {
                 <TableRow>
                   <TableHeaderCell>Bank</TableHeaderCell>
                   <TableHeaderCell>Balance</TableHeaderCell>
+                  <TableHeaderCell>In / out (30 days)</TableHeaderCell>
+                  <TableHeaderCell>Net movement</TableHeaderCell>
                   <TableHeaderCell>Share of total</TableHeaderCell>
+                  <TableHeaderCell>Sync status</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -121,7 +147,10 @@ export default function ControlCenterEnPage() {
                       </div>
                     </TableCell>
                     <TableCell>{formatCurrency(bank.balance)}</TableCell>
+                    <TableCell><span className="text-[var(--success)]">{formatCurrency(bank.monthlyIn)}</span> / <span className="text-[var(--destructive)]">{formatCurrency(bank.monthlyOut)}</span></TableCell>
+                    <TableCell><span className="font-bold text-[var(--success)]">{formatCurrency(bank.monthlyIn - bank.monthlyOut)}</span></TableCell>
                     <TableCell>{totalBalance > 0 ? Math.round((bank.balance / totalBalance) * 100) : 0}%</TableCell>
+                    <TableCell><Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Current</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -129,6 +158,10 @@ export default function ControlCenterEnPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-[var(--warning)]/25">
+        <CardContent className="p-5"><div className="flex items-start gap-3"><CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warning)]" /><div><h2 className="text-sm font-bold text-[var(--foreground)]">Follow-up needed</h2><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Riyad Bank is currently disconnected, so its balances and activity are excluded from this summary. Reconnect it for a complete liquidity view.</p></div></div></CardContent>
+      </Card>
     </div>
   );
 }

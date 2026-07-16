@@ -44,12 +44,12 @@ const ATTENTION = {
   ar: {
     high:   { label: "يستلزم تدخلاً", color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" },
     medium: { label: "يحتاج متابعة",  color: "var(--warning)",     bg: "color-mix(in srgb, var(--warning) 10%, transparent)" },
-    low:    { label: "وضع مستقر",     color: "#1F9A94",            bg: "#1F9A941a" },
+    low:    { label: "وضع مستقر",     color: "#0A3057",            bg: "#0A30571a" },
   },
   en: {
     high:   { label: "Action Required", color: "var(--destructive)", bg: "color-mix(in srgb, var(--destructive) 10%, transparent)" },
     medium: { label: "Needs Attention", color: "var(--warning)",     bg: "color-mix(in srgb, var(--warning) 10%, transparent)" },
-    low:    { label: "Stable",          color: "#1F9A94",            bg: "#1F9A941a" },
+    low:    { label: "Stable",          color: "#0A3057",            bg: "#0A30571a" },
   },
 };
 
@@ -98,13 +98,13 @@ const QUICK_ACTIONS = {
   },
 };
 const PAGE_ROUTES = {
-  ar: { bank: "/control-center", credit: "/credit", benchmarks: "/credit", statements: "/statements", analytics: "/analytics", indicators: "/control-center" },
-  en: { bank: "/en/control-center", credit: "/en/credit", benchmarks: "/en/credit", statements: "/en/statements", analytics: "/en/analytics", indicators: "/en/control-center" },
+  ar: { bank: "/control-center", credit: "/analytics", benchmarks: "/analytics", statements: "/statements", analytics: "/analytics", indicators: "/control-center" },
+  en: { bank: "/en/control-center", credit: "/en/analytics", benchmarks: "/en/analytics", statements: "/en/statements", analytics: "/en/analytics", indicators: "/en/control-center" },
 };
 
 const UI = {
   ar: {
-    reportTitle:     "تقرير المنشأة اليومي",
+    reportTitle:     "التقرير المالي للمنشأة",
     reportSubtitle:  "تحليل تلقائي لبيانات البنوك المربوطة وتقييم جاهزية التمويل",
     refresh:         "تحديث",
     assistant:       "المساعد المالي",
@@ -120,7 +120,7 @@ const UI = {
     inputPlaceholder:"اسأل عن الأرصدة المجمّعة، التصنيف الائتماني، مقارنة القطاع، أو إنشاء قائمة مالية...",
   },
   en: {
-    reportTitle:     "Daily Financial Report",
+    reportTitle:     "Company Financial Report",
     reportSubtitle:  "Automated financial analysis with instant recommendations",
     refresh:         "Refresh",
     assistant:       "AI Assistant",
@@ -200,7 +200,7 @@ function ActionItem({ item, icon: Icon, color, routes }: {
   const text = typeof item === "string" ? item : item.text;
 
   const inner = (
-    <div className={`group flex items-center gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 transition-all ${href ? "cursor-pointer hover:border-[#1F9A94] hover:bg-[var(--surface)]" : ""}`}>
+    <div className={`group flex items-center gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 transition-all ${href ? "cursor-pointer hover:border-[#0A3057] hover:bg-[var(--surface)]" : ""}`}>
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px]" style={{ backgroundColor: `${color}18` }}>
         <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
@@ -252,8 +252,8 @@ function ReportView({ report, lang }: { report: FinanceReport; lang: "ar" | "en"
           <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider px-1">{ui.actionsTitle}</p>
           <div className="space-y-1.5">
             {report.actions_taken.map((action, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-[10px] border border-[var(--border)] bg-[color-mix(in_srgb,#1F9A94_6%,var(--card))] px-4 py-3">
-                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-[#1F9A94]" />
+              <div key={i} className="flex items-start gap-3 rounded-[10px] border border-[var(--border)] bg-[color-mix(in_srgb,#0A3057_6%,var(--card))] px-4 py-3">
+                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-[#0A3057]" />
                 <p className="text-sm text-[var(--foreground)] leading-relaxed">{action}</p>
               </div>
             ))}
@@ -274,7 +274,7 @@ function ReportView({ report, lang }: { report: FinanceReport; lang: "ar" | "en"
         <div className="space-y-1.5">
           <p className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider px-1">{ui.nextStepsTitle}</p>
           <div className="space-y-2.5 px-1">
-            {report.next_steps.map((s, i) => <ActionItem key={i} item={s} icon={ArrowLeft} color="#1F9A94" routes={routes} />)}
+            {report.next_steps.map((s, i) => <ActionItem key={i} item={s} icon={ArrowLeft} color="#0A3057" routes={routes} />)}
           </div>
         </div>
       )}
@@ -378,8 +378,8 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }
       <DialogContent className="flex flex-col gap-0 p-0 max-h-[95dvh] w-[95vw] rounded-[16px] sm:max-w-2xl sm:max-h-[80vh]" dir={dir}>
         <DialogHeader className="shrink-0 border-b border-[var(--border)] px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#1F9A941a]">
-              <Bot className="h-4 w-4 text-[#1F9A94]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#0A30571a]">
+              <Bot className="h-4 w-4 text-[#0A3057]" />
             </div>
             <DialogTitle className="text-sm font-bold text-[var(--foreground)]">{ui.chatTitle}</DialogTitle>
           </div>
@@ -394,7 +394,7 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }
               <div className={`max-w-[86%] rounded-[12px] px-4 py-3 text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
-                  : "bg-[#1F9A94] text-white"
+                  : "bg-[#0A3057] text-white"
               }`}>
                 <MarkdownText text={msg.text} className="text-sm leading-relaxed" />
                 {msg.toolCalls && msg.toolCalls.length > 0 && (
@@ -411,7 +411,7 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }
             <div className="flex justify-end">
               <div className="rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1F9A94]" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#0A3057]" />
                   {currentTool ? `${currentTool}...` : ui.analyzing}
                 </div>
               </div>
@@ -429,11 +429,11 @@ function ChatModal({ open, onOpenChange, initialPrompt, onPromptConsumed, lang }
             placeholder={ui.inputPlaceholder}
             rows={1}
             disabled={isLoading}
-            className="flex-1 resize-none rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[#1F9A94] focus:outline-none disabled:opacity-50"
+            className="flex-1 resize-none rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[#0A3057] focus:outline-none disabled:opacity-50"
             style={{ maxHeight: "100px" }}
           />
           <Button size="sm" onClick={() => void sendMessage(input)} disabled={isLoading || !input.trim()}
-            className="h-9 w-9 shrink-0 rounded-[10px] p-0 bg-[#1F9A94] hover:bg-[#1a857f]">
+            className="h-9 w-9 shrink-0 rounded-[10px] p-0 bg-[#0A3057] hover:bg-[#072747]">
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -490,8 +490,8 @@ export function AgentPanel({ userRole }: { userRole: string }) {
     <>
       <div className="rounded-[16px] border border-[var(--border)] bg-[var(--card)] overflow-hidden" dir={dir}>
         <div className="flex flex-wrap items-start gap-3 border-b border-[var(--border)] px-4 py-4 sm:px-5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1F9A941a]">
-            <Bot className="h-4 w-4 text-[#1F9A94]" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#0A30571a]">
+            <Bot className="h-4 w-4 text-[#0A3057]" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-bold text-[var(--foreground)] sm:text-base">{ui.reportTitle}</h2>
@@ -499,12 +499,12 @@ export function AgentPanel({ userRole }: { userRole: string }) {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button onClick={() => void loadReport(true)} disabled={loading}
-              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] px-2.5 py-1.5 text-xs text-[var(--muted-foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] disabled:opacity-40 sm:gap-1.5 sm:px-3 sm:text-sm">
+              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] px-2.5 py-1.5 text-xs text-[var(--muted-foreground)] transition-colors hover:border-[#0A3057] hover:text-[#0A3057] disabled:opacity-40 sm:gap-1.5 sm:px-3 sm:text-sm">
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">{ui.refresh}</span>
             </button>
             <button onClick={() => openChat()}
-              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-colors hover:border-[#1F9A94] hover:text-[#1F9A94] sm:gap-1.5 sm:px-3 sm:text-sm">
+              className="flex items-center gap-1 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-colors hover:border-[#0A3057] hover:text-[#0A3057] sm:gap-1.5 sm:px-3 sm:text-sm">
               <MessageSquare className="h-3.5 w-3.5" />
               {ui.assistant}
             </button>
@@ -515,7 +515,7 @@ export function AgentPanel({ userRole }: { userRole: string }) {
           {loading ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] mb-4">
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1F9A94]" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#0A3057]" />
                 {ui.loading}
               </div>
               <div className="h-3 animate-pulse rounded-full bg-[var(--muted)] w-full" />
@@ -530,7 +530,7 @@ export function AgentPanel({ userRole }: { userRole: string }) {
               <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--muted-foreground)]" />
               <p className="text-sm text-[var(--muted-foreground)]">
                 {ui.error}{" "}
-                <button onClick={() => void loadReport()} className="text-[#1F9A94] hover:underline">{ui.retry}</button>
+                <button onClick={() => void loadReport()} className="text-[#0A3057] hover:underline">{ui.retry}</button>
               </p>
             </div>
           ) : report ? (
@@ -544,7 +544,7 @@ export function AgentPanel({ userRole }: { userRole: string }) {
               const Icon = action.icon;
               return (
                 <button key={action.label} onClick={() => openChat(action.prompt)}
-                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-all hover:border-[#1F9A94] hover:text-[#1F9A94] sm:px-3.5 sm:py-2 sm:text-sm">
+                  className="flex items-center gap-1.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--foreground)] transition-all hover:border-[#0A3057] hover:text-[#0A3057] sm:px-3.5 sm:py-2 sm:text-sm">
                   <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   {action.label}
                 </button>

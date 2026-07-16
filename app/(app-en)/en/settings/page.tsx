@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
 import { Toggle } from "@/components/ui/toggle";
-import { Settings, User, Bell, Shield, Save, CreditCard, Briefcase, Users2, Plus, Globe } from "lucide-react";
+import { Settings, User, Bell, Shield, Save, CreditCard, Briefcase, Users2, Plus, Globe, Camera, Trash2 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SUBSCRIPTION, SERVICES, CLIENTS, NOTIFICATIONS } from "@/lib/mock";
 import { formatCurrency } from "@/lib/utils/format";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const notificationLabelsEn: Record<string, string> = {
   liquidity_alert: "Liquidity threshold alerts",
@@ -23,12 +24,22 @@ const notificationLabelsEn: Record<string, string> = {
 };
 
 export default function SettingsEnPage() {
-  const { user } = useUser();
+  const { user, updateUser } = useUser();
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
 
   function toggleNotification(key: string) {
     setNotifications(prev => prev.map(n => n.key === key ? { ...n, enabled: !n.enabled } : n));
   }
+
+  function updateAvatar(file?: File) {
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) { toast.error("Choose an image smaller than 2 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => { const value = String(reader.result); window.localStorage.setItem("rakaez-profile-avatar", value); updateUser({ avatar_url: value }); toast.success("Profile image updated"); };
+    reader.readAsDataURL(file);
+  }
+
+  function removeAvatar() { window.localStorage.removeItem("rakaez-profile-avatar"); updateUser({ avatar_url: null }); toast.success("Profile image removed"); }
 
   return (
     <div className="space-y-6 page-transition-shell" dir="ltr">
@@ -47,6 +58,10 @@ export default function SettingsEnPage() {
               <h2 className="text-base font-bold text-[var(--foreground)]">Profile</h2>
             </div>
             <div className="space-y-4">
+              <div className="flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
+                <UserAvatar user={user} className="h-16 w-16" textClassName="text-lg" alt="Profile image" />
+                <div className="flex flex-wrap gap-2"><label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3 text-xs font-medium text-[var(--primary-foreground)]"><Camera className="h-3.5 w-3.5" />Change image<input type="file" accept="image/*" className="hidden" onChange={event => updateAvatar(event.target.files?.[0])} /></label>{user?.avatar_url && <Button type="button" size="sm" variant="outline" className="gap-1.5" onClick={removeAvatar}><Trash2 className="h-3.5 w-3.5" />Remove</Button>}<p className="w-full text-[10px] text-[var(--muted-foreground)]">PNG or JPG, maximum 2 MB</p></div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2"><Label>First name</Label><Input defaultValue={user?.first_name || ""} /></div>
                 <div className="space-y-2"><Label>Last name</Label><Input defaultValue={user?.last_name || ""} /></div>

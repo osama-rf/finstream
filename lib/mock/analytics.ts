@@ -17,16 +17,16 @@ export const MONTHLY_SERIES: MonthlySeriesPoint[] = [
 
 export const EXPENSE_BREAKDOWN: ExpenseBreakdownItem[] = [
   { label: "تكلفة الخدمات", pct: 42, color: "var(--primary)" },
-  { label: "رواتب وأجور", pct: 18, color: "#0e766e" },
-  { label: "إدارية وعمومية", pct: 19, color: "#14b8a6" },
-  { label: "تسويق ومبيعات", pct: 3, color: "#5eead4" },
+  { label: "رواتب وأجور", pct: 18, color: "#31577D" },
+  { label: "إدارية وعمومية", pct: 19, color: "#6684A2" },
+  { label: "تسويق ومبيعات", pct: 3, color: "#A7B8C9" },
 ];
 
 export const REVENUE_BY_SOURCE: RevenueSourceItem[] = [
   { label: "خدمات استشارية", pct: 44, color: "var(--primary)" },
-  { label: "مشاريع تقنية", pct: 32, color: "#0e766e" },
-  { label: "تدريب وورش عمل", pct: 15, color: "#14b8a6" },
-  { label: "تراخيص برمجيات", pct: 9, color: "#5eead4" },
+  { label: "مشاريع تقنية", pct: 32, color: "#31577D" },
+  { label: "تدريب وورش عمل", pct: 15, color: "#6684A2" },
+  { label: "تراخيص برمجيات", pct: 9, color: "#A7B8C9" },
 ];
 
 // Net profit trend expressed as monthly series where `revenue` carries the profit value.

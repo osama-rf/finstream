@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import type { User } from '@/lib/types/database';
 
 // ── Mock user — no auth, full prototype mode ──────────────────────────────────
@@ -35,19 +35,26 @@ interface UserContextType {
   error: string | null;
   refetchUser: () => Promise<void>;
   logout: () => void;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User>(MOCK_USER);
+  useEffect(() => {
+    const avatar = window.localStorage.getItem('rakaez-profile-avatar');
+    if (avatar) setUser(current => ({ ...current, avatar_url: avatar }));
+  }, []);
   const value = useMemo<UserContextType>(() => ({
-    user: MOCK_USER,
+    user,
     isLoading: false,
     isAuthenticated: true,
     error: null,
     refetchUser: async () => {},
     logout: () => {},
-  }), []);
+    updateUser: (updates) => setUser(current => ({ ...current, ...updates })),
+  }), [user]);
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

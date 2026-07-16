@@ -2,11 +2,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight, Clock3, CircleAlert, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/shared/ScoreRing";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { BANKING_SUMMARY, BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
+import { BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
 
 export default function ControlCenterPage() {
   const connected = BANKS.filter(b => b.status === "connected");
@@ -14,6 +14,9 @@ export default function ControlCenterPage() {
   const totalIn = connected.reduce((s, b) => s + b.monthlyIn, 0);
   const totalOut = connected.reduce((s, b) => s + b.monthlyOut, 0);
   const netBalance = totalIn - totalOut;
+  const monthlyCoverage = totalOut > 0 ? totalBalance / totalOut : 0;
+  const largestBank = connected.reduce((largest, bank) => bank.balance > largest.balance ? bank : largest, connected[0]);
+  const largestBankShare = largestBank && totalBalance > 0 ? Math.round((largestBank.balance / totalBalance) * 100) : 0;
 
   const kpis = [
     { label: "إجمالي الأرصدة", value: totalBalance, color: "var(--primary)", icon: Wallet },
@@ -24,7 +27,14 @@ export default function ControlCenterPage() {
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
-      <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">مركز التحكم</h1>
+      <div>
+        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">مركز التحكم</h1>
+        <p className="mt-1 text-sm text-[var(--muted-foreground)] font-arabic">ملخص تنفيذي موحّد للسيولة والحركة البنكية والمخاطر المالية</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)] font-arabic">
+          <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />آخر تحديث: 2 يوليو 2026، 11:05 ص</span>
+          <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />{connected.length} مصادر متصلة</span>
+        </div>
+      </div>
 
       {/* Total balance */}
       <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
@@ -35,6 +45,7 @@ export default function ControlCenterPage() {
           <div>
             <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p>
             <p className="text-2xl font-bold text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(totalBalance)}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">يغطي {monthlyCoverage.toFixed(1)} شهر من المدفوعات بالمعدل الحالي</p>
           </div>
         </CardContent>
       </Card>
@@ -56,10 +67,41 @@ export default function ControlCenterPage() {
                 <p className="text-2xl font-bold tabular-nums" style={{ color: kpi.color }} dir="ltr">
                   {formatCurrency(kpi.value)}
                 </p>
+                <p className="mt-1 text-[11px] text-[var(--muted-foreground)] font-arabic">
+                  {kpi.label.includes("الإيرادات") ? "+8.4% مقارنة بالفترة السابقة" : kpi.label.includes("المدفوعات") ? "+3.1% مقارنة بالفترة السابقة" : `${Math.round((netBalance / totalIn) * 100)}% من الإيرادات محتفظ بها`}
+                </p>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      {/* Executive insights */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">قراءة تنفيذية</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">قوة التدفق النقدي</p>
+              <p className="mt-1 text-lg font-bold text-[var(--success)] font-arabic">موجب ومستقر</p>
+              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">صافي تدفق قدره <span dir="ltr">{formatCurrency(netBalance)}</span> خلال آخر 30 يوماً.</p>
+            </CardContent>
+          </Card>
+          <Card className={largestBankShare > 60 ? "border-[var(--warning)]/30" : ""}>
+            <CardContent className="p-5">
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">تركيز السيولة</p>
+              <p className="mt-1 text-lg font-bold text-[var(--foreground)] font-arabic">{largestBankShare}% لدى {largestBank?.name}</p>
+              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">راقب الاعتماد على حساب واحد ووزّع الاحتياطي التشغيلي عند الحاجة.</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5">
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic">أولوية هذا الأسبوع</p>
+              <p className="mt-1 text-lg font-bold text-[var(--warning)] font-arabic">تسريع التحصيل</p>
+              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">فترة التحصيل 42 يوماً؛ خفضها إلى 35 يوماً يدعم السيولة والتصنيف.</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Credit rating + sustainability score */}
@@ -108,7 +150,10 @@ export default function ControlCenterPage() {
                 <TableRow>
                   <TableHeaderCell>البنك</TableHeaderCell>
                   <TableHeaderCell>الرصيد</TableHeaderCell>
+                  <TableHeaderCell>الداخل / الخارج (30 يوم)</TableHeaderCell>
+                  <TableHeaderCell>صافي الحركة</TableHeaderCell>
                   <TableHeaderCell>النسبة من الإجمالي</TableHeaderCell>
+                  <TableHeaderCell>حالة المزامنة</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -123,7 +168,10 @@ export default function ControlCenterPage() {
                       </div>
                     </TableCell>
                     <TableCell><span dir="ltr">{formatCurrency(bank.balance)}</span></TableCell>
+                    <TableCell><span className="text-[var(--success)]" dir="ltr">{formatCurrency(bank.monthlyIn)}</span> / <span className="text-[var(--destructive)]" dir="ltr">{formatCurrency(bank.monthlyOut)}</span></TableCell>
+                    <TableCell><span className="font-bold text-[var(--success)]" dir="ltr">{formatCurrency(bank.monthlyIn - bank.monthlyOut)}</span></TableCell>
                     <TableCell>{totalBalance > 0 ? Math.round((bank.balance / totalBalance) * 100) : 0}%</TableCell>
+                    <TableCell><Badge variant="success" className="gap-1 font-arabic"><CheckCircle2 className="h-3 w-3" />محدّث</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -131,6 +179,18 @@ export default function ControlCenterPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-[var(--warning)]/25">
+        <CardContent className="p-5">
+          <div className="flex items-start gap-3">
+            <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warning)]" />
+            <div>
+              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic">تنبيه يحتاج متابعة</h2>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">بنك الرياض غير متصل حالياً، لذلك لا تدخل أرصدته أو حركاته في هذا الملخص. إعادة الربط تمنحك صورة سيولة مكتملة.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

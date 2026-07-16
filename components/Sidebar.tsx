@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -8,9 +9,7 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
-  Landmark,
-  CreditCard,
-  Gauge,
+  LayoutGrid,
   TrendingUp,
   Building2,
 } from "lucide-react";
@@ -28,19 +27,18 @@ type SidebarItem = {
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems: SidebarItem[] = [
-  { label: "مركز التحكم",                           icon: Gauge,      path: "/control-center", roles: allRoles },
-  { label: "القوائم المالية",                       icon: FileText,   path: "/statements", roles: allRoles },
-  { label: "التحليل المالي",                        icon: TrendingUp, path: "/analytics",  roles: allRoles },
-  { label: "التصنيف الائتماني ومقارنة القطاع",     icon: CreditCard, path: "/credit",     roles: allRoles },
-  { label: "الشركة والفريق",                        icon: Building2,  path: "/company",    roles: allRoles },
-  { label: "الإعدادات",                             icon: Settings,   path: "/settings",   roles: allRoles },
+  { label: "مركز التحكم", icon: LayoutGrid, path: "/control-center", roles: allRoles },
+  { label: "التحليل المالي", icon: TrendingUp, path: "/analytics", roles: allRoles },
+  { label: "القوائم المالية", icon: FileText, path: "/statements", roles: allRoles },
+  { label: "الشركة والفريق", icon: Building2, path: "/company", roles: allRoles },
+  { label: "الإعدادات", icon: Settings, path: "/settings", roles: allRoles },
 ];
 
 const roleLabels: Record<UserRole, string> = {
-  super_admin:   "مدير النظام",
+  super_admin: "مدير النظام",
   company_admin: "مدير الشركة",
-  accountant:    "محاسب",
-  auditor:       "مدقق حسابات",
+  accountant: "محاسب",
+  auditor: "مدقق حسابات",
 };
 
 export function Sidebar({
@@ -67,9 +65,7 @@ export function Sidebar({
       {/* Logo / brand */}
       <div className={`shrink-0 border-b border-[var(--border)] ${collapsed ? "p-3" : "p-6"}`}>
         <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[var(--primary)]">
-            <Landmark className="h-6 w-6 text-white" />
-          </div>
+          <Image src="/logo.png" alt="ركائز" width={48} height={59} className="h-12 w-auto shrink-0 object-contain" />
           {!collapsed && (
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold text-[var(--foreground)] font-arabic">
@@ -157,11 +153,10 @@ export function Sidebar({
                   href={item.path}
                   onClick={() => onMobileOpenChange(false)}
                   title={item.label}
-                  className={`flex items-center rounded-[10px] transition-all ${
-                    isActive
-                      ? "bg-[var(--primary)] text-white shadow-[var(--shadow-soft)]"
-                      : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)]"
-                  } ${collapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3"}`}
+                  className={`flex items-center rounded-[10px] transition-all ${isActive
+                    ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[var(--shadow-soft)]"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--accent)] hover:text-[var(--primary)]"
+                    } ${collapsed ? "justify-center px-3 py-3" : "gap-3 px-4 py-3"}`}
                 >
                   <Icon className="h-5 w-5 shrink-0" />
                   {!collapsed && (
@@ -190,18 +185,16 @@ export function Sidebar({
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed inset-y-0 start-0 z-[80] flex h-dvh w-[min(86vw,20rem)] max-w-full flex-col overflow-hidden border-e border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] backdrop-blur-xl transition-transform lg:hidden ${
-          mobileOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-y-0 start-0 z-[80] flex h-dvh w-[min(86vw,20rem)] max-w-full flex-col overflow-hidden border-e border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] backdrop-blur-xl transition-transform lg:hidden ${mobileOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {inner}
       </aside>
 
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex lg:h-screen lg:flex-col overflow-hidden border-e border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] backdrop-blur-xl transition-[width] duration-200 ${
-          collapsed ? "lg:w-20" : "lg:w-72"
-        }`}
+        className={`hidden lg:fixed lg:inset-y-0 lg:start-0 lg:flex lg:h-screen lg:flex-col overflow-hidden border-e border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] backdrop-blur-xl transition-[width] duration-200 ${collapsed ? "lg:w-20" : "lg:w-72"
+          }`}
       >
         {inner}
       </aside>
