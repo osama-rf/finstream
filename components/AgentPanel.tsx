@@ -98,8 +98,8 @@ const QUICK_ACTIONS = {
   },
 };
 const PAGE_ROUTES = {
-  ar: { bank: "/bank", credit: "/credit", benchmarks: "/credit", statements: "/statements", analytics: "/analytics", indicators: "/indicators" },
-  en: { bank: "/en/bank", credit: "/en/credit", benchmarks: "/en/credit", statements: "/en/statements", analytics: "/en/analytics", indicators: "/en/indicators" },
+  ar: { bank: "/control-center", credit: "/credit", benchmarks: "/credit", statements: "/statements", analytics: "/analytics", indicators: "/control-center" },
+  en: { bank: "/en/control-center", credit: "/en/credit", benchmarks: "/en/credit", statements: "/en/statements", analytics: "/en/analytics", indicators: "/en/control-center" },
 };
 
 const UI = {

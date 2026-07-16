@@ -28,8 +28,7 @@ type SidebarItem = {
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems: SidebarItem[] = [
-  { label: "المصرفية المفتوحة",                    icon: Landmark,   path: "/bank",       roles: allRoles },
-  { label: "المؤشرات المالية ومدخلات التحكم",      icon: Gauge,      path: "/indicators", roles: allRoles },
+  { label: "مركز التحكم",                           icon: Gauge,      path: "/control-center", roles: allRoles },
   { label: "القوائم المالية",                       icon: FileText,   path: "/statements", roles: allRoles },
   { label: "التحليل المالي",                        icon: TrendingUp, path: "/analytics",  roles: allRoles },
   { label: "التصنيف الائتماني ومقارنة القطاع",     icon: CreditCard, path: "/credit",     roles: allRoles },

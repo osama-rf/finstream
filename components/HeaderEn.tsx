@@ -11,8 +11,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { LangToggle } from "@/components/LangToggle";
 
 const pathTitles: Record<string, string> = {
-  "/en/bank":        "Open Banking",
-  "/en/indicators":  "Financial Indicators & Controls",
+  "/en/control-center": "Control Center",
   "/en/statements":  "Financial Statements",
   "/en/analytics":   "Financial Analysis",
   "/en/credit":      "Credit Rating & Benchmarking",

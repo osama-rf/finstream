@@ -11,8 +11,7 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { LangToggle } from "@/components/LangToggle";
 
 const pathTitles: Record<string, string> = {
-  "/bank": "المصرفية المفتوحة",
-  "/indicators": "المؤشرات المالية ومدخلات التحكم",
+  "/control-center": "مركز التحكم",
   "/statements": "القوائم المالية",
   "/analytics": "التحليل المالي",
   "/credit": "التصنيف الائتماني ومقارنة القطاع",

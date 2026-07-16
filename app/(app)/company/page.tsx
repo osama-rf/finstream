@@ -128,7 +128,7 @@ export default function CompanyPage() {
                 </div>
                 <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2>
               </div>
-              <a href="/bank" className="text-xs font-bold text-[var(--primary)] font-arabic">إدارة الربط</a>
+              <a href="/control-center" className="text-xs font-bold text-[var(--primary)] font-arabic">إدارة الربط</a>
             </div>
             <div className="space-y-2">
               {BANKS.map(bank => (

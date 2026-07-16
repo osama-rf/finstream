@@ -14,8 +14,7 @@ import type { UserRole } from "@/lib/types/database";
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems = [
-  { label: "Open Banking",              icon: Landmark,   path: "/en/bank",       roles: allRoles },
-  { label: "Financial Indicators & Controls", icon: Gauge, path: "/en/indicators", roles: allRoles },
+  { label: "Control Center",             icon: Gauge,      path: "/en/control-center", roles: allRoles },
   { label: "Financial Statements",       icon: FileText,   path: "/en/statements", roles: allRoles },
   { label: "Financial Analysis",         icon: TrendingUp, path: "/en/analytics",  roles: allRoles },
   { label: "Credit Rating & Benchmarking", icon: CreditCard, path: "/en/credit",   roles: allRoles },

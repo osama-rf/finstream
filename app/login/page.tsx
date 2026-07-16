@@ -36,7 +36,7 @@ function LoginContent() {
         toast.success("تم تسجيل الدخول بنجاح");
         await refetchUser();
         router.refresh();
-        router.push("/bank");
+        router.push("/control-center");
       } else {
         toast.error(json.error || "فشل تسجيل الدخول");
       }

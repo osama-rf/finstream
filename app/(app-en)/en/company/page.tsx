@@ -138,7 +138,7 @@ export default function CompanyEnPage() {
                 </div>
                 <h2 className="text-base font-bold text-[var(--foreground)]">Bank Accounts</h2>
               </div>
-              <a href="/en/bank" className="text-xs font-bold text-[var(--primary)]">Manage connections</a>
+              <a href="/en/control-center" className="text-xs font-bold text-[var(--primary)]">Manage connections</a>
             </div>
             <div className="space-y-2">
               {BANKS.map(bank => (
