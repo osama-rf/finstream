@@ -19,26 +19,24 @@ type ToolEvent = { type: "tool_start" | "tool_done" | "text" | "error"; toolName
 
 const TOOL_NAMES = {
   ar: {
-    get_financial_summary:         "تحليل البيانات المجمّعة من البنوك",
-    get_unclassified_transactions: "فحص المعاملات البنكية",
-    get_pending_approvals:         "مراجعة حالة التقارير",
-    get_statements_status:         "قراءة حالة القوائم المالية",
-    get_filings_status:            "قراءة حالة الإيداعات",
-    get_journal_entries:           "قراءة سجل المعاملات",
-    classify_transaction:          "تصنيف معاملة بنكية",
-    create_journal_entry:          "إنشاء قائمة مالية",
-    generate_income_statement:     "توليد قائمة دخل بالذكاء الاصطناعي",
+    get_aggregated_banking_data:     "تحليل البيانات المجمّعة من البنوك",
+    get_credit_report:               "قراءة التصنيف الائتماني",
+    get_sector_benchmarks:           "مقارنة مؤشرات القطاع",
+    get_financial_statements:        "قراءة حالة القوائم المالية",
+    get_analytics_summary:           "تحليل الإيرادات والمصروفات",
+    get_financing_opportunities:     "قراءة عروض التمويل",
+    generate_ai_financial_statement: "توليد قائمة مالية بالذكاء الاصطناعي",
+    classify_bank_transaction:       "تصنيف معاملة بنكية",
   },
   en: {
-    get_financial_summary:         "Aggregating bank data",
-    get_unclassified_transactions: "Scanning bank transactions",
-    get_pending_approvals:         "Reviewing report status",
-    get_statements_status:         "Reading statements status",
-    get_filings_status:            "Reading filings status",
-    get_journal_entries:           "Reading transaction history",
-    classify_transaction:          "Classifying bank transaction",
-    create_journal_entry:          "Generating financial statement",
-    generate_income_statement:     "AI-generating income statement",
+    get_aggregated_banking_data:     "Aggregating bank data",
+    get_credit_report:               "Reading credit report",
+    get_sector_benchmarks:           "Comparing sector benchmarks",
+    get_financial_statements:        "Reading statements status",
+    get_analytics_summary:           "Analyzing revenue and expenses",
+    get_financing_opportunities:     "Reading financing offers",
+    generate_ai_financial_statement: "AI-generating financial statement",
+    classify_bank_transaction:       "Classifying bank transaction",
   },
 } as const;
 
@@ -100,8 +98,8 @@ const QUICK_ACTIONS = {
   },
 };
 const PAGE_ROUTES = {
-  ar: { bank: "/bank", credit: "/credit", benchmarks: "/benchmarks", statements: "/statements" },
-  en: { bank: "/en/bank", credit: "/en/credit", benchmarks: "/en/benchmarks", statements: "/en/statements" },
+  ar: { bank: "/bank", credit: "/credit", benchmarks: "/credit", statements: "/statements", analytics: "/analytics", indicators: "/indicators" },
+  en: { bank: "/en/bank", credit: "/en/credit", benchmarks: "/en/credit", statements: "/en/statements", analytics: "/en/analytics", indicators: "/en/indicators" },
 };
 
 const UI = {

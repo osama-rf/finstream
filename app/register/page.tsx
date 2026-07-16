@@ -60,7 +60,7 @@ export default function RegisterPage() {
         });
         const loginJson = await loginRes.json();
         if (loginJson.success) {
-          router.push("/dashboard");
+          router.push("/bank");
         } else {
           router.push("/login");
         }

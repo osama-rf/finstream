@@ -1,22 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, User, Bell, Shield, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
+import { Toggle } from "@/components/ui/toggle";
+import { Settings, User, Bell, Shield, Save, CreditCard, Briefcase, Users2, Plus, Globe } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SUBSCRIPTION, SERVICES, CLIENTS, NOTIFICATIONS } from "@/lib/mock";
+import { formatCurrency } from "@/lib/utils/format";
 
 export default function SettingsPage() {
   const { user } = useUser();
+  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+
+  function toggleNotification(key: string) {
+    setNotifications(prev => prev.map(n => n.key === key ? { ...n, enabled: !n.enabled } : n));
+  }
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">الإعدادات</h1>
-        <p className="text-sm text-[var(--muted-foreground)] font-arabic">إدارة حسابك وتفضيلات المنصة</p>
+        <p className="text-sm text-[var(--muted-foreground)] font-arabic">تفضيلات الحساب، الأمان، والإشعارات</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -60,7 +71,9 @@ export default function SettingsPage() {
                 <Settings className="h-5 w-5 text-[var(--warning)]" />
               </div>
               <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">المظهر</h2>
+              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
             </div>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">اختر مظهر الواجهة المفضّل لديك</p>
             <div className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
               <div>
                 <p className="text-sm font-medium text-[var(--foreground)] font-arabic">الوضع الداكن / الفاتح</p>
@@ -111,22 +124,137 @@ export default function SettingsPage() {
               <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الإشعارات</h2>
             </div>
             <div className="space-y-3">
-              {[
-                "إشعار عند مزامنة البيانات البنكية",
-                "إشعار عند اكتمال التصنيف التلقائي",
-                "إشعار عند طلب موافقة جديدة",
-                "إشعار عند اكتمال الإيداع الرسمي",
-              ].map((item) => (
-                <div key={item} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-                  <p className="text-sm text-[var(--foreground)] font-arabic">{item}</p>
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="h-4 w-4 rounded accent-[var(--primary)]"
-                  />
+              {notifications.map((n) => (
+                <div key={n.key} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                  <p className="text-sm text-[var(--foreground)] font-arabic">{n.label}</p>
+                  <Toggle checked={n.enabled} onCheckedChange={() => toggleNotification(n.key)} />
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Language & currency */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]">
+                <Globe className="h-5 w-5 text-[var(--primary)]" />
+              </div>
+              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">اللغة والعملة</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--foreground)] font-arabic">لغة الواجهة</span>
+                <span className="text-sm font-bold text-[var(--foreground)] font-arabic">العربية</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--foreground)] font-arabic">العملة الأساسية</span>
+                <span className="text-sm font-bold text-[var(--foreground)] font-arabic">ريال سعودي (SAR)</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subscription & billing */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]">
+                <CreditCard className="h-5 w-5 text-[var(--primary)]" />
+              </div>
+              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الاشتراك والفوترة</h2>
+              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--foreground)] font-arabic">الباقة الحالية</span>
+                <span className="text-sm font-bold text-[var(--foreground)] font-arabic">{SUBSCRIPTION.planName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--foreground)] font-arabic">القيمة الشهرية</span>
+                <span className="text-sm font-bold text-[var(--foreground)] tabular-nums" dir="ltr">{formatCurrency(SUBSCRIPTION.monthlyPrice)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--foreground)] font-arabic">تجديد الاشتراك</span>
+                <span className="text-sm font-bold text-[var(--foreground)] font-arabic">{SUBSCRIPTION.renewalDate}</span>
+              </div>
+            </div>
+            <Button variant="outline" className="mt-4 w-full font-arabic">إدارة الاشتراك والفواتير</Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Services & pricing */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
+          <Briefcase className="h-4 w-4 text-[var(--primary)]" />
+          إدارة قائمة الخدمات والأسعار
+          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+        </h2>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">الخدمات الظاهرة للعملاء عند إصدار عروض الأسعار والفواتير</p>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>الخدمة</TableHeaderCell>
+                  <TableHeaderCell>السعر</TableHeaderCell>
+                  <TableHeaderCell>الحالة</TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {SERVICES.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell>{s.name}</TableCell>
+                    <TableCell>{s.price}</TableCell>
+                    <TableCell><Badge variant={s.active ? "success" : "secondary"} className="font-arabic">{s.active ? "مفعّلة" : "متوقفة"}</Badge></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Button variant="outline" size="sm" className="mt-4 font-arabic gap-2">
+              <Plus className="h-4 w-4" />
+              إضافة خدمة
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Client management */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
+          <Users2 className="h-4 w-4 text-[var(--primary)]" />
+          إدارة العملاء
+          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+        </h2>
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">قائمة العملاء المرتبطين بفواتيرك وقوائمك المالية</p>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeaderCell>العميل</TableHeaderCell>
+                  <TableHeaderCell>إجمالي التعاملات</TableHeaderCell>
+                  <TableHeaderCell>آخر فاتورة</TableHeaderCell>
+                  <TableHeaderCell>الحالة</TableHeaderCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {CLIENTS.map(c => (
+                  <TableRow key={c.id}>
+                    <TableCell>{c.name}</TableCell>
+                    <TableCell><span dir="ltr">{formatCurrency(c.totalTransactions)}</span></TableCell>
+                    <TableCell>{c.lastInvoiceDate}</TableCell>
+                    <TableCell><Badge variant={c.status === "active" ? "success" : "warning"} className="font-arabic">{c.status === "active" ? "نشط" : "متأخر السداد"}</Badge></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Button variant="outline" size="sm" className="mt-4 font-arabic gap-2">
+              <Plus className="h-4 w-4" />
+              إضافة عميل
+            </Button>
           </CardContent>
         </Card>
       </div>

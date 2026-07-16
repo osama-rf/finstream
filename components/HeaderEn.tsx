@@ -11,14 +11,12 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { LangToggle } from "@/components/LangToggle";
 
 const pathTitles: Record<string, string> = {
-  "/en/dashboard":   "Dashboard",
-  "/en/bank":        "Bank Data",
-  "/en/accounting":  "Journal",
+  "/en/bank":        "Open Banking",
+  "/en/indicators":  "Financial Indicators & Controls",
   "/en/statements":  "Financial Statements",
-  "/en/approvals":   "Approvals",
-  "/en/filings":     "Official Filings",
-  "/en/company":     "Company",
-  "/en/users":       "Team",
+  "/en/analytics":   "Financial Analysis",
+  "/en/credit":      "Credit Rating & Benchmarking",
+  "/en/company":     "Company & Team",
   "/en/settings":    "Settings",
 };
 

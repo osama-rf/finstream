@@ -11,14 +11,12 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { LangToggle } from "@/components/LangToggle";
 
 const pathTitles: Record<string, string> = {
-  "/dashboard": "لوحة التحكم",
-  "/bank": "البيانات البنكية",
-  "/accounting": "دفتر اليومية",
+  "/bank": "المصرفية المفتوحة",
+  "/indicators": "المؤشرات المالية ومدخلات التحكم",
   "/statements": "القوائم المالية",
-  "/approvals": "الموافقات",
-  "/filings": "الإيداع الرسمي",
-  "/company": "بيانات الشركة",
-  "/users": "فريق العمل",
+  "/analytics": "التحليل المالي",
+  "/credit": "التصنيف الائتماني ومقارنة القطاع",
+  "/company": "الشركة والفريق",
   "/settings": "الإعدادات",
 };
 

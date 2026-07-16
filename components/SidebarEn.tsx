@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Building2, FileText,
-  Settings, PanelLeftClose, PanelLeftOpen, Landmark, Users,
-  BarChart3, CreditCard, TrendingUp,
+  Building2, FileText,
+  Settings, PanelLeftClose, PanelLeftOpen, Landmark,
+  Gauge, CreditCard, TrendingUp,
 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { UserAvatar } from "@/components/UserAvatar";
@@ -14,15 +14,13 @@ import type { UserRole } from "@/lib/types/database";
 const allRoles: UserRole[] = ["super_admin", "company_admin", "accountant", "auditor"];
 
 const menuItems = [
-  { label: "Dashboard",        icon: LayoutDashboard, path: "/en/dashboard",   roles: allRoles },
-  { label: "Open Banking",     icon: Landmark,        path: "/en/bank",        roles: allRoles },
-  { label: "Credit Report",    icon: CreditCard,      path: "/en/credit",      roles: allRoles },
-  { label: "Benchmarking",     icon: BarChart3,       path: "/en/benchmarks",  roles: allRoles },
-  { label: "Statements",       icon: FileText,        path: "/en/statements",  roles: allRoles },
-  { label: "Analytics",        icon: TrendingUp,      path: "/en/analytics",   roles: allRoles },
-  { label: "Company",          icon: Building2,       path: "/en/company",     roles: ["super_admin","company_admin"] as UserRole[] },
-  { label: "Team",             icon: Users,           path: "/en/users",       roles: ["super_admin","company_admin"] as UserRole[] },
-  { label: "Settings",         icon: Settings,        path: "/en/settings",    roles: allRoles },
+  { label: "Open Banking",              icon: Landmark,   path: "/en/bank",       roles: allRoles },
+  { label: "Financial Indicators & Controls", icon: Gauge, path: "/en/indicators", roles: allRoles },
+  { label: "Financial Statements",       icon: FileText,   path: "/en/statements", roles: allRoles },
+  { label: "Financial Analysis",         icon: TrendingUp, path: "/en/analytics",  roles: allRoles },
+  { label: "Credit Rating & Benchmarking", icon: CreditCard, path: "/en/credit",   roles: allRoles },
+  { label: "Company & Team",             icon: Building2,  path: "/en/company",    roles: allRoles },
+  { label: "Settings",                   icon: Settings,   path: "/en/settings",   roles: allRoles },
 ];
 
 const roleLabels: Record<UserRole, string> = {

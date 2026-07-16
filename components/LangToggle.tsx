@@ -10,10 +10,10 @@ export function LangToggle() {
 
   function toggle() {
     if (isEn) {
-      // /en/dashboard → /dashboard
-      router.push(pathname.replace(/^\/en/, "") || "/dashboard");
+      // /en/bank → /bank
+      router.push(pathname.replace(/^\/en/, "") || "/bank");
     } else {
-      // /dashboard → /en/dashboard
+      // /bank → /en/bank
       router.push("/en" + pathname);
     }
   }

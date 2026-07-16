@@ -1,3 +1,8 @@
+import { BANKS, BANKING_SUMMARY } from '@/lib/mock/banking';
+import { CREDIT_REPORT, CREDIT_RATIOS } from '@/lib/mock/credit';
+import { STATEMENTS_BY_QUARTER } from '@/lib/mock/statements';
+import { ANALYTICS_OVERVIEW } from '@/lib/mock/analytics';
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type AgentMessage = {
@@ -56,77 +61,71 @@ export type FinanceReport = {
 };
 
 // ─── Canonical platform data (single source of truth) ───────────────────────
-// All numbers here match what's shown in the UI pages exactly.
+// Sourced from lib/mock — the same data the UI pages render — so the AI
+// agent's answers never drift from what's shown on screen.
 
 const PLATFORM_DATA = {
-  // Bank connections (matches /bank page)
-  banks: [
-    { name: 'بنك الراجحي',         balance: 1_840_000, monthlyIn: 650_000, monthlyOut: 312_000, status: 'connected' },
-    { name: 'البنك الأهلي السعودي', balance: 620_500,   monthlyIn: 197_500, monthlyOut: 111_200, status: 'connected' },
-    { name: 'STC Pay',             balance: 98_200,    monthlyIn:  43_000, monthlyOut:  21_800, status: 'connected' },
-    { name: 'بنك الرياض',           balance: 0,         monthlyIn: 0,       monthlyOut: 0,       status: 'disconnected' },
-  ],
+  banks: BANKS.map(b => ({
+    name: b.name, balance: b.balance, monthlyIn: b.monthlyIn, monthlyOut: b.monthlyOut, status: b.status,
+  })),
 
-  // Aggregated totals
-  totalBalance:  2_558_700,
-  totalMonthlyIn: 890_500,
-  totalMonthlyOut: 445_000,
-  netMonthly:     445_500,
+  totalBalance: BANKING_SUMMARY.totalBalance,
+  totalMonthlyIn: BANKING_SUMMARY.totalMonthlyIn,
+  totalMonthlyOut: BANKING_SUMMARY.totalMonthlyOut,
+  netMonthly: BANKING_SUMMARY.totalMonthlyIn - BANKING_SUMMARY.totalMonthlyOut,
   revenueGrowth: '+18.4%',
   unclassifiedTxCount: 7,
   unclassifiedTxValue: 1_014_550,
 
-  // SIMAH credit score (matches /credit page)
-  simahScore:   720,
-  simahRating:  'B+',
-  simahLabel:   'جيد جداً',
-  simahSource:  'تصنيف ائتماني معتمد',
-  simahPercentile: 71,
+  simahScore: CREDIT_REPORT.score,
+  simahRating: CREDIT_REPORT.letter,
+  simahLabel: CREDIT_REPORT.rating,
+  simahSource: 'تصنيف ائتماني معتمد',
+  simahPercentile: CREDIT_REPORT.percentile,
   creditValidUntil: '2026-08-01',
 
-  // Financial ratios (matches /credit ratios tab)
   ratios: {
-    profitMargin:   { value: 32.5, unit: '%',   benchmark: 24,  status: 'good' },
-    currentRatio:   { value: 1.8,  unit: 'x',   benchmark: 1.5, status: 'good' },
-    debtEquity:     { value: 0.65, unit: 'x',   benchmark: 0.8, status: 'good' },
-    dso:            { value: 42,   unit: 'يوم', benchmark: 35,  status: 'warning' },
-    revenueGrowth:  { value: 18.4, unit: '%',   benchmark: 12,  status: 'good' },
-    cashCoverage:   { value: 2.1,  unit: 'x',   benchmark: 1.5, status: 'good' },
+    profitMargin: findRatio('profit_margin'),
+    currentRatio: findRatio('current_ratio'),
+    debtEquity: findRatio('debt_equity'),
+    dso: findRatio('dso'),
+    revenueGrowth: findRatio('revenue_growth'),
+    cashCoverage: findRatio('cash_coverage'),
   },
 
-  // Sector benchmarking (matches /benchmarks page)
   benchmarks: {
-    aboveAverage: 6,
-    total: 8,
-    sector: 'تقنية المعلومات والاستشارات',
-    region: 'دول الخليج (GCC)',
+    aboveAverage: CREDIT_REPORT.benchmarkSummary.aboveAverage,
+    total: CREDIT_REPORT.benchmarkSummary.total,
+    sector: CREDIT_REPORT.benchmarkSummary.sector,
+    region: CREDIT_REPORT.benchmarkSummary.region,
   },
 
-  // Financial statements (matches /statements page)
-  statements: [
-    { type: 'قائمة الدخل',            period: 'Q1 2026', status: 'approved',      aiGenerated: true  },
-    { type: 'الميزانية العمومية',      period: 'Q1 2026', status: 'approved',      aiGenerated: true  },
-    { type: 'قائمة التدفقات النقدية', period: 'Q1 2026', status: 'pending_review', aiGenerated: true  },
-    { type: 'قائمة الدخل',            period: 'Q2 2026', status: 'draft',          aiGenerated: false },
-  ],
+  statements: STATEMENTS_BY_QUARTER['Q1 2026'].map(s => ({
+    type: s.title, period: s.period, status: s.status, aiGenerated: s.aiGenerated,
+  })).concat(STATEMENTS_BY_QUARTER['Q2 2026'].map(s => ({
+    type: s.title, period: s.period, status: s.status, aiGenerated: s.aiGenerated,
+  }))),
 
-  // Analytics (matches /analytics page)
   analytics: {
-    totalRevenue:  4_282_500,
+    totalRevenue: ANALYTICS_OVERVIEW.totalRevenueQuarter + 1_435_000,
     totalExpenses: 2_343_200,
-    netProfit:     1_939_300,
+    netProfit: 1_939_300,
     profitMarginPct: 45.3,
     topRevenueSource: 'خدمات استشارية (44%)',
     topExpenseCategory: 'تكلفة الخدمات (42%)',
   },
 
-  // Financing offers available (matches /credit banks tab)
   financingOffers: [
     { bank: 'البنك الأهلي السعودي', product: 'تمويل رأس المال العامل', maxAmount: 3_000_000, rate: '6.5%' },
     { bank: 'بنك الراجحي',          product: 'تمويل المشاريع الصغيرة', maxAmount: 2_500_000, rate: '6.9%' },
     { bank: 'مصرف الإنماء',         product: 'خط ائتمان متجدد',        maxAmount: 1_500_000, rate: '7.2%' },
   ],
 };
+
+function findRatio(key: string) {
+  const r = CREDIT_RATIOS.find(r => r.key === key)!;
+  return { value: r.value, unit: r.unit, benchmark: r.benchmark, status: r.status };
+}
 
 // ─── Tool Declarations ───────────────────────────────────────────────────────
 

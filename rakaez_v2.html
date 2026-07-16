@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ركائز | منصة الاستدامة المالية للمنشآت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#0d9488; --teal-dark:#0f766e; --teal-light:#e6f5f3; --teal-50:#f2faf9;
+    --navy:#12201d; --navy-accent:#1e3a6f; --navy-accent-light:#eaf0f8;
+    --purple:#6d28d9; --purple-dark:#5b21b6; --purple-light:#f4eefc;
+    --gold:#a97a17; --gold-deep:#8a6110; --gold-light:#faf1d8; --gold-text:#7a5810;
+    --gray-900:#12201d; --gray-700:#3f4946; --gray-500:#6b7674; --gray-400:#98a19e;
+    --bg:#f7f9f8; --card:#ffffff; --border:#e6ebe9; --border-strong:#d3dbd8;
+    --green:#15803d; --green-bg:#eaf7ee; --red:#c0292c; --red-bg:#fbebec; --amber:#a15c07; --amber-bg:#fdf3e0;
+    --radius:14px;
+    --shadow-sm:0 1px 2px rgba(18,32,29,.05);
+    --shadow-md:0 8px 24px rgba(18,32,29,.07);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'IBM Plex Sans Arabic', Tahoma, 'Segoe UI', Arial, sans-serif;
+    background:var(--bg); color:var(--gray-900); line-height:1.6;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px; background:var(--card); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm);
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-mark{
+    width:38px; height:38px; border-radius:10px;
+    background:linear-gradient(135deg, var(--teal), var(--teal-dark));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:17px;
+  }
+  .brand-text .name{font-weight:700; font-size:16px; color:var(--navy);}
+  .brand-text .tag{font-size:12px; color:var(--gray-500);}
+  .company-chip{
+    display:flex; align-items:center; gap:6px; margin-inline-start:18px;
+    padding:7px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--gray-700);
+  }
+  .company-chip svg{width:13px; height:13px; opacity:.6;}
+  .topbar-left{display:flex; align-items:center; gap:14px;}
+  .icon-btn{
+    position:relative; width:36px; height:36px; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--gray-700);
+  }
+  .icon-btn .dot{position:absolute; top:6px; left:6px; width:7px; height:7px; border-radius:50%; background:var(--red); border:1.5px solid #fff;}
+  .lang-btn{padding:7px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); font-size:12.5px; color:var(--gray-700); font-weight:600;}
+  .user-chip{display:flex; align-items:center; gap:9px;}
+  .avatar{width:36px; height:36px; border-radius:50%; background:var(--gold-deep); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+  .user-name{font-size:13px; font-weight:600; color:var(--navy);}
+  .user-role{font-size:12px; color:var(--gray-500);}
+
+  /* ---------- horizontal tab nav ---------- */
+  .tabbar-wrap{background:var(--card); border-bottom:1px solid var(--border); position:sticky; top:65px; z-index:49;}
+  .tabbar{
+    display:flex; gap:2px; padding:0 22px; overflow-x:auto; max-width:1400px; margin:0 auto;
+  }
+  .tab{
+    display:flex; align-items:center; gap:7px; padding:14px 16px; background:none; border:none;
+    font-size:14px; font-weight:600; color:var(--gray-500); white-space:nowrap;
+    border-bottom:2.5px solid transparent; transition:.15s;
+  }
+  .tab:hover{color:var(--navy);}
+  .tab.active{color:var(--teal-dark); border-bottom-color:var(--teal);}
+  .tab .num{font-size:10.5px; color:var(--gray-400); font-weight:500;}
+  .tab.active .num{color:var(--teal);}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1400px; margin:0 auto; padding:28px 22px 64px;}
+  .panel{display:none; animation:fade .25s ease;}
+  .panel.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px;}
+  .page-head h1{font-size:24px; line-height:32px; font-weight:700; margin:0 0 4px; color:var(--navy);}
+  .page-head p{margin:0; font-size:13.5px; color:var(--gray-500);}
+  .head-actions{display:flex; gap:10px;}
+  .btn{padding:9px 16px; border-radius:10px; font-size:13.5px; font-weight:600; border:1px solid var(--border-strong); background:var(--card); color:var(--gray-700);}
+  .btn.primary{background:var(--teal-dark); color:#fff; border-color:var(--teal-dark);}
+  .btn.ghost{background:transparent;}
+  .btn:hover{filter:brightness(0.98);}
+
+  .grid{display:grid; gap:16px;}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g12{grid-template-columns:repeat(12,1fr);}
+  @media(max-width:1000px){.g4,.g3,.g2{grid-template-columns:repeat(2,1fr);} .g12{grid-template-columns:repeat(6,1fr);}}
+
+  .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow-sm);}
+  .card h3{margin:0 0 4px; font-size:16px; font-weight:600; color:var(--navy);}
+  .card .sub{font-size:13px; color:var(--gray-500); margin-bottom:12px;}
+
+  .kpi{display:flex; flex-direction:column; gap:10px;}
+  .kpi-top{display:flex; align-items:center; justify-content:space-between;}
+  .kpi-icon{width:34px; height:34px; border-radius:9px; background:var(--teal-50); color:var(--teal-dark); display:flex; align-items:center; justify-content:center; font-size:15px;}
+  .delta{font-size:12px; font-weight:700; padding:3px 7px; border-radius:7px; display:flex; align-items:center; gap:3px;}
+  .delta.up{color:var(--green); background:var(--green-bg);}
+  .delta.down{color:var(--red); background:var(--red-bg);}
+  .kpi-val{font-size:24px; font-weight:700; color:var(--navy);}
+  .kpi-label{font-size:13px; color:var(--gray-500);}
+
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:4px 9px; border-radius:8px;}
+  .badge.new{background:var(--purple-light); color:var(--purple-dark);}
+  .badge.teal{background:var(--teal-light); color:var(--teal-dark);}
+  .badge.purple{background:var(--purple-light); color:var(--purple-dark);}
+  .badge.navy{background:var(--navy-accent-light); color:var(--navy-accent);}
+  .badge.gold{background:var(--gold-light); color:var(--gold-text);}
+  .badge.green{background:var(--green-bg); color:var(--green);}
+  .badge.amber{background:var(--amber-bg); color:var(--amber);}
+  .badge.red{background:var(--red-bg); color:var(--red);}
+  .badge.gray{background:#f1f3f2; color:var(--gray-500);}
+
+  .row{display:flex; align-items:center; justify-content:space-between;}
+  .list-item{display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--border);}
+  .list-item:last-child{border-bottom:none;}
+  .li-left{display:flex; align-items:center; gap:12px;}
+  .li-icon{width:34px; height:34px; border-radius:9px; background:var(--teal-50); color:var(--teal-dark); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;}
+  .li-title{font-size:14px; font-weight:600; color:var(--navy);}
+  .li-sub{font-size:12.5px; color:var(--gray-500); margin-top:2px;}
+
+  .bar-track{height:8px; border-radius:5px; background:#eef1f1; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:5px; background:var(--teal);}
+
+  .section-title{font-size:16px; font-weight:700; color:var(--navy); margin:28px 0 12px;}
+  .section-title.first{margin-top:0;}
+
+  .pill-tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .pill{padding:7px 14px; border-radius:999px; font-size:12.5px; font-weight:600; border:1px solid var(--border-strong); background:var(--card); color:var(--gray-500);}
+  .pill.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+  .metric-row{display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border);}
+  .metric-row:last-child{border-bottom:none;}
+
+  .suggest-note{
+    display:flex; gap:10px; align-items:flex-start; background:var(--purple-light); border:1px dashed var(--purple);
+    border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--purple-dark); margin-bottom:18px;
+  }
+  .suggest-note b{color:var(--purple-dark);}
+
+  .gauge-wrap{display:flex; align-items:center; gap:18px;}
+  .score-ring{width:96px; height:96px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; flex:none;}
+  .score-ring .inner{width:74px; height:74px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .score-ring .inner b{font-size:20px; color:var(--navy);}
+  .score-ring .inner span{font-size:10.5px; color:var(--gray-500);}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th{text-align:right; font-size:12px; color:var(--gray-500); font-weight:600; padding:8px 6px; border-bottom:1px solid var(--border);}
+  td{padding:11px 6px; border-bottom:1px solid var(--border); color:var(--gray-700);}
+  tr:last-child td{border-bottom:none;}
+
+  .toggle{width:38px; height:22px; border-radius:999px; background:#e2e8e6; position:relative; flex:none; border:none;}
+  .toggle.on{background:var(--teal);}
+  .toggle .dot{position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:.15s; box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .toggle.on .dot{right:18px;}
+
+  .slider-row{margin-bottom:16px;}
+  .slider-row .row{margin-bottom:6px; font-size:12.5px;}
+  input[type=range]{width:100%; accent-color:var(--teal);}
+
+  .team-avatar{width:32px; height:32px; border-radius:50%; background:var(--gray-400); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700;}
+
+  .footer-hint{text-align:center; font-size:12px; color:var(--gray-400); margin-top:36px;}
+
+  .flex-between{display:flex; align-items:center; justify-content:space-between;}
+  .mini-bars{display:flex; align-items:flex-end; gap:6px; height:64px;}
+  .mini-bars .bar{flex:1; background:var(--teal); border-radius:4px 4px 0 0; opacity:.85;}
+  .mini-bars .bar.alt{background:#cbd5d1;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div style="display:flex; align-items:center;">
+    <div class="brand">
+      <div class="brand-mark">ر</div>
+      <div class="brand-text">
+        <div class="name">ركائز</div>
+        <div class="tag">منصة الاستدامة المالية للمنشآت</div>
+      </div>
+    </div>
+    <div class="company-chip">
+      شركة الأفق للتقنية والاستشارات
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </div>
+  <div class="topbar-left">
+    <button class="icon-btn">🔔<span class="dot"></span></button>
+    <button class="lang-btn">EN</button>
+    <div class="user-chip">
+      <div class="avatar">أا</div>
+      <div>
+        <div class="user-name">أسامة الرفاعي</div>
+        <div class="user-role">مدير الشركة</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <button class="tab active" data-tab="bank"><span>🏦</span> المصرفية المفتوحة</button>
+    <button class="tab" data-tab="indicators"><span>📊</span> المؤشرات المالية ومدخلات التحكم</button>
+    <button class="tab" data-tab="statements"><span>📄</span> القوائم المالية</button>
+    <button class="tab" data-tab="analysis"><span>📈</span> التحليل المالي</button>
+    <button class="tab" data-tab="credit"><span>🏅</span> التصنيف الائتماني ومقارنة القطاع</button>
+    <button class="tab" data-tab="company"><span>🏢</span> الشركة والفريق</button>
+    <button class="tab" data-tab="settings"><span>⚙️</span> الإعدادات</button>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ 1. المصرفية المفتوحة ============ -->
+  <section class="panel active" id="tab-bank">
+    <div class="page-head">
+      <div>
+        <h1>المصرفية المفتوحة</h1>
+        <p>اجمع بيانات منشأتك من بنوكها وبوابات الدفع في مكان واحد — عبر Open Banking المعتمد من ساما</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn">تصدير كشف موحّد</button>
+        <button class="btn primary">+ ربط مصدر جديد</button>
+      </div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> تصنيف تلقائي للمعاملات بالذكاء الاصطناعي لتغذية المؤشرات والتحليل المالي مباشرة دون تدخل يدوي، مع مؤشرات صافي السيولة اليومية.</div></div>
+
+    <div class="grid g4" style="margin-bottom:22px;">
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">💰</div><div class="delta up">↑ 8.3%</div></div><div class="kpi-val">2,558,700 ر.س</div><div class="kpi-label">إجمالي الأرصدة المجمّعة</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">↓</div><div class="delta up">↑ 12%</div></div><div class="kpi-val">890,500 ر.س</div><div class="kpi-label">الواردات (30 يوم)</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">↑</div><div class="delta down">↑ 3.1%</div></div><div class="kpi-val">445,000 ر.س</div><div class="kpi-label">المدفوعات (30 يوم)</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">📐</div><div class="badge new" style="margin-inline-start:4px;">جديد</div></div><div class="kpi-val">2,180,400 ر.س</div><div class="kpi-label">متوسط صافي الرصيد اليومي (30 يوم)</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">💧</div><div class="badge new">جديد</div></div><div class="kpi-val">1.8x</div><div class="kpi-label">نسبة السيولة</div></div>
+    </div>
+
+    <div class="grid g12" style="align-items:start;">
+      <div class="card" style="grid-column:span 7;">
+        <div class="flex-between"><h3>المصادر المربوطة</h3><a href="#" style="font-size:12.5px; color:var(--teal-dark); font-weight:600;">إدارة الربط</a></div>
+        <div class="sub">4 مصادر · تحديث تلقائي كل ساعة</div>
+        <div class="list-item">
+          <div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">بنك الراجحي</div><div class="li-sub">SA44 •••• 1234 · آخر مزامنة: منذ ساعتين</div></div></div>
+          <div style="text-align:left;"><div class="li-title">1,840,000 ر.س</div><span class="badge green">مباشر</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-left"><div class="li-icon">ا</div><div><div class="li-title">البنك الأهلي السعودي</div><div class="li-sub">SA03 •••• 7519 · آخر مزامنة: منذ 4 ساعات</div></div></div>
+          <div style="text-align:left;"><div class="li-title">620,500 ر.س</div><span class="badge amber">تأخر بسيط</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-left"><div class="li-icon">S</div><div><div class="li-title">STC Pay</div><div class="li-sub">بوابة دفع · آخر مزامنة: منذ ساعة</div></div></div>
+          <div style="text-align:left;"><div class="li-title">98,200 ر.س</div><span class="badge green">مباشر</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">بنك الرياض</div><div class="li-sub">غير مربوط — البيانات غير محدّثة</div></div></div>
+          <button class="btn primary" style="padding:7px 14px;">ربط الآن</button>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:span 5;">
+        <h3>تصنيف تلقائي للمعاملات <span class="badge new">جديد</span></h3>
+        <div class="sub">آخر 5 معاملات مجمّعة، مصنّفة تلقائياً بالذكاء الاصطناعي</div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--green-bg); color:var(--green);">+</div><div><div class="li-title">تحويل وارد — شركة الأفق للتجارة</div><div class="li-sub">إيرادات مبيعات · بنك الراجحي</div></div></div><div class="li-title" style="color:var(--green);">+250,000</div></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--red-bg); color:var(--red);">−</div><div><div class="li-title">مصروف استضافة سحابية</div><div class="li-sub">تقنية وبنية تحتية · الأهلي</div></div></div><div class="li-title">3,200−</div></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--red-bg); color:var(--red);">−</div><div><div class="li-title">رواتب موظفين — يونيو</div><div class="li-sub">رواتب وأجور · بنك الراجحي</div></div></div><div class="li-title">92,000−</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. المؤشرات المالية ومدخلات التحكم ============ -->
+  <section class="panel" id="tab-indicators">
+    <div class="page-head">
+      <div>
+        <h1>المؤشرات المالية ومدخلات التحكم</h1>
+        <p>نظرة عامة حيّة على وضع منشأتك، مع أدوات تحكم لضبط الأهداف والتنبيهات — يونيو 2026</p>
+      </div>
+      <div class="head-actions"><button class="btn">تحديث الآن</button></div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> هذه التبويبة تدمج لوحة المؤشرات القديمة مع "مدخلات تحكم" فعلية — أهداف مالية، حدود تنبيه، ومحاكي سيناريوهات — بدل عرض القراءة فقط.</div></div>
+
+    <div class="section-title first">نظرة عامة</div>
+    <div class="grid g4" style="margin-bottom:10px;">
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">💵</div><div class="delta up">↑ 8.3%</div></div><div class="kpi-val">2,558,700 ر.س</div><div class="kpi-label">إجمالي الأرصدة المجمّعة</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">📈</div><div class="delta up">↑ 12.4%</div></div><div class="kpi-val">847,500 ر.س</div><div class="kpi-label">صافي الإيرادات (30 يوم)</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">📉</div><div class="delta down">↑ 3.1%</div></div><div class="kpi-val">423,200 ر.س</div><div class="kpi-label">إجمالي المصروفات (30 يوم)</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">🛡️</div><div class="badge gold">جيد جداً</div></div><div class="kpi-val">A-</div><div class="kpi-label">التصنيف الائتماني</div></div>
+    </div>
+
+    <div class="grid g12" style="margin-top:16px;">
+      <div class="card" style="grid-column:span 4;">
+        <h3>مؤشر الاستدامة المالية <span class="badge new">جديد</span></h3>
+        <div class="sub">مقياس مركّب يجمع السيولة، الربحية، الانضباط، والتنويع</div>
+        <div class="gauge-wrap">
+          <div class="score-ring" style="background:conic-gradient(var(--teal) 0% 78%, #eef1f1 78% 100%);">
+            <div class="inner"><b>78</b><span>من 100</span></div>
+          </div>
+          <div style="flex:1;">
+            <div class="metric-row"><span style="font-size:12px; color:var(--gray-500);">السيولة</span><span style="font-weight:700; font-size:12.5px;">85</span></div>
+            <div class="metric-row"><span style="font-size:12px; color:var(--gray-500);">الربحية</span><span style="font-weight:700; font-size:12.5px;">88</span></div>
+            <div class="metric-row"><span style="font-size:12px; color:var(--gray-500);">الانضباط التشغيلي</span><span style="font-weight:700; font-size:12.5px;">64</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:span 4;">
+        <h3>أهداف مالية <span class="badge new">جديد</span></h3>
+        <div class="sub">حدّد أهدافك وتابع التقدّم نحوها</div>
+        <div style="margin-bottom:14px;">
+          <div class="row" style="margin-bottom:6px; font-size:12.5px;"><span>مدار نقدي (Runway)</span><span style="font-weight:700;">7.2 / 9 أشهر</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:80%;"></div></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="row" style="margin-bottom:6px; font-size:12.5px;"><span>خفض فترة التحصيل DSO</span><span style="font-weight:700;">42 / 35 يوم</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:60%; background:var(--amber);"></div></div>
+        </div>
+        <div>
+          <div class="row" style="margin-bottom:6px; font-size:12.5px;"><span>معدل الادخار الشهري</span><span style="font-weight:700;">14% / 20%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:70%;"></div></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:span 4;">
+        <h3>حدود التنبيه <span class="badge new">جديد</span></h3>
+        <div class="sub">أوقف المفاجآت — نبّهنا عند تجاوز الحدود</div>
+        <div class="list-item"><div><div class="li-title">سيولة تقل عن 300,000 ر.س</div><div class="li-sub">تنبيه فوري + بريد إلكتروني</div></div><button class="toggle on"><span class="dot"></span></button></div>
+        <div class="list-item"><div><div class="li-title">مصروف غير معتاد &gt; 50,000 ر.س</div><div class="li-sub">تنبيه فوري</div></div><button class="toggle on"><span class="dot"></span></button></div>
+        <div class="list-item"><div><div class="li-title">تركّز عميل واحد &gt; 35%</div><div class="li-sub">تقرير أسبوعي</div></div><button class="toggle"><span class="dot"></span></button></div>
+      </div>
+    </div>
+
+    <div class="section-title">محاكي السيناريوهات <span class="badge new">جديد</span></div>
+    <div class="card">
+      <div class="sub">حرّك المتغيرات لترى أثرها الفوري على المدار النقدي والتصنيف الائتماني — أداة تخطيط، لا تُغيّر بياناتك الفعلية</div>
+      <div class="grid g3">
+        <div class="slider-row">
+          <div class="row"><span>نمو الإيرادات الشهري</span><b>+5%</b></div>
+          <input type="range" min="-10" max="20" value="5">
+        </div>
+        <div class="slider-row">
+          <div class="row"><span>خفض المصروفات التشغيلية</span><b>-8%</b></div>
+          <input type="range" min="-20" max="10" value="-8">
+        </div>
+        <div class="slider-row">
+          <div class="row"><span>تمويل إضافي مقترح</span><b>200,000 ر.س</b></div>
+          <input type="range" min="0" max="500000" value="200000">
+        </div>
+      </div>
+      <div class="grid g3" style="margin-top:6px;">
+        <div class="card" style="background:var(--teal-50); border-color:var(--teal-light);"><div class="kpi-label">مدار نقدي متوقّع</div><div class="kpi-val" style="font-size:18px;">11.4 شهر</div></div>
+        <div class="card" style="background:var(--teal-50); border-color:var(--teal-light);"><div class="kpi-label">تصنيف ائتماني متوقّع</div><div class="kpi-val" style="font-size:18px;">A</div></div>
+        <div class="card" style="background:var(--teal-50); border-color:var(--teal-light);"><div class="kpi-label">مؤشر استدامة متوقّع</div><div class="kpi-val" style="font-size:18px;">84 / 100</div></div>
+      </div>
+    </div>
+
+    <div class="section-title">مدخلات يدوية <span class="badge new">جديد</span></div>
+    <div class="card">
+      <div class="sub">لبيانات غير مرتبطة عبر Open Banking (نقد، عهدة، تحويلات خارجية)</div>
+      <table>
+        <tr><th>الوصف</th><th>النوع</th><th>المبلغ</th><th>التاريخ</th><th></th></tr>
+        <tr><td>عهدة نقدية — معرض تجاري</td><td><span class="badge gray">مصروف</span></td><td>12,000 ر.س</td><td>2026-07-05</td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+        <tr><td>دفعة مقدّمة من عميل (نقداً)</td><td><span class="badge green">إيراد</span></td><td>30,000 ر.س</td><td>2026-07-02</td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+      </table>
+      <button class="btn" style="margin-top:12px;">+ إضافة قيد يدوي</button>
+    </div>
+  </section>
+
+  <!-- ============ 3. القوائم المالية ============ -->
+  <section class="panel" id="tab-statements">
+    <div class="page-head">
+      <div>
+        <h1>القوائم المالية</h1>
+        <p>أنشئ قوائمك المالية بالذكاء الاصطناعي من بيانات بنوكك، واعتمدها، وشاركها مع البنوك</p>
+      </div>
+      <div class="head-actions"><button class="btn">🖨 تصدير PDF</button><button class="btn">قائمة جديدة</button><button class="btn primary">✨ إنشاء بالـ AI</button></div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> سجلّ اعتماد كامل (Audit Trail)، تصدير القوائم بصيغة PDF، قائمة تدفقات نقدية تنبؤية (Pro-forma) لثلاثة أشهر قادمة، وقائمة جاهزية للفوترة الإلكترونية (ZATCA).</div></div>
+
+    <div class="pill-tabs">
+      <div class="pill active">Q2 2026</div><div class="pill">Q1 2026</div><div class="pill">2025 كامل</div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="flex-between"><h3>قائمة الدخل <span class="badge purple">AI</span></h3><span class="badge green">معتمدة</span></div>
+        <div class="sub">Q1 2026 — يناير إلى مارس · اعتمدها خالد العمر · 2026-04-10</div>
+        <div class="metric-row"><span>الإيرادات</span><b>4,282,500 ر.س</b></div>
+        <div class="metric-row"><span>المصروفات</span><b>2,343,200 ر.س</b></div>
+        <div class="metric-row"><span>صافي الربح</span><b style="color:var(--green);">1,939,300 ر.س</b></div>
+        <div class="head-actions" style="margin-top:12px;"><button class="btn">معاينة</button><button class="btn">مشاركة مع بنك</button></div>
+      </div>
+      <div class="card">
+        <div class="flex-between"><h3>الميزانية العمومية <span class="badge purple">AI</span></h3><span class="badge green">معتمدة</span></div>
+        <div class="sub">Q1 2026 — يناير إلى مارس · اعتمدها خالد العمر</div>
+        <div class="metric-row"><span>إجمالي الأصول</span><b>5,120,000 ر.س</b></div>
+        <div class="metric-row"><span>إجمالي الالتزامات</span><b>1,860,000 ر.س</b></div>
+        <div class="metric-row"><span>حقوق الملكية</span><b style="color:var(--green);">3,260,000 ر.س</b></div>
+        <div class="head-actions" style="margin-top:12px;"><button class="btn">معاينة</button><button class="btn">مشاركة مع بنك</button></div>
+      </div>
+      <div class="card">
+        <div class="flex-between"><h3>قائمة التدفقات النقدية <span class="badge purple">AI</span></h3><span class="badge amber">بانتظار المراجعة</span></div>
+        <div class="sub">Q1 2026 — أُنشئت 2026-04-12</div>
+        <div class="metric-row"><span>تدفقات تشغيلية</span><b>612,000 ر.س</b></div>
+        <div class="metric-row"><span>تدفقات استثمارية</span><b>-85,000 ر.س</b></div>
+        <div class="head-actions" style="margin-top:12px;"><button class="btn">معاينة</button><button class="btn primary">اعتماد</button></div>
+      </div>
+      <div class="card" style="border-style:dashed;">
+        <div class="flex-between"><h3>قائمة تدفقات تنبؤية <span class="badge new">جديد</span></h3><span class="badge gray">تجريبية</span></div>
+        <div class="sub">توقّع الذكاء الاصطناعي لثلاثة أشهر قادمة بناءً على نمط بياناتك البنكية</div>
+        <div class="metric-row"><span>يوليو المتوقع</span><b>+415,000 ر.س</b></div>
+        <div class="metric-row"><span>أغسطس المتوقع</span><b>+390,000 ر.س</b></div>
+        <div class="metric-row"><span>سبتمبر المتوقع</span><b>+460,000 ر.س</b></div>
+        <div class="head-actions" style="margin-top:12px;"><button class="btn primary">توليد التوقع</button></div>
+      </div>
+    </div>
+
+    <div class="section-title">جاهزية الفوترة الإلكترونية (ZATCA) <span class="badge new">جديد</span></div>
+    <div class="card">
+      <div class="metric-row"><span>الفواتير المرتبطة بمنصة فاتورة</span><b>96%</b></div>
+      <div class="metric-row"><span>فواتير تحتاج مراجعة</span><b style="color:var(--amber);">4 فواتير</b></div>
+      <div class="metric-row"><span>آخر مزامنة</span><b>اليوم 09:10</b></div>
+    </div>
+
+    <div class="section-title">مركز التحقق الداخلي <span class="badge new">جديد</span></div>
+    <div class="suggest-note">💡 <div><b>مصدر الفكرة:</b> أداة تدقيق داخلي مالي — تصنّف كل قائمة حسب درجة الخطورة قبل مشاركتها مع البنك، وتكشف الحسابات غير المطابقة تلقائياً.</div></div>
+    <div class="grid g4" style="margin-bottom:22px;">
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">✓</div><div class="badge green">منخفض</div></div><div class="kpi-val">94%</div><div class="kpi-label">حسابات مطابقة تلقائياً</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">⚠️</div><div class="badge amber">راجع</div></div><div class="kpi-val">5</div><div class="kpi-label">بنود تحتاج مراجعة يدوية</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">🔒</div><div class="badge navy">سري</div></div><div class="kpi-val">لجنة التدقيق</div><div class="kpi-label">مستوى تداول التقرير</div></div>
+      <div class="card kpi"><div class="kpi-top"><div class="kpi-icon">📊</div><div class="badge purple">تلقائي</div></div><div class="kpi-val">3</div><div class="kpi-label">فترات مقارنة (حالية/سابقة/موازنة)</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. التحليل المالي ============ -->
+  <section class="panel" id="tab-analysis">
+    <div class="page-head">
+      <div>
+        <h1>التحليل المالي</h1>
+        <p>تحليل الإيرادات والمصروفات وتوزيعها، مع كشف شذوذ تلقائي بالذكاء الاصطناعي</p>
+      </div>
+      <div class="head-actions"><button class="btn">تصدير</button></div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> معدّل الاستنزاف النقدي (Burn Rate)، تفصيل الإيرادات حسب المصدر، اتجاه صافي الربح الشهري، وكشف الشذوذ التلقائي في الإنفاق.</div></div>
+
+    <div class="card" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(90deg, var(--teal-50), var(--card));">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="kpi-icon" style="width:44px; height:44px; font-size:19px;">🔥</div>
+        <div>
+          <div class="kpi-label">معدل الاستنزاف النقدي الشهري (Burn Rate)</div>
+          <div class="kpi-val" style="font-size:22px;">67,400 ر.س / شهر</div>
+        </div>
+      </div>
+      <div style="text-align:left;">
+        <div class="badge new">جديد</div>
+        <div class="li-sub" style="margin-top:6px;">مدار نقدي متوقّع: 7.2 أشهر</div>
+      </div>
+    </div>
+
+    <div class="grid g12">
+      <div class="card" style="grid-column:span 7;">
+        <h3>الإيرادات مقابل المصروفات</h3>
+        <div class="sub">شهرياً · Q1–Q2 2026</div>
+        <div class="mini-bars">
+          <div class="bar" style="height:45%;"></div><div class="bar alt" style="height:30%;"></div>
+          <div class="bar" style="height:55%;"></div><div class="bar alt" style="height:32%;"></div>
+          <div class="bar" style="height:62%;"></div><div class="bar alt" style="height:35%;"></div>
+          <div class="bar" style="height:70%;"></div><div class="bar alt" style="height:38%;"></div>
+          <div class="bar" style="height:88%;"></div><div class="bar alt" style="height:40%;"></div>
+          <div class="bar" style="height:100%;"></div><div class="bar alt" style="height:44%;"></div>
+        </div>
+        <div class="row" style="margin-top:8px; font-size:11px; color:var(--gray-500);"><span>يناير</span><span>فبراير</span><span>مارس</span><span>أبريل</span><span>مايو</span><span>يونيو</span></div>
+      </div>
+      <div class="card" style="grid-column:span 5;">
+        <h3>توزيع المصروفات</h3>
+        <div style="margin-top:10px;">
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>تكلفة الخدمات</span><b>42%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:42%;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>رواتب وأجور</span><b>18%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:18%; background:#0e766e;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>إدارية وعمومية</span><b>19%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:19%; background:#14b8a6;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>تسويق ومبيعات</span><b>3%</b></div><div class="bar-track"><div class="bar-fill" style="width:3%; background:#5eead4;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:16px;">
+      <div class="card">
+        <h3>الإيرادات حسب المصدر <span class="badge new">جديد</span></h3>
+        <div class="sub">إجمالي الربع: 2,847,500 ر.س</div>
+        <div style="margin-top:10px;">
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>خدمات استشارية</span><b>44%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:44%;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>مشاريع تقنية</span><b>32%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:32%; background:#0e766e;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>تدريب وورش عمل</span><b>15%</b></div><div class="bar-track" style="margin-bottom:12px;"><div class="bar-fill" style="width:15%; background:#14b8a6;"></div></div>
+          <div class="row" style="font-size:12.5px; margin-bottom:6px;"><span>تراخيص برمجيات</span><b>9%</b></div><div class="bar-track"><div class="bar-fill" style="width:9%; background:#5eead4;"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>اتجاه صافي الربح الشهري <span class="badge new">جديد</span></h3>
+        <div class="sub">نمو 31.2% مقارنة بالربع السابق</div>
+        <div class="mini-bars">
+          <div class="bar" style="height:52%;"></div>
+          <div class="bar" style="height:64%;"></div>
+          <div class="bar" style="height:68%;"></div>
+          <div class="bar" style="height:71%;"></div>
+          <div class="bar" style="height:82%;"></div>
+          <div class="bar" style="height:100%;"></div>
+        </div>
+        <div class="row" style="margin-top:8px; font-size:11px; color:var(--gray-500);"><span>يناير</span><span>فبراير</span><span>مارس</span><span>أبريل</span><span>مايو</span><span>يونيو</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3>كشف شذوذ تلقائي <span class="badge new">جديد</span></h3>
+      <div class="sub">تنبيهات ذكاء اصطناعي حول أنماط غير معتادة</div>
+      <div class="grid g2">
+        <div class="list-item"><div><div class="li-title">ارتفاع غير معتاد في مصروفات "أخرى"</div><div class="li-sub">+140% عن المتوسط الشهري</div></div><span class="badge amber">تحقّق</span></div>
+        <div class="list-item"><div><div class="li-title">انخفاض إيرادات تراخيص البرمجيات</div><div class="li-sub">-22% مقارنة بالربع السابق</div></div><span class="badge red">انتبه</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. التصنيف الائتماني ومقارنة القطاع ============ -->
+  <section class="panel" id="tab-credit">
+    <div class="page-head">
+      <div>
+        <h1>التصنيف الائتماني ومقارنة القطاع</h1>
+        <p>تقييم جاهزية منشأتك للتمويل، ومقارنتها بمتوسطات القطاع، مع عروض تمويل مطابقة</p>
+      </div>
+      <div class="head-actions"><button class="btn">تحديث</button><button class="btn primary">مشاركة مع بنك</button></div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> دمج التصنيف الائتماني ومقارنة القطاع في مكان واحد لسرد قصة موحّدة للبنك، مع محاكي "ماذا لو" لأثر التحسينات على النقاط، ومطابقة تلقائية مع عروض تمويل حقيقية.</div></div>
+
+    <div class="grid g12" style="margin-bottom:18px;">
+      <div class="card" style="grid-column:span 4;">
+        <h3>التصنيف الائتماني</h3>
+        <div class="gauge-wrap">
+          <div class="score-ring" style="background:conic-gradient(var(--gold) 0% 80%, #eef1f1 80% 100%);">
+            <div class="inner"><b>720</b><span>من 900</span></div>
+          </div>
+          <div>
+            <div class="kpi-val" style="font-size:20px;">B+</div>
+            <div class="kpi-label">جيد جداً</div>
+            <div class="badge green" style="margin-top:6px;">أعلى من 71% من القطاع</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:14px; gap:3px;">
+          <div style="flex:1; text-align:center; padding:5px 0; border-radius:6px 0 0 6px; background:var(--red-bg); color:var(--red); font-size:10.5px; font-weight:700;">C</div>
+          <div style="flex:1; text-align:center; padding:5px 0; background:var(--amber-bg); color:var(--amber); font-size:10.5px; font-weight:700;">B-</div>
+          <div style="flex:1; text-align:center; padding:5px 0; background:var(--gold-light); color:var(--gold-text); font-size:10.5px; font-weight:700;">B</div>
+          <div style="flex:1; text-align:center; padding:5px 0; background:var(--teal-dark); color:#fff; font-size:10.5px; font-weight:700; box-shadow:0 0 0 2px var(--navy) inset;">B+</div>
+          <div style="flex:1; text-align:center; padding:5px 0; background:var(--green-bg); color:var(--green); font-size:10.5px; font-weight:700;">A-</div>
+          <div style="flex:1; text-align:center; padding:5px 0; border-radius:0 6px 6px 0; background:var(--green-bg); color:var(--green); font-size:10.5px; font-weight:700;">A</div>
+        </div>
+        <div class="li-sub" style="margin-top:6px;">سلّم التصنيف — موقعك الحالي محاط بإطار داكن</div>
+      </div>
+      <div class="card" style="grid-column:span 4;">
+        <h3>مؤشر الاستدامة المالية</h3>
+        <div class="sub">مكمّل للتصنيف الائتماني — يقيس صلابة النموذج المالي طويل الأمد</div>
+        <div class="gauge-wrap">
+          <div class="score-ring" style="background:conic-gradient(#0f766e 0% 78%, #eef1f1 78% 100%);">
+            <div class="inner"><b>78</b><span>من 100</span></div>
+          </div>
+          <div class="badge teal">مستقر</div>
+        </div>
+      </div>
+      <div class="card" style="grid-column:span 4;">
+        <h3>ملخص المقارنة القطاعية</h3>
+        <div class="sub">الاستشارات والخدمات · دول الخليج</div>
+        <div class="metric-row"><span>فوق المتوسط</span><b style="color:var(--green);">7 مؤشرات</b></div>
+        <div class="metric-row"><span>أدنى المتوسط</span><b style="color:var(--red);">1 مؤشر (DSO)</b></div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-bottom:18px;">
+      <div class="card">
+        <h3>نقاط القوة</h3>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--green-bg); color:var(--green);">✓</div><div><div class="li-title">هامش ربح أعلى من متوسط القطاع بـ 8.4 نقطة</div></div></div></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--green-bg); color:var(--green);">✓</div><div><div class="li-title">نمو إيرادات سنوي مستقر فوق 18%</div></div></div></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--green-bg); color:var(--green);">✓</div><div><div class="li-title">نسبة دين إلى حقوق ملكية منخفضة (0.65x)</div></div></div></div>
+      </div>
+      <div class="card">
+        <h3>مخاطر تحتاج معالجة</h3>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--amber-bg); color:var(--amber);">!</div><div><div class="li-title">فترة تحصيل ذمم مرتفعة (42 يوم مقابل 35 للقطاع)</div></div></div></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon" style="background:var(--amber-bg); color:var(--amber);">!</div><div><div class="li-title">تركّز 3 عملاء يشكّلون 41% من الإيرادات</div></div></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <h3>توصيات تحسين مولّدة بالذكاء الاصطناعي <span class="badge purple">AI</span></h3>
+      <div class="list-item"><div><div class="li-title">خفض DSO إلى 35 يوماً قد يرفع الدرجة بنحو 15 نقطة</div><div class="li-sub">فعّل تمويل الفواتير المقترح أدناه لتسريع التحصيل</div></div><span class="badge green">أثر مرتفع</span></div>
+      <div class="list-item"><div><div class="li-title">تنويع قاعدة العملاء لتقليل التركّز عن 35%</div><div class="li-sub">يحسّن مؤشر الاستدامة المالية بند "الانضباط التشغيلي"</div></div><span class="badge amber">أثر متوسط</span></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>مؤشرات ائتمانية مقارنة بالقطاع</h3>
+        <table>
+          <tr><th>المؤشر</th><th>شركتك</th><th>متوسط القطاع</th></tr>
+          <tr><td>هامش الربح الصافي</td><td><b style="color:var(--green);">32.5%</b></td><td>24.1%</td></tr>
+          <tr><td>نمو الإيرادات السنوي</td><td><b style="color:var(--green);">18.4%</b></td><td>12.3%</td></tr>
+          <tr><td>نسبة السيولة الجارية</td><td><b style="color:var(--green);">1.8x</b></td><td>1.5x</td></tr>
+          <tr><td>متوسط فترة التحصيل (DSO)</td><td><b style="color:var(--red);">42 يوم</b></td><td>35 يوم</td></tr>
+          <tr><td>نسبة الدين إلى حقوق الملكية</td><td><b style="color:var(--green);">0.65x</b></td><td>0.78x</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>عروض تمويل مطابقة <span class="badge new">جديد</span></h3>
+        <div class="sub">مطابقة تلقائية بناءً على تصنيفك وبياناتك البنكية المربوطة</div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">تمويل رأس مال عامل — بنك الراجحي</div><div class="li-sub">حتى 500,000 ر.س · نسبة تنافسية</div></div></div><span class="badge green">مؤهّل</span></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ك</div><div><div class="li-title">ضمان كفالة لتمويل التوسع</div><div class="li-sub">برنامج كفالة الحكومي</div></div></div><span class="badge green">مؤهّل</span></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">تمويل فواتير (Invoice Financing)</div><div class="li-sub">لتحسين DSO مباشرة</div></div></div><span class="badge amber">يحتاج مستندات</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. الشركة والفريق ============ -->
+  <section class="panel" id="tab-company">
+    <div class="page-head">
+      <div>
+        <h1>الشركة والفريق</h1>
+        <p>بيانات الشركة، الحسابات البنكية، وإدارة صلاحيات فريق العمل</p>
+      </div>
+      <div class="head-actions"><button class="btn primary">+ دعوة عضو</button></div>
+    </div>
+
+    <div class="suggest-note">💡 <div><b>مقترح جديد:</b> إدارة فريق كاملة بالأدوار والصلاحيات وسجلّ نشاط، إضافة لبيانات الشركة الأساسية — لأن الاستدامة المالية مسؤولية جماعية لا فردية.</div></div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>بيانات الشركة</h3>
+        <div class="metric-row"><span>اسم الشركة</span><b>شركة الأفق للتقنية والاستشارات</b></div>
+        <div class="metric-row"><span>رقم السجل التجاري</span><b>1010XXXXXX</b></div>
+        <div class="metric-row"><span>الرقم الضريبي</span><b>3001XXXXXXXXXX</b></div>
+        <div class="metric-row"><span>القطاع</span><b>الاستشارات والخدمات التقنية</b></div>
+        <div class="metric-row"><span>الخدمات المقدمة <span class="badge new" style="margin-inline-start:4px;">جديد</span></span><b style="text-align:left; max-width:60%;">استشارات تقنية، تطوير برمجيات، تدريب وورش عمل</b></div>
+        <button class="btn primary" style="margin-top:14px; width:100%;">حفظ التغييرات</button>
+      </div>
+      <div class="card">
+        <div class="flex-between"><h3>الحسابات البنكية <span class="badge new">جديد</span></h3><a href="#" style="font-size:12.5px; color:var(--teal-dark); font-weight:600;">إدارة الربط</a></div>
+        <div class="sub">4 حسابات مرتبطة عبر تبويبة المصرفية المفتوحة</div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">بنك الراجحي</div><div class="li-sub">SA44 •••• 1234</div></div></div><span class="badge green">نشط</span></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ا</div><div><div class="li-title">البنك الأهلي السعودي</div><div class="li-sub">SA03 •••• 7519</div></div></div><span class="badge amber">تأخر بسيط</span></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">S</div><div><div class="li-title">STC Pay</div><div class="li-sub">بوابة دفع</div></div></div><span class="badge green">نشط</span></div>
+        <div class="list-item"><div class="li-left"><div class="li-icon">ب</div><div><div class="li-title">بنك الرياض</div><div class="li-sub">غير مربوط</div></div></div><span class="badge gray">غير مربوط</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">فريق العمل <span class="badge new">جديد</span></div>
+    <div class="card">
+      <table>
+        <tr><th>العضو</th><th>الدور</th><th>الصلاحية</th><th>آخر نشاط</th><th></th></tr>
+        <tr><td style="display:flex; align-items:center; gap:8px; padding-top:14px;"><span class="team-avatar" style="background:var(--gold-deep);">أا</span> أسامة الرفاعي</td><td>مدير الشركة</td><td><span class="badge navy">مالك</span></td><td>الآن</td><td></td></tr>
+        <tr><td style="display:flex; align-items:center; gap:8px;"><span class="team-avatar">خع</span> خالد العمر</td><td>مدير مالي</td><td><span class="badge green">اعتماد القوائم</span></td><td>منذ يوم</td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+        <tr><td style="display:flex; align-items:center; gap:8px;"><span class="team-avatar">نس</span> نورة السالم</td><td>محاسبة</td><td><span class="badge gray">إدخال بيانات فقط</span></td><td>منذ 3 أيام</td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+        <tr><td style="display:flex; align-items:center; gap:8px;"><span class="team-avatar" style="background:var(--gray-400);">؟</span> دعوة معلّقة</td><td>مستثمر / مطّلع</td><td><span class="badge amber">عرض فقط</span></td><td>—</td><td><a href="#" style="color:var(--red); font-size:12px;">إلغاء</a></td></tr>
+      </table>
+    </div>
+
+    <div class="section-title">سجلّ النشاط <span class="badge new">جديد</span></div>
+    <div class="card">
+      <div class="list-item"><div class="li-left"><div class="li-icon">✓</div><div><div class="li-title">خالد العمر اعتمد قائمة الدخل Q1 2026</div><div class="li-sub">2026-04-10 · 11:20 ص</div></div></div></div>
+      <div class="list-item"><div class="li-left"><div class="li-icon">🔗</div><div><div class="li-title">أسامة الرفاعي ربط STC Pay</div><div class="li-sub">2026-07-13 · 09:02 ص</div></div></div></div>
+      <div class="list-item"><div class="li-left"><div class="li-icon">📤</div><div><div class="li-title">تمت مشاركة التقرير الائتماني مع بنك الراجحي</div><div class="li-sub">2026-07-06 · 03:41 م</div></div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ 7. الإعدادات ============ -->
+  <section class="panel" id="tab-settings">
+    <div class="page-head">
+      <div><h1>الإعدادات</h1><p>تفضيلات الحساب، الأمان، والإشعارات</p></div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <h3>الأمان</h3>
+        <div class="metric-row"><span>كلمة المرور</span><b>آخر تحديث: منذ 3 أشهر</b></div>
+        <button class="btn" style="width:100%; margin-bottom:6px;">تحديث كلمة المرور</button>
+        <div class="list-item"><span class="li-title">التحقق بخطوتين (2FA)</span><button class="toggle on"><span class="dot"></span></button></div>
+      </div>
+      <div class="card">
+        <h3>المظهر <span class="badge new">جديد</span></h3>
+        <div class="sub">اختر مظهر الواجهة المفضّل لديك</div>
+        <div class="pill-tabs">
+          <div class="pill active">☀️ فاتح</div>
+          <div class="pill">🌙 داكن</div>
+          <div class="pill">تلقائي (حسب النظام)</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>الإشعارات</h3>
+        <div class="list-item"><span class="li-title">تنبيهات تجاوز حدود السيولة</span><button class="toggle on"><span class="dot"></span></button></div>
+        <div class="list-item"><span class="li-title">تقرير أسبوعي بالبريد الإلكتروني</span><button class="toggle on"><span class="dot"></span></button></div>
+        <div class="list-item"><span class="li-title">تنبيهات تغيّر التصنيف الائتماني</span><button class="toggle on"><span class="dot"></span></button></div>
+        <div class="list-item"><span class="li-title">عروض تمويل جديدة مطابقة</span><button class="toggle"><span class="dot"></span></button></div>
+      </div>
+      <div class="card">
+        <h3>اللغة والعملة</h3>
+        <div class="metric-row"><span>لغة الواجهة</span><b>العربية</b></div>
+        <div class="metric-row"><span>العملة الأساسية</span><b>ريال سعودي (SAR)</b></div>
+      </div>
+      <div class="card">
+        <h3>الخصوصية وبيانات Open Banking</h3>
+        <div class="sub">نستخدم بروتوكول Open Banking المعتمد من ساما. لا نخزّن كلمات مرورك — فقط صلاحية قراءة البيانات بموافقتك.</div>
+        <button class="btn">إدارة موافقات الربط</button>
+      </div>
+      <div class="card">
+        <h3>الاشتراك والفوترة <span class="badge new">جديد</span></h3>
+        <div class="metric-row"><span>الباقة الحالية</span><b>الأعمال — شهري</b></div>
+        <div class="metric-row"><span>القيمة الشهرية</span><b>349 ر.س</b></div>
+        <div class="metric-row"><span>تجديد الاشتراك</span><b>2026-08-01</b></div>
+        <button class="btn" style="width:100%; margin-top:6px;">إدارة الاشتراك والفواتير</button>
+      </div>
+    </div>
+
+    <div class="section-title">إدارة قائمة الخدمات والأسعار <span class="badge new">جديد</span></div>
+    <div class="card" style="margin-bottom:22px;">
+      <div class="sub">الخدمات الظاهرة للعملاء عند إصدار عروض الأسعار والفواتير</div>
+      <table>
+        <tr><th>الخدمة</th><th>السعر</th><th>الحالة</th><th></th></tr>
+        <tr><td>استشارات تقنية (بالساعة)</td><td>450 ر.س</td><td><span class="badge green">مفعّلة</span></td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+        <tr><td>تطوير برمجيات (مشروع)</td><td>حسب النطاق</td><td><span class="badge green">مفعّلة</span></td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+        <tr><td>تدريب وورش عمل (يوم)</td><td>3,500 ر.س</td><td><span class="badge gray">متوقفة</span></td><td><a href="#" style="color:var(--teal-dark); font-size:12px;">تعديل</a></td></tr>
+      </table>
+      <button class="btn primary" style="margin-top:12px;">+ إضافة خدمة</button>
+    </div>
+
+    <div class="section-title">إدارة العملاء <span class="badge new">جديد</span></div>
+    <div class="card">
+      <div class="sub">قائمة العملاء المرتبطين بفواتيرك وقوائمك المالية</div>
+      <table>
+        <tr><th>العميل</th><th>إجمالي التعاملات</th><th>آخر فاتورة</th><th>الحالة</th></tr>
+        <tr><td>شركة نماء للتطوير العقاري</td><td>620,000 ر.س</td><td>2026-07-02</td><td><span class="badge green">نشط</span></td></tr>
+        <tr><td>مؤسسة درب للاستشارات</td><td>285,000 ر.س</td><td>2026-06-18</td><td><span class="badge green">نشط</span></td></tr>
+        <tr><td>مجموعة الفا التجارية</td><td>140,000 ر.س</td><td>2026-04-30</td><td><span class="badge amber">متأخر السداد</span></td></tr>
+      </table>
+      <button class="btn" style="margin-top:12px;">+ إضافة عميل</button>
+    </div>
+  </section>
+
+  <div class="footer-hint">نموذج تصميم مقترح لمنصة ركائز — بيانات تجريبية لأغراض العرض فقط</div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+</script>
+
+</body>
+</html>

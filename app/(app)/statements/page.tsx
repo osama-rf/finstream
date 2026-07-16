@@ -8,10 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import {
   FileText, Plus, Sparkles, TrendingUp, TrendingDown,
   ArrowLeftRight, Share2, Download, Eye, CheckCircle2,
-  Building2, Clock, Send, X, Printer,
+  Building2, Clock, Send, X, Printer, ShieldCheck, ClipboardCheck,
+  AlertTriangle, Lock, BarChart2,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
+import { PillTabs } from "@/components/shared/PillTabs";
+import { AgentPanel } from "@/components/AgentPanel";
+import { useUser } from "@/lib/contexts/UserContext";
+import { QUARTERS, PRO_FORMA, ZATCA_READINESS, AUDIT_CENTER_KPIS } from "@/lib/mock";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -398,11 +403,23 @@ function ShareModal({ stmt, onClose }: { stmt: Statement; onClose: () => void })
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function StatementsPage() {
+  const { user } = useUser();
   const [stmts, setStmts] = useState<Statement[]>(initialStatements);
   const [generating, setGenerating] = useState(false);
   const [previewStmt, setPreviewStmt] = useState<Statement | null>(null);
   const [shareStmt, setShareStmt] = useState<Statement | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [quarter, setQuarter] = useState<string>(QUARTERS[0]);
+  const [forecasting, setForecasting] = useState(false);
+  const [forecastGenerated, setForecastGenerated] = useState(false);
+
+  async function handleGenerateForecast() {
+    setForecasting(true);
+    await new Promise(r => setTimeout(r, 1800));
+    setForecasting(false);
+    setForecastGenerated(true);
+    toast.success("تم توليد توقّع التدفقات النقدية لثلاثة أشهر قادمة");
+  }
 
   async function handleQuickGenerate() {
     setGenerating(true);
@@ -471,6 +488,13 @@ export default function StatementsPage() {
           </p>
         </div>
       </div>
+
+      {/* Quarter selector */}
+      <PillTabs
+        options={QUARTERS.map(q => ({ key: q, label: q }))}
+        value={quarter}
+        onChange={setQuarter}
+      />
 
       {/* Statements grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -547,6 +571,109 @@ export default function StatementsPage() {
             </Card>
           );
         })}
+
+        {/* Pro-forma forecast card */}
+        <Card className="border-dashed">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]">
+                  <TrendingUp className="h-5 w-5 text-[var(--primary)]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-bold text-[var(--foreground)] font-arabic text-sm">قائمة تدفقات تنبؤية</p>
+                    <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+                  </div>
+                  <p className="text-xs text-[var(--muted-foreground)] font-arabic">توقّع الذكاء الاصطناعي لثلاثة أشهر قادمة</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="font-arabic shrink-0 text-[11px]">تجريبية</Badge>
+            </div>
+            {forecastGenerated && (
+              <div className="space-y-1.5 mb-3">
+                {PRO_FORMA.map(m => (
+                  <div key={m.label} className="flex items-center justify-between rounded-[10px] bg-[var(--surface)] px-3 py-2">
+                    <span className="text-xs text-[var(--foreground)] font-arabic">{m.label}</span>
+                    <span className="text-sm font-bold text-[var(--success)] tabular-nums" dir="ltr">+{formatCurrency(m.projected)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button size="sm" className="w-full font-arabic gap-2" onClick={handleGenerateForecast} disabled={forecasting}>
+              {forecasting ? (
+                <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />جاري التوليد...</>
+              ) : (
+                <><Sparkles className="h-4 w-4" />{forecastGenerated ? "إعادة توليد التوقع" : "توليد التوقع"}</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ZATCA readiness */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
+          جاهزية الفوترة الإلكترونية (ZATCA)
+          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+        </h2>
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--foreground)] font-arabic">الفواتير المرتبطة بمنصة فاتورة</span>
+              <span className="text-sm font-bold text-[var(--success)] tabular-nums">{ZATCA_READINESS.linkedInvoicesPct}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--foreground)] font-arabic">فواتير تحتاج مراجعة</span>
+              <span className="text-sm font-bold text-[var(--warning)] font-arabic">{ZATCA_READINESS.invoicesNeedingReviewCount} فواتير</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-[var(--foreground)] font-arabic">آخر مزامنة</span>
+              <span className="text-sm font-bold text-[var(--foreground)] font-arabic">{ZATCA_READINESS.lastSyncedAt}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Internal audit center */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3 flex items-center gap-2">
+          مركز التحقق الداخلي
+          <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+        </h2>
+        <div className="rounded-[16px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4 mb-4">
+          <div className="flex items-start gap-3">
+            <ClipboardCheck className="h-5 w-5 text-[var(--primary)] shrink-0 mt-0.5" />
+            <p className="text-sm text-[var(--foreground)] font-arabic leading-relaxed">
+              <span className="font-bold">أداة تدقيق داخلي مالي — </span>
+              تصنّف كل قائمة حسب درجة الخطورة قبل مشاركتها مع البنك، وتكشف الحسابات غير المطابقة تلقائياً.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {AUDIT_CENTER_KPIS.map(kpi => {
+            const Icon = kpi.icon === "check" ? CheckCircle2 : kpi.icon === "warning" ? AlertTriangle : kpi.icon === "lock" ? Lock : BarChart2;
+            const badgeVariant = kpi.icon === "check" ? "success" : kpi.icon === "warning" ? "warning" : kpi.icon === "lock" ? "default" : "secondary";
+            return (
+              <Card key={kpi.key}>
+                <CardContent className="p-3 sm:p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <Icon className="h-4 w-4 text-[var(--primary)]" />
+                    <Badge variant={badgeVariant} className="font-arabic text-[10px]">{kpi.badge}</Badge>
+                  </div>
+                  <p className="text-lg font-bold text-[var(--foreground)] font-arabic tabular-nums sm:text-xl">{kpi.value}</p>
+                  <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs leading-snug">{kpi.label}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* AI financial assistant */}
+      <div>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">المساعد المالي الذكي</h2>
+        <AgentPanel userRole={user?.role ?? "company_admin"} />
       </div>
     </div>
   );

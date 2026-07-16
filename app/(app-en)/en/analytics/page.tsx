@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   TrendingUp, TrendingDown, Wallet, BarChart3,
-  ArrowUpRight, ArrowDownRight, Download, Flame, AlertTriangle,
+  ArrowUpRight, ArrowDownRight, Download, Flame,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { MiniBarsChart } from "@/components/shared/MiniBarsChart";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const periods = ["Q1 2026", "Q2 2025", "Q3 2025", "Q4 2025", "2025 كامل"];
+const periods = ["Q1 2026", "Q2 2025", "Q3 2025", "Q4 2025", "Full year 2025"];
 
 const monthlyData = ANALYTICS_OVERVIEW.monthlySeries.map(m => ({ month: m.label, revenue: m.revenue, expenses: m.expense }));
 
@@ -28,10 +28,10 @@ const revenueBySource = ANALYTICS_OVERVIEW.revenueBySource.map(r => ({
 }));
 
 const kpis = [
-  { label: "إجمالي الإيرادات",  value: 4_282_500, change: "+18.4%", up: true,  color: "var(--primary)",     icon: Wallet    },
-  { label: "إجمالي المصروفات",  value: 2_343_200, change: "+8.2%",  up: false, color: "var(--destructive)", icon: TrendingDown },
-  { label: "صافي الربح",        value: 1_939_300, change: "+31.2%", up: true,  color: "var(--success)",     icon: TrendingUp },
-  { label: "هامش الربح الصافي", value: "45.3%",   change: "+4.9%",  up: true,  color: "var(--success)",     icon: BarChart3  },
+  { label: "Total revenue", value: 4_282_500, change: "+18.4%", up: true, color: "var(--primary)", icon: Wallet },
+  { label: "Total expenses", value: 2_343_200, change: "+8.2%", up: false, color: "var(--destructive)", icon: TrendingDown },
+  { label: "Net profit", value: 1_939_300, change: "+31.2%", up: true, color: "var(--success)", icon: TrendingUp },
+  { label: "Net profit margin", value: "45.3%", change: "+4.9%", up: true, color: "var(--success)", icon: BarChart3 },
 ];
 
 // ─── Bar chart component ───────────────────────────────────────────────────────
@@ -42,10 +42,9 @@ function BarChartSection({ data }: { data: typeof monthlyData }) {
 
   return (
     <div className="mt-4">
-      {/* Bars */}
       <div className="flex items-end justify-between gap-1 sm:gap-2" style={{ height: heightPx }}>
         {data.map(d => {
-          const revH = Math.round((d.revenue  / maxVal) * heightPx);
+          const revH = Math.round((d.revenue / maxVal) * heightPx);
           const expH = Math.round((d.expenses / maxVal) * heightPx);
           return (
             <div key={d.month} className="flex flex-1 flex-col items-center gap-0.5">
@@ -53,28 +52,27 @@ function BarChartSection({ data }: { data: typeof monthlyData }) {
                 <div
                   className="flex-1 max-w-[18px] rounded-t-[4px] sm:max-w-[28px] sm:rounded-t-[6px] transition-all"
                   style={{ height: revH, background: "var(--primary)", opacity: 0.9 }}
-                  title={`إيرادات: ${formatCurrency(d.revenue)}`}
+                  title={`Revenue: ${formatCurrency(d.revenue)}`}
                 />
                 <div
                   className="flex-1 max-w-[18px] rounded-t-[4px] sm:max-w-[28px] sm:rounded-t-[6px] transition-all"
                   style={{ height: expH, background: "var(--destructive)", opacity: 0.7 }}
-                  title={`مصروفات: ${formatCurrency(d.expenses)}`}
+                  title={`Expenses: ${formatCurrency(d.expenses)}`}
                 />
               </div>
-              <span className="text-[9px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-[10px]">{d.month}</span>
+              <span className="text-[9px] text-[var(--muted-foreground)] mt-1 sm:text-[10px]">{d.month}</span>
             </div>
           );
         })}
       </div>
-      {/* Legend */}
       <div className="flex items-center justify-center gap-4 mt-3">
         <div className="flex items-center gap-1.5">
           <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "var(--primary)" }} />
-          <span className="text-xs text-[var(--muted-foreground)] font-arabic">الإيرادات</span>
+          <span className="text-xs text-[var(--muted-foreground)]">Revenue</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "var(--destructive)", opacity: 0.7 }} />
-          <span className="text-xs text-[var(--muted-foreground)] font-arabic">المصروفات</span>
+          <span className="text-xs text-[var(--muted-foreground)]">Expenses</span>
         </div>
       </div>
     </div>
@@ -120,36 +118,35 @@ function DonutChart({ slices, size = 140 }: {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function AnalyticsPage() {
+export default function AnalyticsEnPage() {
   const [period, setPeriod] = useState("Q1 2026");
 
-  const totalRevenue  = revenueBySource.reduce((s, r) => s + r.amount, 0);
+  const totalRevenue = revenueBySource.reduce((s, r) => s + r.amount, 0);
   const totalExpenses = expenseBreakdown.reduce((s, e) => s + e.amount, 0);
-  const netProfit     = totalRevenue - totalExpenses;
+  const netProfit = totalRevenue - totalExpenses;
 
   return (
-    <div className="space-y-6 page-transition-shell" dir="rtl">
+    <div className="space-y-6 page-transition-shell" dir="ltr">
 
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التحليل المالي</h1>
-          <p className="text-sm text-[var(--muted-foreground)] font-arabic">
-            تحليل الإيرادات والمصروفات وتوزيعها من بيانات بنوكك المربوطة
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Analyze revenue, expenses, and their distribution from your connected bank data
           </p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={period}
             onChange={e => setPeriod(e.target.value)}
-            className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-arabic text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
+            className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
           >
             {periods.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <Button variant="outline" size="sm" className="font-arabic gap-2"
-            onClick={() => toast.success("تم تصدير التقرير بصيغة PDF")}>
+          <Button variant="outline" size="sm" className="gap-2"
+            onClick={() => toast.success("Report exported as PDF")}>
             <Download className="h-4 w-4" />
-            تصدير
+            Export
           </Button>
         </div>
       </div>
@@ -162,13 +159,13 @@ export default function AnalyticsPage() {
               <Flame className="h-5 w-5 text-[var(--destructive)]" />
             </div>
             <div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">معدل الاستنزاف النقدي الشهري (Burn Rate)</p>
-              <p className="text-xl font-bold text-[var(--foreground)] tabular-nums" dir="ltr">{formatCurrency(ANALYTICS_OVERVIEW.burnRatePerMonth)} / شهر</p>
+              <p className="text-xs text-[var(--muted-foreground)]">Monthly cash burn rate</p>
+              <p className="text-xl font-bold text-[var(--foreground)] tabular-nums">{formatCurrency(ANALYTICS_OVERVIEW.burnRatePerMonth)} / month</p>
             </div>
           </div>
           <div className="text-end">
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-1.5">مدار نقدي متوقّع: {ANALYTICS_OVERVIEW.projectedRunwayMonths} أشهر</p>
+            <Badge variant="default" className="text-[10px]">New</Badge>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1.5">Projected runway: {ANALYTICS_OVERVIEW.projectedRunwayMonths} months</p>
           </div>
         </CardContent>
       </Card>
@@ -196,10 +193,10 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
                 <p className="text-sm font-bold tabular-nums leading-tight break-all sm:text-xl"
-                  style={{ color: kpi.color }} dir="ltr">
+                  style={{ color: kpi.color }}>
                   {typeof kpi.value === "number" ? formatCurrency(kpi.value) : kpi.value}
                 </p>
-                <p className="mt-1 text-[10px] text-[var(--muted-foreground)] font-arabic leading-snug sm:text-xs">{kpi.label}</p>
+                <p className="mt-1 text-[10px] text-[var(--muted-foreground)] leading-snug sm:text-xs">{kpi.label}</p>
               </CardContent>
             </Card>
           );
@@ -210,25 +207,24 @@ export default function AnalyticsPage() {
       <Card>
         <CardContent className="p-5">
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic flex items-center gap-2">
+            <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
-              الإيرادات مقابل المصروفات
+              Revenue vs. Expenses
             </h2>
-            <Badge variant="secondary" className="font-arabic text-xs">{period}</Badge>
+            <Badge variant="secondary" className="text-xs">{period}</Badge>
           </div>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-1">شهرياً · مجمّع من جميع البنوك المربوطة</p>
+          <p className="text-xs text-[var(--muted-foreground)] mb-1">Monthly · aggregated from all connected banks</p>
           <BarChartSection data={monthlyData} />
 
-          {/* Summary row */}
           <div className="mt-4 grid grid-cols-3 gap-3 border-t border-[var(--border)] pt-4">
             {[
-              { label: "إجمالي الإيرادات",  value: monthlyData.reduce((s,d)=>s+d.revenue,0),  color: "var(--primary)"    },
-              { label: "إجمالي المصروفات",  value: monthlyData.reduce((s,d)=>s+d.expenses,0), color: "var(--destructive)" },
-              { label: "صافي الربح",         value: monthlyData.reduce((s,d)=>s+d.revenue-d.expenses,0), color: "var(--success)" },
+              { label: "Total revenue", value: monthlyData.reduce((s, d) => s + d.revenue, 0), color: "var(--primary)" },
+              { label: "Total expenses", value: monthlyData.reduce((s, d) => s + d.expenses, 0), color: "var(--destructive)" },
+              { label: "Net profit", value: monthlyData.reduce((s, d) => s + d.revenue - d.expenses, 0), color: "var(--success)" },
             ].map(s => (
               <div key={s.label} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
-                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{s.label}</p>
-                <p className="text-sm font-bold tabular-nums mt-0.5 sm:text-base" style={{ color: s.color }} dir="ltr">
+                <p className="text-[10px] text-[var(--muted-foreground)] sm:text-xs">{s.label}</p>
+                <p className="text-sm font-bold tabular-nums mt-0.5 sm:text-base" style={{ color: s.color }}>
                   {formatCurrency(s.value)}
                 </p>
               </div>
@@ -240,12 +236,11 @@ export default function AnalyticsPage() {
       {/* Expense breakdown + Revenue by source */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
-        {/* Expense breakdown */}
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--destructive)]" />
-              توزيع المصروفات
+              Expense breakdown
             </h2>
             <div className="flex items-center gap-4">
               <DonutChart
@@ -257,37 +252,36 @@ export default function AnalyticsPage() {
                   <div key={e.label} className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <div className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: e.color }} />
-                      <span className="text-xs text-[var(--foreground)] font-arabic truncate">{e.label}</span>
+                      <span className="text-xs text-[var(--foreground)] truncate">{e.label}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[10px] text-[var(--muted-foreground)] tabular-nums" dir="ltr">{formatCurrency(e.amount)}</span>
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-arabic">{e.pct}%</Badge>
+                      <span className="text-[10px] text-[var(--muted-foreground)] tabular-nums">{formatCurrency(e.amount)}</span>
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{e.pct}%</Badge>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
-              <span className="text-sm font-bold text-[var(--foreground)] font-arabic">الإجمالي</span>
-              <span className="text-sm font-bold text-[var(--destructive)] tabular-nums" dir="ltr">{formatCurrency(totalExpenses)}</span>
+              <span className="text-sm font-bold text-[var(--foreground)]">Total</span>
+              <span className="text-sm font-bold text-[var(--destructive)] tabular-nums">{formatCurrency(totalExpenses)}</span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Revenue by source */}
         <Card>
           <CardContent className="p-5">
-            <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
-              الإيرادات حسب المصدر
-              <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+              Revenue by source
+              <Badge variant="default" className="text-[10px]">New</Badge>
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-3">إجمالي الربع: {formatCurrency(ANALYTICS_OVERVIEW.totalRevenueQuarter)}</p>
+            <p className="text-xs text-[var(--muted-foreground)] mb-3">Quarter total: {formatCurrency(ANALYTICS_OVERVIEW.totalRevenueQuarter)}</p>
             <div className="space-y-3">
               {revenueBySource.map(r => (
                 <div key={r.label}>
                   <div className="flex items-center justify-between mb-1.5 text-xs">
-                    <span className="text-[var(--foreground)] font-arabic">{r.label}</span>
+                    <span className="text-[var(--foreground)]">{r.label}</span>
                     <span className="font-bold text-[var(--foreground)]">{r.pct}%</span>
                   </div>
                   <div className="h-2 rounded-full bg-[var(--muted)] overflow-hidden">
@@ -297,8 +291,8 @@ export default function AnalyticsPage() {
               ))}
             </div>
             <div className="mt-4 flex items-center justify-between rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
-              <span className="text-sm font-bold text-[var(--foreground)] font-arabic">إجمالي الإيرادات</span>
-              <span className="text-sm font-bold text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(totalRevenue)}</span>
+              <span className="text-sm font-bold text-[var(--foreground)]">Total revenue</span>
+              <span className="text-sm font-bold text-[var(--primary)] tabular-nums">{formatCurrency(totalRevenue)}</span>
             </div>
           </CardContent>
         </Card>
@@ -307,24 +301,24 @@ export default function AnalyticsPage() {
       {/* Net profit trend */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+          <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
             <div className="h-5 w-1 rounded-full bg-[var(--success)]" />
-            اتجاه صافي الربح الشهري
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+            Monthly net profit trend
+            <Badge variant="default" className="text-[10px]">New</Badge>
           </h2>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">نمو 31.2% مقارنة بالربع السابق</p>
+          <p className="text-xs text-[var(--muted-foreground)] mb-4">31.2% growth vs. the prior quarter</p>
           <MiniBarsChart
             data={ANALYTICS_OVERVIEW.netProfitTrend.map(m => ({ label: m.label, value: m.revenue }))}
             formatValue={formatCurrency}
           />
           <div className="mt-4 rounded-[12px] border border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] px-4 py-3 flex items-center justify-between">
             <div>
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي صافي الربح — {period}</p>
-              <p className="text-lg font-black text-[var(--success)] tabular-nums" dir="ltr">{formatCurrency(netProfit)}</p>
+              <p className="text-xs text-[var(--muted-foreground)]">Total net profit — {period}</p>
+              <p className="text-lg font-black text-[var(--success)] tabular-nums">{formatCurrency(netProfit)}</p>
             </div>
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-5 w-5 text-[var(--success)]" />
-              <span className="text-sm font-bold text-[var(--success)] font-arabic">+31.2% مقارنة بالعام الماضي</span>
+              <span className="text-sm font-bold text-[var(--success)]">+31.2% vs. last year</span>
             </div>
           </div>
         </CardContent>
@@ -333,20 +327,20 @@ export default function AnalyticsPage() {
       {/* Anomaly detection */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
-            كشف شذوذ تلقائي
-            <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+          <h2 className="text-base font-bold text-[var(--foreground)] mb-1 flex items-center gap-2">
+            Automatic anomaly detection
+            <Badge variant="default" className="text-[10px]">New</Badge>
           </h2>
-          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">تنبيهات ذكاء اصطناعي حول أنماط غير معتادة</p>
+          <p className="text-xs text-[var(--muted-foreground)] mb-4">AI alerts about unusual patterns</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {ANALYTICS_OVERVIEW.anomalies.map((a, i) => (
               <div key={i} className="flex items-center justify-between rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium text-[var(--foreground)] font-arabic">{a.title}</p>
-                  <p className="text-xs text-[var(--muted-foreground)] font-arabic mt-0.5">{a.sub}</p>
+                  <p className="text-sm font-medium text-[var(--foreground)]">{a.title}</p>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{a.sub}</p>
                 </div>
-                <Badge variant={a.severity === "warning" ? "warning" : "destructive"} className="font-arabic shrink-0">
-                  {a.severity === "warning" ? "تحقّق" : "انتبه"}
+                <Badge variant={a.severity === "warning" ? "warning" : "destructive"} className="shrink-0">
+                  {a.severity === "warning" ? "Review" : "Attention"}
                 </Badge>
               </div>
             ))}

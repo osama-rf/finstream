@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { CreditReport, CreditRatio } from "@/lib/ai/finance-agent";
+import { ScoreRing as SharedScoreRing } from "@/components/shared/ScoreRing";
+import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
+import { SUSTAINABILITY_SCORE, CREDIT_REPORT as MOCK_CREDIT_REPORT } from "@/lib/mock";
 
 // ─── Static score constants (score itself is fixed; narrative is AI) ─────────
 
@@ -204,7 +207,7 @@ export default function CreditPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التقرير الائتماني</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التصنيف الائتماني ومقارنة القطاع</h1>
           <p className="text-sm text-[var(--muted-foreground)] font-arabic">
             تقييم جاهزية منشأتك للتمويل البنكي ومقارنتها بمتوسطات القطاع
           </p>
@@ -249,6 +252,16 @@ export default function CreditPage() {
                     <span className="text-xs font-bold text-[var(--primary)] font-arabic">أعلى من {report.percentile}% من شركات القطاع</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Sustainability score — complements the credit score */}
+            <div className="flex items-center gap-4 border-t border-[var(--border)] pt-4 sm:gap-6">
+              <SharedScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={96} colorOverride="#0f766e" />
+              <div>
+                <p className="text-sm font-bold text-[var(--foreground)] font-arabic mb-1">مؤشر الاستدامة المالية</p>
+                <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-2">مكمّل للتصنيف الائتماني — يقيس صلابة النموذج المالي طويل الأمد</p>
+                <Badge variant="secondary" className="font-arabic text-xs">مستقر</Badge>
               </div>
             </div>
 
@@ -467,6 +480,44 @@ export default function CreditPage() {
           ))}
         </div>
       )}
+
+      {/* Sector benchmark comparison */}
+      <Card>
+        <CardContent className="p-5">
+          <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1">مؤشرات ائتمانية مقارنة بالقطاع</h2>
+          <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">
+            {MOCK_CREDIT_REPORT.benchmarkSummary.sector} · {MOCK_CREDIT_REPORT.benchmarkSummary.region}
+          </p>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-xs text-[var(--success)] font-bold font-arabic">
+              فوق المتوسط: {MOCK_CREDIT_REPORT.benchmarkSummary.aboveAverage} مؤشرات
+            </span>
+            <span className="text-xs text-[var(--destructive)] font-bold font-arabic">
+              أدنى المتوسط: {MOCK_CREDIT_REPORT.benchmarkSummary.belowAverage} مؤشر ({MOCK_CREDIT_REPORT.benchmarkSummary.belowAverageNote})
+            </span>
+          </div>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeaderCell>المؤشر</TableHeaderCell>
+                <TableHeaderCell>شركتك</TableHeaderCell>
+                <TableHeaderCell>متوسط القطاع</TableHeaderCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {MOCK_CREDIT_REPORT.benchmarkRows.map(row => (
+                <TableRow key={row.key}>
+                  <TableCell>{row.label}</TableCell>
+                  <TableCell>
+                    <b style={{ color: row.favorable ? "var(--success)" : "var(--destructive)" }}>{row.companyValue}</b>
+                  </TableCell>
+                  <TableCell>{row.sectorAverage}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

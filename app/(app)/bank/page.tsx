@@ -9,51 +9,20 @@ import {
   Landmark, RefreshCw, Plus, CheckCircle2, Link2Off,
   Wallet, TrendingUp, TrendingDown, AlertCircle,
   ExternalLink, MoreHorizontal, Clock, ShieldCheck,
-  KeyRound, ListChecks, X,
+  KeyRound, ListChecks, X, Gauge, Droplets, Sparkles,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
+import { BANKS, AVAILABLE_TO_CONNECT, RECENT_TRANSACTIONS, CATEGORIZED_TRANSACTIONS, BANKING_SUMMARY } from "@/lib/mock";
+import type { BankSource } from "@/lib/mock";
+import { ListItemRow } from "@/components/shared/ListItemRow";
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── Initial data (sourced from lib/mock, the shared single source of truth) ──
 
-interface BankSource {
-  id: string;
-  name: string;
-  code: string;
-  balance: number;
-  currency: string;
-  iban: string | null;
-  status: "connected" | "disconnected";
-  lastSync: string | null;
-  monthlyIn: number;
-  monthlyOut: number;
-  color: string;
-  type: "bank" | "gateway";
-}
-
-// ─── Initial data ─────────────────────────────────────────────────────────────
-
-const initialBanks: BankSource[] = [
-  { id: "1", name: "بنك الراجحي", code: "RJHI", balance: 1_840_000, currency: "SAR", iban: "SA44 2000 0001 2345 6789 1234", status: "connected", lastSync: "2026-07-02 10:32", monthlyIn: 650_000, monthlyOut: 312_000, color: "#006838", type: "bank" },
-  { id: "2", name: "البنك الأهلي السعودي", code: "ANB", balance: 620_500, currency: "SAR", iban: "SA03 8000 0000 6080 1016 7519", status: "connected", lastSync: "2026-07-02 06:15", monthlyIn: 197_500, monthlyOut: 111_200, color: "#00574B", type: "bank" },
-  { id: "3", name: "STC Pay", code: "STCPAY", balance: 98_200, currency: "SAR", iban: null, status: "connected", lastSync: "2026-07-02 11:05", monthlyIn: 43_000, monthlyOut: 21_800, color: "#7B2D8B", type: "gateway" },
-  { id: "4", name: "بنك الرياض", code: "RIBL", balance: 0, currency: "SAR", iban: "SA04 2000 0001 9999 8888 7777", status: "disconnected", lastSync: null, monthlyIn: 0, monthlyOut: 0, color: "#C8102E", type: "bank" },
-];
-
-const availableToConnect = [
-  { name: "مصرف الإنماء", color: "#005CA9", type: "bank" as const },
-  { name: "بنك البلاد", color: "#4A1942", type: "bank" as const },
-  { name: "تمارا", color: "#2B3A8C", type: "gateway" as const },
-  { name: "تابي", color: "#3DBE9E", type: "gateway" as const },
-];
-
-const recentTransactions = [
-  { id: "t1", bank: "بنك الراجحي", desc: "تحويل وارد — شركة الأفق للتجارة", amount: 250_000, type: "credit" as const, date: "2026-07-01" },
-  { id: "t2", bank: "البنك الأهلي", desc: "مصروف استضافة سحابية", amount: -3_200, type: "debit" as const, date: "2026-07-01" },
-  { id: "t3", bank: "STC Pay", desc: "إيراد مبيعات إلكترونية", amount: 18_400, type: "credit" as const, date: "2026-06-30" },
-  { id: "t4", bank: "بنك الراجحي", desc: "رواتب موظفين — يونيو", amount: -92_000, type: "debit" as const, date: "2026-06-29" },
-  { id: "t5", bank: "البنك الأهلي", desc: "إيراد خدمات استشارية", amount: 65_000, type: "credit" as const, date: "2026-06-28" },
-];
+const initialBanks: BankSource[] = BANKS;
+const availableToConnect = AVAILABLE_TO_CONNECT;
+const recentTransactions = RECENT_TRANSACTIONS;
+const categorizedTransactions = CATEGORIZED_TRANSACTIONS;
 
 // ─── Connect Modal (3 steps) ──────────────────────────────────────────────────
 
@@ -294,25 +263,31 @@ export default function BankPage() {
       </div>
 
       {/* Aggregated summary */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
-          { label: "إجمالي الأرصدة", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `من ${connected.length} مصادر` },
-          { label: "الواردات (30 يوم)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: "عبر كل المصادر" },
-          { label: "المدفوعات (30 يوم)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: "عبر كل المصادر" },
-        ].map(({ label, value, color, icon: Icon, sub }) => (
-          <Card key={label} className={label === "إجمالي الأرصدة" ? "border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]" : ""}>
+          { label: "إجمالي الأرصدة المجمّعة", value: totalBalance, color: "var(--primary)", icon: Wallet, sub: `من ${connected.length} مصادر`, isCurrency: true },
+          { label: "الواردات (30 يوم)", value: totalIn, color: "var(--success)", icon: TrendingUp, sub: "عبر كل المصادر", isCurrency: true },
+          { label: "المدفوعات (30 يوم)", value: totalOut, color: "var(--destructive)", icon: TrendingDown, sub: "عبر كل المصادر", isCurrency: true },
+          { label: "متوسط صافي الرصيد اليومي (30 يوم)", value: BANKING_SUMMARY.avgDailyNetBalance, color: "var(--primary)", icon: Gauge, sub: "جديد", isCurrency: true, isNew: true },
+          { label: "نسبة السيولة", value: BANKING_SUMMARY.liquidityRatio, color: "var(--success)", icon: Droplets, sub: "جديد", isCurrency: false, isNew: true },
+        ].map(({ label, value, color, icon: Icon, sub, isCurrency, isNew }) => (
+          <Card key={label} className={label === "إجمالي الأرصدة المجمّعة" ? "border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]" : ""}>
             <CardContent className="p-3 sm:p-5">
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] sm:h-9 sm:w-9 sm:rounded-[12px]"
                   style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
                   <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color }} />
                 </div>
-                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{label}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs leading-snug">{label}</p>
               </div>
               <p className="text-sm font-bold tabular-nums break-all sm:text-2xl" style={{ color }} dir="ltr">
-                {formatCurrency(value)}
+                {isCurrency ? formatCurrency(value) : `${value}x`}
               </p>
-              <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">{sub}</p>
+              {isNew ? (
+                <Badge variant="secondary" className="mt-1 font-arabic text-[10px]">{sub}</Badge>
+              ) : (
+                <p className="text-[10px] text-[var(--muted-foreground)] font-arabic mt-1 sm:text-xs">{sub}</p>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -418,25 +393,48 @@ export default function BankPage() {
               </h2>
               <div className="space-y-2">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 sm:px-4 sm:py-3">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black sm:h-8 sm:w-8"
-                      style={{
-                        background: tx.type === "credit"
-                          ? "color-mix(in srgb, var(--success) 14%, transparent)"
-                          : "color-mix(in srgb, var(--destructive) 12%, transparent)",
-                        color: tx.type === "credit" ? "var(--success)" : "var(--destructive)",
-                      }}>
-                      {tx.type === "credit" ? "+" : "-"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-xs font-medium text-[var(--foreground)] font-arabic sm:text-sm">{tx.desc}</p>
-                      <p className="text-[10px] text-[var(--muted-foreground)] font-arabic sm:text-xs">{tx.bank} · {tx.date}</p>
-                    </div>
-                    <span className="text-xs font-bold tabular-nums shrink-0 sm:text-sm"
-                      style={{ color: tx.type === "credit" ? "var(--success)" : "var(--destructive)" }} dir="ltr">
-                      {tx.type === "credit" ? "+" : ""}{formatCurrency(Math.abs(tx.amount))}
-                    </span>
-                  </div>
+                  <ListItemRow
+                    key={tx.id}
+                    icon={tx.type === "credit" ? "+" : "-"}
+                    iconBg={tx.type === "credit" ? "color-mix(in srgb, var(--success) 14%, transparent)" : "color-mix(in srgb, var(--destructive) 12%, transparent)"}
+                    title={tx.desc}
+                    sub={`${tx.bank} · ${tx.date}`}
+                    right={
+                      <span className="text-xs font-bold tabular-nums sm:text-sm"
+                        style={{ color: tx.type === "credit" ? "var(--success)" : "var(--destructive)" }} dir="ltr">
+                        {tx.type === "credit" ? "+" : ""}{formatCurrency(Math.abs(tx.amount))}
+                      </span>
+                    }
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI-categorized transactions */}
+          <Card>
+            <CardContent className="p-5">
+              <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-1 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[var(--primary)]" />
+                تصنيف تلقائي للمعاملات
+                <Badge variant="default" className="font-arabic text-[10px]">جديد</Badge>
+              </h2>
+              <p className="text-xs text-[var(--muted-foreground)] font-arabic mb-4">آخر المعاملات المجمّعة، مصنّفة تلقائياً بالذكاء الاصطناعي</p>
+              <div className="space-y-2">
+                {categorizedTransactions.map((tx) => (
+                  <ListItemRow
+                    key={tx.id}
+                    icon={tx.type === "credit" ? "+" : "-"}
+                    iconBg={tx.type === "credit" ? "color-mix(in srgb, var(--success) 14%, transparent)" : "color-mix(in srgb, var(--destructive) 12%, transparent)"}
+                    title={tx.desc}
+                    sub={`${tx.category} · ${tx.bank}`}
+                    right={
+                      <span className="text-xs font-bold tabular-nums sm:text-sm"
+                        style={{ color: tx.type === "credit" ? "var(--success)" : "var(--destructive)" }} dir="ltr">
+                        {tx.type === "credit" ? "+" : ""}{formatCurrency(Math.abs(tx.amount))}
+                      </span>
+                    }
+                  />
                 ))}
               </div>
             </CardContent>
