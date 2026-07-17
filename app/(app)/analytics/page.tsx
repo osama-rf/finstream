@@ -28,6 +28,12 @@ const EXPENSE_DETAILS: Record<FinancialYear, { selling: number; admin: number }>
 
 const banksList = LICENSED_FINANCE_ENTITIES;
 const shareBanks = LICENSED_BANKS.map(bank => bank.name);
+const receivedFinancingOffers = [
+  { lender: "شركة سهل للتمويل", amount: 8_000_000, rate: 6.4, term: 36, status: "عرض جديد" },
+  { lender: "شركة إمكان للتمويل", amount: 5_500_000, rate: 6.9, term: 30, status: "قيد المقارنة" },
+  { lender: "شركة اليسر للإجارة والتمويل", amount: 4_000_000, rate: 7.2, term: 24, status: "ينتهي خلال 5 أيام" },
+];
+type ReceivedFinancingOffer = (typeof receivedFinancingOffers)[number];
 
 // ─── Bar chart ──────────────────────────────────────────────────────────────
 
@@ -282,11 +288,39 @@ function ShareCreditModal({ letter, onClose }: { letter: string; onClose: () => 
   );
 }
 
+function FinancingOfferModal({ offer, onClose }: { offer: ReceivedFinancingOffer; onClose: () => void }) {
+  const monthlyRate = offer.rate / 100 / 12;
+  const monthlyPayment = offer.amount * monthlyRate * (1 + monthlyRate) ** offer.term / ((1 + monthlyRate) ** offer.term - 1);
+  const totalRepayment = monthlyPayment * offer.term;
+  return <Dialog open onOpenChange={onClose}>
+    <DialogContent className="w-[95vw] max-w-lg p-0" dir="rtl">
+      <DialogHeader className="border-b border-[var(--border)] px-5 py-4 pe-14"><DialogTitle className="font-arabic">تفاصيل العرض التمويلي</DialogTitle></DialogHeader>
+      <div className="space-y-4 p-5">
+        <div className="rounded-xl border border-[var(--success)]/25 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] p-4"><p className="font-bold text-[var(--foreground)] font-arabic">{offer.lender}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">تمويل رأس مال عامل · {offer.status}</p></div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            ["مبلغ التمويل", formatCurrency(offer.amount)],
+            ["المعدل السنوي", `${offer.rate}%`],
+            ["مدة التمويل", `${offer.term} شهراً`],
+            ["القسط التقديري", formatCurrency(Math.round(monthlyPayment))],
+            ["إجمالي السداد", formatCurrency(Math.round(totalRepayment))],
+            ["تكلفة التمويل", formatCurrency(Math.round(totalRepayment - offer.amount))],
+          ].map(([label, value]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{label}</p><p className="mt-1 text-sm font-bold text-[var(--foreground)]" dir="ltr">{value}</p></div>)}
+        </div>
+        <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs font-bold text-[var(--foreground)] font-arabic">المتطلبات</p><ul className="mt-2 space-y-1 text-xs text-[var(--muted-foreground)] font-arabic"><li>• اعتماد القوائم المالية للسنة المختارة</li><li>• مشاركة التقرير الائتماني الحالي</li><li>• كشف الحساب البنكي لآخر 12 شهراً</li></ul></div>
+        <p className="text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">القسط وإجمالي السداد تقدير أولي محسوب بطريقة القسط الثابت، ويخضع العرض النهائي لشروط الجهة الممولة.</p>
+        <div className="flex gap-2"><Button className="flex-1 font-arabic" onClick={() => { toast.success(`تم قبول عرض ${offer.lender} مبدئياً`); onClose(); }}>قبول العرض مبدئياً</Button><Button variant="outline" className="font-arabic" onClick={onClose}>إغلاق</Button></div>
+      </div>
+    </DialogContent>
+  </Dialog>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const [selectedYear, setSelectedYear] = useState<FinancialYear>("2025");
   const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<ReceivedFinancingOffer | null>(null);
   const [scenario, setScenario] = useState(SCENARIO_BASELINE);
   const [activeExpenseIndex, setActiveExpenseIndex] = useState<number | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState<number | null>(null);
@@ -329,6 +363,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6 page-transition-shell" dir="rtl">
 
       {showShareModal && <ShareCreditModal letter={yearCreditReport.letter} onClose={() => setShowShareModal(false)} />}
+      {selectedOffer && <FinancingOfferModal offer={selectedOffer} onClose={() => setSelectedOffer(null)} />}
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">التحليل المالي</h1><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{selectedYear === "2023" ? "" : ""}</p></div>
@@ -710,17 +745,16 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card> */}
 
+          <div className="grid items-start gap-4 xl:grid-cols-2">
           <Card>
             <CardContent className="p-5">
               <div className="rounded-[14px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <p className="text-sm font-bold text-[var(--foreground)] font-arabic">
-                    قائمة جهات التمويل المرخصة من البنك المركزي السعودي
-                  </p>
+                  <div><p className="text-sm font-bold text-[var(--foreground)] font-arabic">إرسال طلب تمويل</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">اختر جهة مرخصة وأرسل ملفك المالي والتصنيف الائتماني.</p></div>
                 </div>
               </div>
-              <div className="max-h-[620px] space-y-3 overflow-y-auto pe-1">
-                {banksList.map(bank => (
+              <div className="max-h-[520px] space-y-3 overflow-y-auto pe-1">
+                {banksList.slice(0, 12).map(bank => (
                   <div key={bank.name} className="rounded-[14px] border border-[var(--border)] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-4">
@@ -745,6 +779,32 @@ export default function AnalyticsPage() {
               <a href={SAMA_FINANCE_SOURCE} target="_blank" rel="noreferrer" className="mt-4 block text-xs text-[var(--primary)] underline underline-offset-4 font-arabic"></a>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-5">
+              <div className="rounded-[14px] border border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_5%,transparent)] px-5 py-4 mb-4">
+                <p className="text-sm font-bold text-[var(--foreground)] font-arabic">العروض التمويلية الواردة</p>
+                <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">عروض مستلمة بناءً على بيانات {selectedYear} وتصنيف {yearCreditReport.letter}.</p>
+              </div>
+              <div className="space-y-3">
+                {receivedFinancingOffers.map(offer => (
+                  <div key={offer.lender} className="rounded-[14px] border border-[var(--border)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div><p className="font-bold text-[var(--foreground)] font-arabic">{offer.lender}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">تمويل رأس مال عامل</p></div>
+                      <Badge variant={offer.status === "عرض جديد" ? "success" : "secondary"} className="shrink-0 font-arabic">{offer.status}</Badge>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[var(--surface)] p-3">
+                      <div><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">المبلغ</p><b className="text-xs" dir="ltr">{formatCurrency(offer.amount)}</b></div>
+                      <div><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">المعدل السنوي</p><b className="text-xs" dir="ltr">{offer.rate}%</b></div>
+                      <div><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">المدة</p><b className="text-xs font-arabic">{offer.term} شهراً</b></div>
+                    </div>
+                    <Button variant="outline" size="sm" className="mt-3 w-full font-arabic" onClick={() => setSelectedOffer(offer)}>مراجعة العرض</Button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-xl border border-dashed border-[var(--border)] p-3 text-center text-xs text-[var(--muted-foreground)] font-arabic">3 عروض مستلمة · قارن المعدل والمدة قبل القبول</div>
+            </CardContent>
+          </Card>
+          </div>
 
           {/* <Card>
             <CardContent className="p-5">

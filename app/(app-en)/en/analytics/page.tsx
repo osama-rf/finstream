@@ -28,6 +28,12 @@ const EXPENSE_DETAILS: Record<FinancialYear, { selling: number; admin: number }>
 
 const banksList = LICENSED_FINANCE_ENTITIES;
 const shareBanks = LICENSED_BANKS.map(bank => bank.name);
+const receivedFinancingOffers = [
+  { lender: "Sahl Finance", amount: 8_000_000, rate: 6.4, term: 36, status: "New offer" },
+  { lender: "Emkan Finance", amount: 5_500_000, rate: 6.9, term: 30, status: "Comparing" },
+  { lender: "Al Yusr Leasing & Finance", amount: 4_000_000, rate: 7.2, term: 24, status: "Expires in 5 days" },
+];
+type ReceivedFinancingOffer = (typeof receivedFinancingOffers)[number];
 
 // ─── Bar chart ──────────────────────────────────────────────────────────────
 
@@ -278,11 +284,39 @@ function ShareCreditModal({ letter, onClose }: { letter: string; onClose: () => 
   );
 }
 
+function FinancingOfferModal({ offer, onClose }: { offer: ReceivedFinancingOffer; onClose: () => void }) {
+  const monthlyRate = offer.rate / 100 / 12;
+  const monthlyPayment = offer.amount * monthlyRate * (1 + monthlyRate) ** offer.term / ((1 + monthlyRate) ** offer.term - 1);
+  const totalRepayment = monthlyPayment * offer.term;
+  return <Dialog open onOpenChange={onClose}>
+    <DialogContent className="w-[95vw] max-w-lg p-0">
+      <DialogHeader className="border-b border-[var(--border)] px-5 py-4 pe-14"><DialogTitle>Financing offer details</DialogTitle></DialogHeader>
+      <div className="space-y-4 p-5">
+        <div className="rounded-xl border border-[var(--success)]/25 bg-[color:color-mix(in_srgb,var(--success)_6%,transparent)] p-4"><p className="font-bold text-[var(--foreground)]">{offer.lender}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Working-capital finance · {offer.status}</p></div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            ["Financing amount", formatCurrency(offer.amount)],
+            ["Annual rate", `${offer.rate}%`],
+            ["Term", `${offer.term} months`],
+            ["Estimated payment", formatCurrency(Math.round(monthlyPayment))],
+            ["Total repayment", formatCurrency(Math.round(totalRepayment))],
+            ["Financing cost", formatCurrency(Math.round(totalRepayment - offer.amount))],
+          ].map(([label, value]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)]">{label}</p><p className="mt-1 text-sm font-bold text-[var(--foreground)]">{value}</p></div>)}
+        </div>
+        <div className="rounded-xl border border-[var(--border)] p-4"><p className="text-xs font-bold text-[var(--foreground)]">Requirements</p><ul className="mt-2 space-y-1 text-xs text-[var(--muted-foreground)]"><li>• Approved statements for the selected year</li><li>• Current credit report</li><li>• Last 12 months of bank statements</li></ul></div>
+        <p className="text-[10px] leading-4 text-[var(--muted-foreground)]">Payment and total repayment are preliminary fixed-payment estimates. Final terms remain subject to lender approval.</p>
+        <div className="flex gap-2"><Button className="flex-1" onClick={() => { toast.success(`${offer.lender} offer accepted provisionally`); onClose(); }}>Accept provisionally</Button><Button variant="outline" onClick={onClose}>Close</Button></div>
+      </div>
+    </DialogContent>
+  </Dialog>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsEnPage() {
   const [selectedYear, setSelectedYear] = useState<FinancialYear>("2025");
   const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<ReceivedFinancingOffer | null>(null);
   const [scenario, setScenario] = useState(SCENARIO_BASELINE);
   const [activeExpenseIndex, setActiveExpenseIndex] = useState<number | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState<number | null>(null);
@@ -325,6 +359,7 @@ export default function AnalyticsEnPage() {
     <div className="space-y-6 page-transition-shell" dir="ltr">
 
       {showShareModal && <ShareCreditModal letter={yearCreditReport.letter} onClose={() => setShowShareModal(false)} />}
+      {selectedOffer && <FinancingOfferModal offer={selectedOffer} onClose={() => setSelectedOffer(null)} />}
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">{selectedYear === "2023" ? "Before Rakaez" : "After Rakaez"}</p></div>
@@ -703,18 +738,16 @@ export default function AnalyticsEnPage() {
             </CardContent>
           </Card>
 
+          <div className="grid items-start gap-4 xl:grid-cols-2">
           <Card>
             <CardContent className="p-5">
               <div className="rounded-[14px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-5 py-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0" />
-                  <p className="text-sm font-bold text-[var(--foreground)]">
-                    SAMA-licensed financing entities
-                  </p>
+                  <div><p className="text-sm font-bold text-[var(--foreground)]">Send financing request</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Choose a licensed entity and send your financial file and credit rating.</p></div>
                 </div>
               </div>
-              <div className="max-h-[620px] space-y-3 overflow-y-auto pe-1">
-                {banksList.map(bank => (
+              <div className="max-h-[520px] space-y-3 overflow-y-auto pe-1">
+                {banksList.slice(0, 12).map(bank => (
                   <div key={bank.name} className="rounded-[14px] border border-[var(--border)] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-4">
@@ -739,6 +772,29 @@ export default function AnalyticsEnPage() {
               <a href={SAMA_FINANCE_SOURCE} target="_blank" rel="noreferrer" className="mt-4 block text-xs text-[var(--primary)] underline underline-offset-4">Source: Saudi Central Bank</a>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-5">
+              <div className="rounded-[14px] border border-[var(--success)]/20 bg-[color:color-mix(in_srgb,var(--success)_5%,transparent)] px-5 py-4 mb-4">
+                <p className="text-sm font-bold text-[var(--foreground)]">Received financing offers</p>
+                <p className="mt-1 text-xs text-[var(--muted-foreground)]">Offers based on {selectedYear} data and the {yearCreditReport.letter} rating.</p>
+              </div>
+              <div className="space-y-3">
+                {receivedFinancingOffers.map(offer => (
+                  <div key={offer.lender} className="rounded-[14px] border border-[var(--border)] p-4">
+                    <div className="flex items-start justify-between gap-3"><div><p className="font-bold text-[var(--foreground)]">{offer.lender}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">Working-capital finance</p></div><Badge variant={offer.status === "New offer" ? "success" : "secondary"} className="shrink-0">{offer.status}</Badge></div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-[var(--surface)] p-3">
+                      <div><p className="text-[10px] text-[var(--muted-foreground)]">Amount</p><b className="text-xs">{formatCurrency(offer.amount)}</b></div>
+                      <div><p className="text-[10px] text-[var(--muted-foreground)]">Annual rate</p><b className="text-xs">{offer.rate}%</b></div>
+                      <div><p className="text-[10px] text-[var(--muted-foreground)]">Term</p><b className="text-xs">{offer.term} months</b></div>
+                    </div>
+                    <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setSelectedOffer(offer)}>Review offer</Button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-xl border border-dashed border-[var(--border)] p-3 text-center text-xs text-[var(--muted-foreground)]">3 offers received · compare rate and term before accepting</div>
+            </CardContent>
+          </Card>
+          </div>
 
           <Card>
             <CardContent className="p-5">
