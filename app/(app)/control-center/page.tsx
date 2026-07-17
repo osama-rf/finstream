@@ -56,7 +56,7 @@ export default function ControlCenterPage() {
   ].map(account => ({ ...account, balance: selectedMetrics.cash * account.share }));
 
   const kpis = [
-    { label: "النقد وما في حكمه", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
+    { label: "الرصيد", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
     { label: `إيرادات ${selectedYear}`, value: selectedMetrics.revenue, color: "var(--success)", icon: TrendingUp },
     { label: `صافي ربح ${selectedYear}`, value: selectedMetrics.netProfit, color: "var(--success)", icon: TrendingDown },
     { label: "التدفق النقدي التشغيلي", value: selectedMetrics.operatingCashFlow, color: selectedMetrics.operatingCashFlow >= 0 ? "var(--success)" : "var(--destructive)", icon: ArrowLeftRight },
@@ -83,7 +83,7 @@ export default function ControlCenterPage() {
             <Wallet className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic">النقد وما في حكمه</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic">الرصيد</p>
             <p className="text-2xl font-bold text-[var(--control-balance-value)] tabular-nums" dir="ltr">{formatCurrency(selectedMetrics.cash)}</p>
             <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{selectedYear === "2023" ? "سنة الأساس " : <>مقارنةً بـ <span dir="ltr">{formatCurrency(previousMetrics.cash)}</span> في {previousYear}</>}</p>
           </div>
@@ -178,7 +178,7 @@ export default function ControlCenterPage() {
       {/* Bank accounts */}
       <div>
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div><h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">توزيع النقد وما في حكمه للسنة المالية {selectedYear}</p></div>
+          <div><h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">توزيع الرصيد للسنة المالية {selectedYear}</p></div>
           <div className="text-left"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p><p className="text-sm font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(selectedMetrics.cash)}</p></div>
         </div>
         <Card>
