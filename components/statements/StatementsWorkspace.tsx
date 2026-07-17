@@ -183,11 +183,11 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
     <div>
       <h2 className="font-bold text-[var(--foreground)] font-arabic">{lang === "ar" ? "مركز جاهزية الاعتماد" : "Approval Readiness Center"}</h2>
       <p className="mb-3 mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{lang === "ar" ? "اختبارات مترابطة تكشف الأخطاء قبل إرسال القوائم للمراجع أو جهة التمويل." : "Connected tests that surface errors before statements reach a reviewer or lender."}</p>
-      <Card className={exceptionCount ? "border-[var(--warning)]/30" : "border-[var(--success)]/30"}>
+      <Card className={exceptionCount ? "border-[var(--destructive)]/30" : "border-[var(--success)]/30"}>
         <CardContent className="p-5">
           <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div><p className={`font-bold font-arabic ${exceptionCount ? "text-[var(--warning)]" : "text-[var(--success)]"}`}>{exceptionCount ? (lang === "ar" ? "غير جاهزة للاعتماد" : "Not ready for approval") : (lang === "ar" ? "جاهزة للاعتماد" : "Ready for approval")}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{exceptionCount ? (lang === "ar" ? `${exceptionCount} استثناءات تمنع الاعتماد حتى مراجعتها` : `${exceptionCount} exceptions must be reviewed before approval`) : (lang === "ar" ? "اجتازت القوائم جميع اختبارات الاتساق والتتبع" : "All reconciliation and traceability tests passed")}</p></div>
+              <div><p className={`font-bold font-arabic ${exceptionCount ? "text-[var(--destructive)]" : "text-[var(--success)]"}`}>{exceptionCount ? (lang === "ar" ? "غير جاهزة للاعتماد" : "Not ready for approval") : (lang === "ar" ? "جاهزة للاعتماد" : "Ready for approval")}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{exceptionCount ? (lang === "ar" ? `${exceptionCount} استثناءات تمنع الاعتماد حتى مراجعتها` : `${exceptionCount} exceptions must be reviewed before approval`) : (lang === "ar" ? "اجتازت القوائم جميع اختبارات الاتساق والتتبع" : "All reconciliation and traceability tests passed")}</p></div>
             </div>
             <div className="flex gap-2"><Badge variant={exceptionCount ? "warning" : "success"}>{passedChecks}/{checks.length} {lang === "ar" ? "اختبارات ناجحة" : "tests passed"}</Badge><Badge variant="secondary">{period}</Badge></div>
           </div>
