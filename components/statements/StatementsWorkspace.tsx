@@ -189,7 +189,7 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
             <div className="flex items-center gap-4">
               <div><p className={`font-bold font-arabic ${exceptionCount ? "text-[var(--destructive)]" : "text-[var(--success)]"}`}>{exceptionCount ? (lang === "ar" ? "غير جاهزة للاعتماد" : "Not ready for approval") : (lang === "ar" ? "جاهزة للاعتماد" : "Ready for approval")}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{exceptionCount ? (lang === "ar" ? `${exceptionCount} استثناءات تمنع الاعتماد حتى مراجعتها` : `${exceptionCount} exceptions must be reviewed before approval`) : (lang === "ar" ? "اجتازت القوائم جميع اختبارات الاتساق والتتبع" : "All reconciliation and traceability tests passed")}</p></div>
             </div>
-            <div className="flex gap-2"><Badge variant={exceptionCount ? "warning" : "success"}>{passedChecks}/{checks.length} {lang === "ar" ? "اختبارات ناجحة" : "tests passed"}</Badge><Badge variant="secondary">{period}</Badge></div>
+            <div className="flex gap-2"><Badge variant={exceptionCount ? "warning" : "success"}>{passedChecks}/{checkResults.length} {lang === "ar" ? "اختبارات ناجحة" : "tests passed"}</Badge><Badge variant="secondary">{period}</Badge></div>
           </div>
           <div className="mt-2 divide-y divide-[var(--border)]">
             {checks.map(check => <div key={check.title} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
@@ -218,10 +218,18 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
           <Badge variant={generated ? (exceptionCount ? "warning" : "success") : "secondary"}>{generated ? (exceptionCount ? (lang === "ar" ? "يتطلب إجراء" : "Action required") : t.ready) : t.draft}</Badge>
         </div>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {[[t.coverage, `${coveragePct}%`, lang === "ar" ? "3/3 قوائم" : "3/3 statements"], [t.checks, `${passedChecks}/${checks.length}`, lang === "ar" ? "ناجحة" : "passed"], [t.exceptions, String(exceptionCount), lang === "ar" ? "مفتوحة" : "open"], [lang === "ar" ? "القيود اليدوية" : "Manual entries", String(entries.length), t.balanced]].map(([label, value, detail]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{value}</p><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{detail}</p></div>)}
+          {[[t.coverage, `${coveragePct}%`, lang === "ar" ? "3/3 قوائم" : "3/3 statements"], [t.checks, `${passedChecks}/${checkResults.length}`, lang === "ar" ? "ناجحة" : "passed"], [t.exceptions, String(exceptionCount), lang === "ar" ? "مفتوحة" : "open"], [lang === "ar" ? "القيود اليدوية" : "Manual entries", String(entries.length), t.balanced]].map(([label, value, detail]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{value}</p><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{detail}</p></div>)}
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-bold text-[var(--foreground)] font-arabic">{lang === "ar" ? "القوائم الجاهزة للمراجعة" : "Statements ready for review"}</p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {statements.map(statement => {
+              const name = lang === "ar" ? statement.title : statement.type === "income" ? t.income : statement.type === "balance" ? t.balance : t.cashflow;
+              return <button key={statement.id} type="button" onClick={() => setSelectedStatement(statement)} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-start transition-colors hover:border-[var(--primary)]/40 hover:bg-[var(--surface)]"><FileText className="h-4 w-4 shrink-0 text-[var(--primary)]" /><span className="min-w-0 flex-1"><b className="block truncate text-xs font-arabic">{name}</b><small className="text-[10px] text-[var(--muted-foreground)]">{period}</small></span><Badge variant={statement.status === "approved" ? "success" : "secondary"}>{lang === "ar" ? "فتح" : "Open"}</Badge></button>;
+            })}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
-          <Button size="sm" variant="outline" onClick={() => statements[0] && setSelectedStatement(statements[0])}>{lang === "ar" ? "مراجعة القوائم" : "Review statements"}</Button>
           <Button size="sm" variant="outline" onClick={openEntryForm}>{t.add}</Button>
           <Button size="sm" onClick={approveStatements} disabled={!generated || exceptionCount > 0}>{lang === "ar" ? "اعتماد داخلي" : "Internal approval"}</Button>
         </div>
