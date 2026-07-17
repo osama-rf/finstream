@@ -104,6 +104,8 @@ ul.clean li b{color:var(--sand);font-weight:500}
 #timer-display.danger{color:var(--clay)}
 #timer button{background:none;border:none;color:var(--mist);cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;transition:background .2s,color .2s}
 #timer button:hover{background:var(--stone2);color:var(--sand)}
+.btn-primary{display:inline-block;background:var(--gold);color:var(--navy);font-family:'Thmanyah Serif Text';font-weight:600;font-size:1.05rem;padding:14px 34px;border-radius:10px;text-decoration:none;transition:transform .15s,background .2s}
+.btn-primary:hover{background:var(--sand);transform:translateY(-2px)}
 .hint{position:fixed;bottom:22px;right:30px;z-index:100;font-size:.72rem;color:var(--mist);opacity:.7;font-family:'Thmanyah Serif Text','IBM Plex Sans Arabic'}
 
 /* رمز مؤقت — بديل عن final_logo.png لحين رفع الملف الفعلي */
@@ -172,13 +174,13 @@ ul.clean li b{color:var(--sand);font-weight:500}
       <p>الشركات المتوسطة والصغيرة تُرفض لا لضعف أدائها، بل <b>لافتقارها لسجل ائتماني قوي وقوائم مالية مدققة</b>.</p>
       <div class="trio">
         <div class="cell">
-          <svg viewBox="0 0 260 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:260px;height:auto">
-            <rect x="10" y="12" width="128" height="28" rx="5" fill="var(--clay)"/>
-            <text x="128" y="30" text-anchor="end" fill="var(--sand)" font-family="IBM Plex Mono" font-size="13" font-weight="600" dx="-8">٩.٤٪</text>
-            <text x="145" y="30" fill="var(--sand)" font-family="Thmanyah Serif Text, IBM Plex Sans Arabic" font-size="11">الوضع الحالي</text>
-            <rect x="10" y="58" width="150" height="28" rx="5" fill="var(--gold)"/>
-            <text x="150" y="76" text-anchor="end" fill="var(--sand)" font-family="IBM Plex Mono" font-size="13" font-weight="600" dx="-8">١١٪</text>
-            <text x="167" y="76" fill="var(--sand)" font-family="Thmanyah Serif Text, IBM Plex Sans Arabic" font-size="11">الهدف ٢٠٢٥</text>
+          <svg viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:220px;height:auto">
+            <rect x="10" y="8" width="200" height="34" rx="6" fill="var(--clay)"/>
+            <text x="110" y="30" text-anchor="middle" fill="var(--sand)" font-family="IBM Plex Mono" font-size="15" font-weight="600">٩.٤٪</text>
+            <text x="110" y="55" text-anchor="middle" fill="var(--sand)" font-family="Thmanyah Serif Text, IBM Plex Sans Arabic" font-size="11">الوضع الحالي</text>
+            <rect x="10" y="65" width="200" height="34" rx="6" fill="var(--gold)"/>
+            <text x="110" y="87" text-anchor="middle" fill="var(--sand)" font-family="IBM Plex Mono" font-size="15" font-weight="600">١١٪</text>
+            <text x="110" y="108" text-anchor="middle" fill="var(--sand)" font-family="Thmanyah Serif Text, IBM Plex Sans Arabic" font-size="11">الهدف ٢٠٢٥</text>
           </svg>
           <div class="mlabel" style="text-align:center">حصة قروض المنشآت الصغيرة من إجمالي قروض البنوك</div>
         </div>
@@ -235,7 +237,7 @@ ul.clean li b{color:var(--sand);font-weight:500}
 
       <div class="mini-card" style="margin-top:20px;text-align:right">
         <div class="role">تجارة إلكترونية — منتجات تجميل وعناية بالبشرة</div>
-        <h3 style="margin-bottom:6px">Glowpick <span style="font-size:.7rem;color:var(--mist);font-weight:400">(شعار الشركة سيُضاف)</span></h3>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px"><img src="data:image/png;base64,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" alt="Glowpick" style="height:46px;width:auto"><h3 style="margin-bottom:0">Glowpick</h3></div>
         <p>شركة تقدّم حلول تقنية حديثة تخدم العملاء وعمليات توصيل بجودة عالية في قطاع منتجات التجميل والعناية بالبشرة.</p>
       </div>
 
@@ -268,7 +270,7 @@ ul.clean li b{color:var(--sand);font-weight:500}
       <ul class="clean">
         <li><b>إطار المصرفية المفتوحة الحديث:</b> ساما رخّصت شركات في هذا النشاط تحديداً ضمن البيئة التجريبية — الطريق مثبت لا افتراضي.</li>
         <li><b>٢٧٠ جهة تقنية مالية فاعلة:</b> تجاوزت مستهدف ٢٠٢٥ من خط أساس ٨٢ — نظام شركاء وعملاء جاهز اليوم.</li>
-        <li><b>هدف حكومي يبحث عن أداة:</b> رفع حصة تمويل المنشآت من ٥٪ إلى ٢٠٪ بحلول ٢٠٣٠ لن يتحقق بالأدوات التقليدية.</li>
+        <li><b>هدف من أهداف الرؤية:</b> رفع حصة تمويل المنشآت إلى ٢٠٪ بحلول ٢٠٣٠، ومنصة ركائز ستكون من أكبر المساهمين في تحقيقه.</li>
       </ul>
       <div class="mini-chart">
         <svg viewBox="0 0 350 147" xmlns="http://www.w3.org/2000/svg">
@@ -293,38 +295,41 @@ ul.clean li b{color:var(--sand);font-weight:500}
         <svg viewBox="0 0 440 182" xmlns="http://www.w3.org/2000/svg">
           <rect x="10" y="126.26465661641541" width="60" height="23.73534338358459" rx="4" fill="var(--gold)" opacity="0.55"/><text x="40.0" y="118.26465661641541" text-anchor="middle" class="bar-value">109</text><text x="40.0" y="168" text-anchor="middle" class="axis-label">٢٠١٨</text><rect x="100" y="110.36850921273032" width="60" height="39.63149078726968" rx="4" fill="var(--gold)" opacity="0.66"/><text x="130.0" y="102.36850921273032" text-anchor="middle" class="bar-value">182</text><text x="130.0" y="168" text-anchor="middle" class="axis-label">٢٠٢٠</text><rect x="190" y="89.89949748743719" width="60" height="60.10050251256281" rx="4" fill="var(--gold)" opacity="0.77"/><text x="220.0" y="81.89949748743719" text-anchor="middle" class="bar-value">276</text><text x="220.0" y="168" text-anchor="middle" class="axis-label">٢٠٢٥</text><rect x="280" y="61.59128978224456" width="60" height="88.40871021775544" rx="4" fill="var(--gold)" opacity="0.88"/><text x="310.0" y="53.59128978224456" text-anchor="middle" class="bar-value">406</text><text x="310.0" y="168" text-anchor="middle" class="axis-label">٢٠٣٠</text><rect x="370" y="20.0" width="60" height="130.0" rx="4" fill="var(--gold)" opacity="0.99"/><text x="400.0" y="12.0" text-anchor="middle" class="bar-value">597</text><text x="400.0" y="168" text-anchor="middle" class="axis-label">٢٠٣٥</text>
         </svg>
-        <p style="font-size:.78rem;color:var(--mist);margin-top:2px;text-align:center">نمو سوق شركات التمويل (مليون ريال) — نمو سنوي مركب ١١٪</p>
+        <p style="font-size:.78rem;color:var(--mist);margin-top:2px;text-align:center">نمو <b style="color:var(--sand)">قطاع شركات التمويل تحديداً</b> (مليون ريال) — مؤشر مختلف عن إجمالي الطلب على الائتمان أعلاه</p>
       </div>
       <p class="src">وزارة الاستثمار</p>
     </div>
   </div>
 
-  <div class="frame" id="f-moat" style="width:960px;height:1360px">
+  <div class="frame" id="f-moat" style="width:1480px;height:840px">
     <div class="inner">
-      <h2>بماذا نتميز؟</h2>
-      <p><b>موقعنا في سلسلة القيمة</b> هيكلي لا يعتمد على الخصائص الكثيرة أو الأسعار المخفّضة.</p>
-      <div class="comp-label">المنافسون الحاليون — كلهم بنية تحتية موجّهة للبنك</div>
-      <div class="comp-row">
-        <div class="comp-chip">ترابط <span class="tag">Tarabut</span></div>
-        <div class="comp-chip">لين <span class="tag">Lean</span></div>
-        <div class="comp-chip">سمة / قرار <span class="tag">SIMAH</span></div>
-        <div class="comp-chip">بيان <span class="tag">Bayan</span></div>
-        <div class="comp-chip">سنقل فيو <span class="tag">SingleView</span></div>
-        <div class="comp-chip">ساي فاي <span class="tag">Sifi</span></div>
-      </div>
-      <ul class="clean">
-        <li><b>كل اللاعبين في السوق متوجهين للجهات التمويلية والبنوك</b></li>
-        <li><b>بيانات حية وتاريخية لتقييم أدق</b></li>
-      </ul>
-
-      <div style="width:100%;height:1px;background:var(--line);margin:30px 0"></div>
-
-      <h2>ما هي المخاطر والتحديات؟</h2>
-      <div class="risk-grid">
-        <div class="risk-item"><b>تنظيمية وتشريعية</b>الترخيص والبيئة التجريبية ضمن تشريعات ساما.</div>
-        <div class="risk-item"><b>الربط والتكامل</b>الربط مع بيان للمعلومات الائتمانية ومع البنوك — نحتاج وصولاً لواجهات API.</div>
-        <div class="risk-item"><b>التنفيذ</b>دقة نموذج التقييم — نخفّفها ببدء شريحة قطاعية واحدة قبل التوسع.</div>
-        <div class="risk-item"><b>التركّز</b>الاعتماد على مزود ربط واحد — نخفّفها بتصميم يسمح بتعدد المزودين.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px">
+        <div>
+          <h2>بماذا نتميز؟</h2>
+          <p><b>موقعنا في سلسلة القيمة</b> هيكلي لا يعتمد على الخصائص الكثيرة أو الأسعار المخفّضة.</p>
+          <div class="comp-label">المنافسون الحاليون — كلهم بنية تحتية موجّهة للبنك</div>
+          <div class="comp-row">
+            <div class="comp-chip">ترابط <span class="tag">Tarabut</span></div>
+            <div class="comp-chip">لين <span class="tag">Lean</span></div>
+            <div class="comp-chip">سمة / قرار <span class="tag">SIMAH</span></div>
+            <div class="comp-chip">بيان <span class="tag">Bayan</span></div>
+            <div class="comp-chip">سنقل فيو <span class="tag">SingleView</span></div>
+            <div class="comp-chip">ساي فاي <span class="tag">Sifi</span></div>
+          </div>
+          <ul class="clean">
+            <li><b>كل اللاعبين في السوق متوجهين للجهات التمويلية والبنوك</b></li>
+            <li><b>بيانات حية وتاريخية لتقييم أدق</b></li>
+          </ul>
+        </div>
+        <div style="border-right:1px solid var(--line);padding-right:50px">
+          <h2>ما هي المخاطر والتحديات؟</h2>
+          <div class="risk-grid" style="grid-template-columns:1fr">
+            <div class="risk-item"><b>تنظيمية وتشريعية</b>الترخيص والبيئة التجريبية ضمن تشريعات ساما.</div>
+            <div class="risk-item"><b>الربط والتكامل</b>الربط مع بيان للمعلومات الائتمانية ومع البنوك — نحتاج وصولاً لواجهات API.</div>
+            <div class="risk-item"><b>التنفيذ</b>دقة نموذج التقييم — نخفّفها ببدء شريحة قطاعية واحدة قبل التوسع.</div>
+            <div class="risk-item"><b>التركّز</b>الاعتماد على مزود ربط واحد — نخفّفها بتصميم يسمح بتعدد المزودين.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -339,7 +344,7 @@ ul.clean li b{color:var(--sand);font-weight:500}
       </div>
       <div class="milestone" style="margin-top:18px">
         <p style="color:var(--sand);font-weight:600;margin-bottom:6px;font-family:'Thmanyah Serif Text'">أين تتراكم القيمة؟</p>
-        <p style="font-size:.9rem">في <b>نموذج التقييم</b> (يتحسّن مع كل ملف) و<b>شبكة العلاقات مع الممولين</b> — الأصعب تقليداً والأثمن عند أي استحواذ مستقبلي.</p>
+        <p style="font-size:.9rem">تحسّن <b>نموذج التقييم</b> مع كل ملف تمويل، وبناء <b>شبكة العلاقات مع الممولين</b> لمستقبل نمو أفضل.</p>
       </div>
       <p class="src">* أسعار استرشادية.</p>
     </div>
@@ -348,9 +353,8 @@ ul.clean li b{color:var(--sand);font-weight:500}
   <div class="frame" id="f-close" style="width:1000px;height:920px;align-items:center;text-align:center">
     <div class="inner" style="display:flex;flex-direction:column;align-items:center">
       <div class="eyebrow" style="justify-content:center"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="8,12.3 11,15.3 16,9"/></svg><span>ركائز</span></div>
-      <h2 style="font-size:3rem;line-height:1.3">نبني الركيزة التي يقف عليها<br>تمويل الشركات الناشئة</h2>
-      <p style="margin-top:16px;font-size:1.1rem">منتج حيّ · فجوة رسمية · نموذج مُجرَّب · توقيت تنظيمي مثالي</p>
-      <a href="https://rakaez.zaai.cc/control-center" target="_blank" rel="noopener" class="kicker" style="margin-top:22px;color:var(--gold);font-family:'IBM Plex Mono';font-size:1.05rem;text-decoration:none">rakaez.zaai.cc/control-center</a>
+      <h2 style="font-size:2.5rem;line-height:1.4">نبني الركيزة التي يستند عليها<br>نمو الشركات الناشئة والصغيرة والمتوسطة</h2>
+      <a href="https://rakaez.zaai.cc/control-center" target="_blank" rel="noopener" class="btn-primary" style="margin-top:26px">انتقل إلى منصة ركائز</a>
 
       <div class="team-row">
         <div class="team-member">
@@ -388,8 +392,8 @@ const steps=[
   {id:'f-moat'},{id:'f-revenue'},{id:'f-personas'},{id:'f-close'}
 ];
 const layout=[
-  {x:175,y:305},{x:1695,y:365},{x:3125,y:355},{x:4575,y:445},{x:4615,y:1995},{x:3165,y:1915},
-  {x:1695,y:1645},{x:245,y:1985},{x:225,y:3415},{x:1675,y:3415}
+  {x:250,y:305},{x:1920,y:365},{x:3500,y:355},{x:5100,y:445},{x:5140,y:1995},{x:3540,y:1915},
+  {x:1660,y:1905},{x:320,y:1985},{x:300,y:3415},{x:1900,y:3415}
 ];
 const arNum=n=>n.toLocaleString('ar-SA');
 let idx=0;

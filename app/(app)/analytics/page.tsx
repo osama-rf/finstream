@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ const shareBanks = LICENSED_BANKS.map(bank => bank.name);
 
 function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [detailYear, setDetailYear] = useState<FinancialYear>(selectedYear);
   const data = FINANCIAL_YEARS.slice().reverse().filter(year => Number(year) <= Number(selectedYear)).map(year => {
     const metrics = FINANCIAL_METRICS_BY_YEAR[year];
     return { quarter: year, revenue: metrics.revenue, expenses: metrics.revenue - metrics.netProfit, forecast: false };
@@ -46,23 +46,21 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
   const revenueGrowth = previousItem ? ((totalRevenue - previousItem.revenue) / previousItem.revenue) * 100 : 0;
   const heightPx = 96;
 
-  const activeIndex = hoverIndex ?? selectedIndex;
+  const activeIndex = hoverIndex;
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
-  const detailItem = selectedIndex !== null ? data[selectedIndex] : null;
-  const detailMargin = detailItem ? Math.round(((detailItem.revenue - detailItem.expenses) / detailItem.revenue) * 100) : null;
+  const detailItem = data.find(item => item.quarter === detailYear) ?? data[data.length - 1];
+  const detailMargin = ((detailItem.revenue - detailItem.expenses) / detailItem.revenue) * 100;
 
-  function toggleSelect(index: number) {
-    setSelectedIndex(prev => (prev === index ? null : index));
-  }
+  useEffect(() => setDetailYear(selectedYear), [selectedYear]);
 
   return (
     <div className="mt-2">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex flex-wrap gap-4">
-          <div><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">إيرادات {selectedYear}</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(totalRevenue)}</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">مصروفات {selectedYear}</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(totalExpenses)}</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">هامش صافي الربح</p><p className="mt-1 text-lg font-bold text-[var(--success)]" dir="ltr">{(((totalRevenue - totalExpenses) / totalRevenue) * 100).toFixed(1)}%</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">نمو الإيرادات سنوياً</p><p className="mt-1 text-lg font-bold text-[var(--success)]" dir="ltr">{revenueGrowth > 0 ? "+" : ""}{revenueGrowth.toFixed(1)}%</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">إيرادات {selectedYear}</p><p className="mt-1 w-full text-right text-lg font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(totalRevenue)}</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">مصروفات {selectedYear}</p><p className="mt-1 w-full text-right text-lg font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(totalExpenses)}</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">هامش صافي الربح</p><p className="mt-1 w-full text-right text-lg font-bold text-[var(--success)]" dir="ltr">{(((totalRevenue - totalExpenses) / totalRevenue) * 100).toFixed(2)}%</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">نمو الإيرادات سنوياً</p><p className="mt-1 w-full text-right text-lg font-bold text-[var(--success)]" dir="ltr">{revenueGrowth > 0 ? "+" : ""}{revenueGrowth.toFixed(1)}%</p></div>
         </div>
         <div className="flex items-center gap-3 rounded-full bg-[var(--surface)] px-3 py-1.5">
           <span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)] font-arabic"><i className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />الإيرادات</span>
@@ -82,7 +80,7 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
         <div className="flex flex-1 items-end gap-2">
           {data.map((item, index) => {
             const isActive = activeIndex === index;
-            const isSelected = selectedIndex === index;
+            const isSelected = item.quarter === detailItem.quarter;
             const revH = Math.round((item.revenue / maxVal) * heightPx);
             const expH = Math.round((item.expenses / maxVal) * heightPx);
             return (
@@ -101,9 +99,7 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
                   type="button"
                   onMouseEnter={() => setHoverIndex(index)}
                   onMouseLeave={() => setHoverIndex(null)}
-                  onFocus={() => setHoverIndex(index)}
-                  onBlur={() => setHoverIndex(null)}
-                  onClick={() => toggleSelect(index)}
+                  onClick={() => setDetailYear(item.quarter)}
                   className="flex w-full items-end justify-center gap-1 rounded-[6px] px-1 pt-1 transition-colors"
                   style={{ height: heightPx, background: isActive ? "var(--muted)" : "transparent" }}
                 >
@@ -113,7 +109,7 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
                       height: Math.max(revH, 2),
                       background: "var(--primary)",
                       opacity: item.forecast ? (isActive ? .55 : .38) : (isActive ? 1 : .9),
-                      outline: item.forecast || isSelected ? `1.5px dashed var(--primary)` : "none",
+                      outline: item.forecast || isSelected ? `1.5px solid var(--primary)` : "none",
                       outlineOffset: -1.5,
                     }}
                   />
@@ -123,7 +119,7 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
                       height: Math.max(expH, 2),
                       background: "var(--destructive)",
                       opacity: item.forecast ? (isActive ? .42 : .28) : (isActive ? .8 : .62),
-                      outline: item.forecast || isSelected ? `1.5px dashed var(--destructive)` : "none",
+                      outline: item.forecast || isSelected ? `1.5px solid var(--destructive)` : "none",
                       outlineOffset: -1.5,
                     }}
                   />
@@ -131,8 +127,8 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
                 <span
                   className="mt-1.5 text-[9px] font-arabic"
                   style={{
-                    color: isSelected ? "var(--foreground)" : "var(--muted-foreground)",
-                    fontWeight: isSelected ? 700 : 400,
+                    color: isSelected || isActive ? "var(--foreground)" : "var(--muted-foreground)",
+                    fontWeight: isSelected || isActive ? 700 : 400,
                   }}
                 >
                   {item.quarter}{item.forecast ? "*" : ""}
@@ -143,30 +139,15 @@ function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
         </div>
       </div>
 
-      {detailItem && (
-        <div className="mt-3 rounded-[12px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)] px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-bold text-[var(--foreground)] font-arabic">
-              تفاصيل {detailItem.quarter}{detailItem.forecast && " — متوقّع"}
-            </p>
-            <button onClick={() => setSelectedIndex(null)} className="text-xs text-[var(--muted-foreground)] font-arabic hover:text-[var(--foreground)]">إغلاق</button>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">الإيرادات</p>
-              <p className="text-sm font-bold text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(detailItem.revenue)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">المصروفات</p>
-              <p className="text-sm font-bold text-[var(--destructive)] tabular-nums" dir="ltr">{formatCurrency(detailItem.expenses)}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-[var(--muted-foreground)] font-arabic">هامش الربح</p>
-              <p className="text-sm font-bold text-[var(--success)] tabular-nums" dir="ltr">{detailMargin}%</p>
-            </div>
-          </div>
+      <div className="mt-3 rounded-[12px] border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)] px-4 py-3">
+        <p className="mb-2 text-sm font-bold text-[var(--foreground)] font-arabic">تفاصيل {detailItem.quarter}</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">الإيرادات</p><p className="w-full text-right text-sm font-bold text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(detailItem.revenue)}</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">المصروفات</p><p className="w-full text-right text-sm font-bold text-[var(--destructive)] tabular-nums" dir="ltr">{formatCurrency(detailItem.expenses)}</p></div>
+          <div className="text-right"><p className="text-[11px] text-[var(--muted-foreground)] font-arabic">هامش الربح</p><p className="w-full text-right text-sm font-bold text-[var(--success)] tabular-nums" dir="ltr">{detailMargin.toFixed(2)}%</p></div>
         </div>
-      )}
+      </div>
+
     </div>
   );
 }
