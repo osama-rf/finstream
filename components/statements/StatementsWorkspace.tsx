@@ -72,24 +72,30 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
   const endingCash = statementValue(cashFlowStatement, "النقد في نهاية الفترة");
   const cashDifference = startingCash !== undefined && netCashChange !== undefined && endingCash !== undefined ? startingCash + netCashChange - endingCash : Number.NaN;
   const cashReconciled = Number.isFinite(cashDifference) && Math.abs(cashDifference) < 1;
+  const incomeProfitBeforeZakat = statementValue(incomeStatement, "الربح قبل الزكاة");
+  const cashFlowProfitBeforeZakat = statementValue(cashFlowStatement, "الربح قبل الزكاة");
+  const crossStatementDifference = incomeProfitBeforeZakat !== undefined && cashFlowProfitBeforeZakat !== undefined ? incomeProfitBeforeZakat - cashFlowProfitBeforeZakat : Number.NaN;
+  const crossStatementReconciled = Number.isFinite(crossStatementDifference) && Math.abs(crossStatementDifference) < 1;
   const totalLineCount = statements.reduce((sum, statement) => sum + statement.lines.length, 0);
   const sourcedLineCount = statements.reduce((sum, statement) => sum + statement.lines.filter(line => Number.isFinite(line.value)).length, 0);
   const statementsComplete = statements.length === 3 && totalLineCount > 0 && sourcedLineCount === totalLineCount;
-  const checkResults = [accountingBalanced, incomeReconciled, cashReconciled, statementsComplete];
+  const checkResults = [accountingBalanced, incomeReconciled, crossStatementReconciled, cashReconciled, statementsComplete];
   const passedChecks = checkResults.filter(Boolean).length;
   const exceptionCount = checkResults.filter(result => !result).length;
   const coveragePct = totalLineCount ? Math.round((sourcedLineCount / totalLineCount) * 100) : 0;
   const money = (value: number) => formatCurrency(Number.isFinite(value) ? value : 0);
-  const checks = lang === "ar" ? [
-    ["توازن قائمة المركز المالي", `الأصول ${money(totalAssets ?? 0)} − الالتزامات ${money(totalLiabilities ?? 0)} − حقوق الملكية ${money(totalEquity ?? 0)} = فرق ${money(balanceDifference)}`, accountingBalanced ? "تم" : "تنبيه"],
-    ["اتساق قائمة الدخل", `الإيرادات − تكلفة المبيعات = ${money(calculatedGrossProfit)}؛ إجمالي الربح المعروض ${money(reportedGrossProfit ?? 0)}؛ الفرق ${money(incomeDifference)}`, incomeReconciled ? "تم" : "تنبيه"],
-    ["تسوية التدفق النقدي", `نقد البداية ${money(startingCash ?? 0)} + صافي التغير ${money(netCashChange ?? 0)} − نقد النهاية ${money(endingCash ?? 0)} = فرق ${money(cashDifference)}`, cashReconciled ? "تم" : "تنبيه"],
-    ["اكتمال القوائم والمصدر", `${statements.length}/3 قوائم · ${sourcedLineCount}/${totalLineCount} بنداً رقمياً من ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, statementsComplete ? "تم" : "تنبيه"],
+  const checks: Array<{ title: string; evidence: string; passed: boolean; statement?: Statement }> = lang === "ar" ? [
+    { title: "المعادلة المحاسبية", evidence: accountingBalanced ? `الأصول متطابقة مع الالتزامات وحقوق الملكية · ${money(totalAssets ?? 0)}` : `فرق غير مسوّى بقيمة ${money(balanceDifference)}`, passed: accountingBalanced, statement: balanceStatement },
+    { title: "إعادة احتساب إجمالي الربح", evidence: incomeReconciled ? `الإيرادات ناقص تكلفة المبيعات يطابق ${money(reportedGrossProfit ?? 0)}` : `المحسوب ${money(calculatedGrossProfit)} مقابل المعروض ${money(reportedGrossProfit ?? 0)} · فرق ${money(incomeDifference)}`, passed: incomeReconciled, statement: incomeStatement },
+    { title: "الربط بين القوائم", evidence: crossStatementReconciled ? `الربح قبل الزكاة متطابق في قائمة الدخل والتدفقات · ${money(incomeProfitBeforeZakat ?? 0)}` : `الربح قبل الزكاة مختلف بين القائمتين · فرق ${money(crossStatementDifference)}`, passed: crossStatementReconciled, statement: incomeStatement },
+    { title: "حركة النقد", evidence: cashReconciled ? `رصيد البداية + صافي الحركة يطابق الرصيد الختامي ${money(endingCash ?? 0)}` : `حركة النقد لا تطابق الرصيد الختامي · فرق ${money(cashDifference)}`, passed: cashReconciled, statement: cashFlowStatement },
+    // { title: "قابلية التتبع للمصدر", evidence: `${sourcedLineCount}/${totalLineCount} بنداً رقمياً · 3 قوائم · ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, passed: statementsComplete },
   ] : [
-    ["Statement of financial position", `Assets ${money(totalAssets ?? 0)} − liabilities ${money(totalLiabilities ?? 0)} − equity ${money(totalEquity ?? 0)} = ${money(balanceDifference)} difference`, accountingBalanced ? "Passed" : "Alert"],
-    ["Income statement reconciliation", `Revenue − cost of sales = ${money(calculatedGrossProfit)}; reported gross profit ${money(reportedGrossProfit ?? 0)}; difference ${money(incomeDifference)}`, incomeReconciled ? "Passed" : "Alert"],
-    ["Cash-flow reconciliation", `Opening cash ${money(startingCash ?? 0)} + net change ${money(netCashChange ?? 0)} − closing cash ${money(endingCash ?? 0)} = ${money(cashDifference)} difference`, cashReconciled ? "Passed" : "Alert"],
-    ["Statement and source completeness", `${statements.length}/3 statements · ${sourcedLineCount}/${totalLineCount} numeric lines from ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, statementsComplete ? "Passed" : "Alert"],
+    { title: "Accounting equation", evidence: accountingBalanced ? `Assets reconcile to liabilities and equity · ${money(totalAssets ?? 0)}` : `Unreconciled difference of ${money(balanceDifference)}`, passed: accountingBalanced, statement: balanceStatement },
+    { title: "Gross-profit recalculation", evidence: incomeReconciled ? `Revenue less cost of sales reconciles to ${money(reportedGrossProfit ?? 0)}` : `Calculated ${money(calculatedGrossProfit)} versus reported ${money(reportedGrossProfit ?? 0)} · ${money(incomeDifference)} difference`, passed: incomeReconciled, statement: incomeStatement },
+    { title: "Cross-statement linkage", evidence: crossStatementReconciled ? `Profit before zakat agrees across income and cash-flow statements · ${money(incomeProfitBeforeZakat ?? 0)}` : `Profit before zakat differs across statements · ${money(crossStatementDifference)} difference`, passed: crossStatementReconciled, statement: incomeStatement },
+    { title: "Cash roll-forward", evidence: cashReconciled ? `Opening cash plus net movement reconciles to ${money(endingCash ?? 0)}` : `Cash movement does not reconcile · ${money(cashDifference)} difference`, passed: cashReconciled, statement: cashFlowStatement },
+    { title: "Source traceability", evidence: `${sourcedLineCount}/${totalLineCount} numeric lines · 3 statements · ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, passed: statementsComplete },
   ];
 
   async function generate() {
@@ -174,7 +180,27 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
       <div className="mt-4 grid gap-3 lg:grid-cols-3">{statements.map(statement => <div key={statement.id} className="rounded-xl border border-[var(--border)] p-4"><div className="flex items-center justify-between"><FileText className="h-5 w-5 text-[var(--primary)]" /><Badge variant={statement.status === "approved" ? "success" : statement.status === "pending_review" ? "warning" : "secondary"}>{statement.status === "approved" ? (lang === "ar" ? "معتمدة" : "Approved") : statement.status === "pending_review" ? t.ready : t.draft}</Badge></div><p className="mt-3 text-sm font-bold font-arabic">{lang === "en" ? (statement.type === "income" ? t.income : statement.type === "balance" ? t.balance : t.cashflow) : statement.title}</p><p className="mt-1 text-[10px] text-[var(--muted-foreground)] font-arabic">{statement.period}</p><div className="mt-3 space-y-2 border-t border-[var(--border)] pt-3">{statement.lines.filter(line => line.emphasis).slice(-3).map(line => <div key={line.label} className="flex items-center justify-between gap-3 text-xs"><span className="text-[var(--muted-foreground)] font-arabic">{line.label}</span><b className={line.emphasis === "positive" ? "text-[var(--success)]" : "text-[var(--destructive)]"}>{formatCurrency(line.value)}</b></div>)}</div><Button variant="outline" size="sm" className="mt-3 w-full font-arabic" onClick={() => setSelectedStatement(statement)}>{lang === "ar" ? "فتح القائمة" : "Open statement"}</Button>{statement.approvedBy && <p className="mt-3 text-[9px] text-[var(--success)] font-arabic">{lang === "ar" ? `اعتمدها: ${statement.approvedBy}` : `Approved by: ${statement.approvedBy}`}</p>}</div>)}</div>
     </CardContent></Card>
 
-    <div><h2 className="font-bold text-[var(--foreground)] font-arabic">{t.verification}</h2><p className="mb-3 mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{t.verificationSub}</p><div className="grid gap-3 sm:grid-cols-2">{checks.map(([name, detail, status]) => { const warning = status === "تنبيه" || status === "Alert"; return <Card key={name}><CardContent className="flex items-start gap-3 p-4">{warning ? <CircleAlert className="h-5 w-5 shrink-0 text-[var(--warning)]" /> : <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--success)]" />}<div className="flex-1"><div className="flex justify-between gap-2"><p className="text-sm font-bold font-arabic">{name}</p><Badge variant={warning ? "warning" : "success"}>{status}</Badge></div><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{detail}</p></div></CardContent></Card>; })}</div></div>
+    <div>
+      <h2 className="font-bold text-[var(--foreground)] font-arabic">{lang === "ar" ? "مركز جاهزية الاعتماد" : "Approval Readiness Center"}</h2>
+      <p className="mb-3 mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{lang === "ar" ? "اختبارات مترابطة تكشف الأخطاء قبل إرسال القوائم للمراجع أو جهة التمويل." : "Connected tests that surface errors before statements reach a reviewer or lender."}</p>
+      <Card className={exceptionCount ? "border-[var(--warning)]/30" : "border-[var(--success)]/30"}>
+        <CardContent className="p-5">
+          <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div><p className={`font-bold font-arabic ${exceptionCount ? "text-[var(--warning)]" : "text-[var(--success)]"}`}>{exceptionCount ? (lang === "ar" ? "غير جاهزة للاعتماد" : "Not ready for approval") : (lang === "ar" ? "جاهزة للاعتماد" : "Ready for approval")}</p><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{exceptionCount ? (lang === "ar" ? `${exceptionCount} استثناءات تمنع الاعتماد حتى مراجعتها` : `${exceptionCount} exceptions must be reviewed before approval`) : (lang === "ar" ? "اجتازت القوائم جميع اختبارات الاتساق والتتبع" : "All reconciliation and traceability tests passed")}</p></div>
+            </div>
+            <div className="flex gap-2"><Badge variant={exceptionCount ? "warning" : "success"}>{passedChecks}/{checks.length} {lang === "ar" ? "اختبارات ناجحة" : "tests passed"}</Badge><Badge variant="secondary">{period}</Badge></div>
+          </div>
+          <div className="mt-2 divide-y divide-[var(--border)]">
+            {checks.map(check => <div key={check.title} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${check.passed ? "bg-[color:color-mix(in_srgb,var(--success)_12%,transparent)]" : "bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)]"}`}>{check.passed ? <CheckCircle2 className="h-4 w-4 text-[var(--success)]" /> : <CircleAlert className="h-4 w-4 text-[var(--warning)]" />}</div>
+              <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><p className="text-sm font-bold text-[var(--foreground)] font-arabic">{check.title}</p><Badge variant={check.passed ? "success" : "warning"}>{check.passed ? (lang === "ar" ? "اجتاز" : "Passed") : (lang === "ar" ? "يتطلب مراجعة" : "Review")}</Badge></div><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">{check.evidence}</p></div>
+              {check.statement && <Button variant="ghost" size="sm" className="shrink-0 font-arabic" onClick={() => setSelectedStatement(check.statement!)}>{lang === "ar" ? "عرض الدليل" : "View evidence"}</Button>}
+            </div>)}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
 
     <div id="manual-journals" className="scroll-mt-20"><div className="mb-3 flex items-end justify-between gap-3"><div><h2 className="font-bold text-[var(--foreground)] font-arabic">{t.manual}</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{t.manualSub}</p></div><Button size="sm" onClick={openEntryForm} className="font-arabic">{t.add}</Button></div>
       {showEntry && <Card className="mb-3"><CardContent className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">{(["date", "description", "debitAccount", "creditAccount", "amount"] as const).map(key => <label key={key} className="text-[10px] text-[var(--muted-foreground)] font-arabic">{t[key === "debitAccount" ? "debit" : key === "creditAccount" ? "credit" : key]}<input type={key === "amount" ? "number" : key === "date" ? "date" : "text"} value={form[key]} onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))} className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--foreground)]" /></label>)}<div className="flex gap-2 lg:col-span-5"><Button size="sm" onClick={saveEntry}>{t.save}</Button><Button size="sm" variant="outline" onClick={() => setShowEntry(false)}>{t.cancel}</Button></div></CardContent></Card>}
@@ -192,7 +218,7 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
           <Badge variant={generated ? (exceptionCount ? "warning" : "success") : "secondary"}>{generated ? (exceptionCount ? (lang === "ar" ? "يتطلب إجراء" : "Action required") : t.ready) : t.draft}</Badge>
         </div>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {[[t.coverage, `${coveragePct}%`, lang === "ar" ? "3/3 قوائم" : "3/3 statements"], [t.checks, `${passedChecks}/4`, lang === "ar" ? "ناجحة" : "passed"], [t.exceptions, String(exceptionCount), lang === "ar" ? "مفتوحة" : "open"], [lang === "ar" ? "القيود اليدوية" : "Manual entries", String(entries.length), t.balanced]].map(([label, value, detail]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{value}</p><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{detail}</p></div>)}
+          {[[t.coverage, `${coveragePct}%`, lang === "ar" ? "3/3 قوائم" : "3/3 statements"], [t.checks, `${passedChecks}/${checks.length}`, lang === "ar" ? "ناجحة" : "passed"], [t.exceptions, String(exceptionCount), lang === "ar" ? "مفتوحة" : "open"], [lang === "ar" ? "القيود اليدوية" : "Manual entries", String(entries.length), t.balanced]].map(([label, value, detail]) => <div key={label} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{value}</p><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">{detail}</p></div>)}
         </div>
         <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
           <Button size="sm" variant="outline" onClick={() => statements[0] && setSelectedStatement(statements[0])}>{lang === "ar" ? "مراجعة القوائم" : "Review statements"}</Button>
