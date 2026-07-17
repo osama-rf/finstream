@@ -70,7 +70,7 @@ export default function ControlCenterPage() {
           <p className="mt-1 text-sm text-[var(--muted-foreground)] font-arabic">ملخص تنفيذي موحّد للسيولة والحركة البنكية والمخاطر المالية</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)] font-arabic">
             <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />الفترة المنتهية في 31 ديسمبر {selectedYear}</span>
-            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />قوائم {selectedYear} فعلية · {LICENSED_BANKS.length} بنكاً في سجل ساما</span>
+            {/* <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />قوائم {selectedYear} فعلية · {LICENSED_BANKS.length} بنكاً في سجل ساما</span> */}
           </div>
         </div>
         <label className="text-[10px] text-[var(--muted-foreground)] font-arabic">السنة المالية<select value={selectedYear} onChange={event => setSelectedYear(event.target.value as FinancialYear)} className="mt-1 block min-w-32 rounded-xl border border-[var(--border)] bg-[var(--card)] py-2.5 text-sm font-bold text-[var(--foreground)]">{FINANCIAL_YEARS.map(year => <option key={year}>{year}</option>)}</select></label>

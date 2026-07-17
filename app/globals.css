@@ -42,7 +42,7 @@
   --secondary: #eef2f6;
   --secondary-foreground: #0A3057;
   --muted: #f6f8f9;
-  --muted-foreground: #667085;
+  --muted-foreground: #3f4753;
   --accent: rgba(10, 48, 87, 0.10);
   --accent-foreground: #0A3057;
   --destructive: #d93025;
@@ -275,4 +275,25 @@ img, picture, video, canvas, svg {
   &::-webkit-scrollbar { width: 6px; height: 6px; }
   &::-webkit-scrollbar-track { background: #f9fafb; border-radius: 3px; }
   &::-webkit-scrollbar-thumb { background: #d2d6db; border-radius: 3px; }
+}
+
+/*
+ * Several pages use very small arbitrary text sizes (9-11px) for captions and
+ * KPI subtext, which read as illegible in light mode. Bump them app-wide
+ * instead of editing each occurrence individually.
+ */
+.text-\[9px\],
+.text-\[10px\] {
+  font-size: 12px !important;
+  line-height: 1.35;
+}
+
+.text-\[11px\] {
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+
+.text-xs {
+  font-size: 13px !important;
+  line-height: 1.4;
 }
