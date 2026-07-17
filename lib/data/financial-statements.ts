@@ -15,7 +15,7 @@ export const FINANCIAL_STATEMENTS_SOURCE = {
   endDate: "2025-12-31",
   displayNameAr: "القوائم المالية السنوية 2023–2025",
   displayNameEn: "2023–2025 annual financial statements",
-  fileName: "Glowpick 3Y financial center v2.xls",
+  fileName: "Glowpick 3Y financial center v3.xls",
 } as const;
 
 export const QUARTERS = ["2025", "2024", "2023"] as const;
@@ -37,7 +37,7 @@ const FY_2025_STATEMENTS: Statement[] = [
     aiGenerated: false,
     createdAt: "2026-03-31",
     lines: [
-      line("الإيرادات", 1_016_659_141, 1_003_512_887),
+      line("الإيرادات", 1_016_659_141, 803_512_887),
       line("تكلفة المبيعات", 771_633_844, 735_425_226),
       line("إجمالي الربح", 245_025_297, 268_087_661, "positive"),
       line("مصاريف بيع وتوزيع", 178_895_209, 146_239_809),
@@ -73,6 +73,7 @@ const FY_2025_STATEMENTS: Statement[] = [
       line("موجودات غير ملموسة، صافي", 13_355_092, 1_195_881),
       line("إجمالي الموجودات غير المتداولة", 174_789_341, 104_625_212),
       line("إجمالي الأصول", 652_310_298, 530_178_880, "positive"),
+      line("قروض قصيرة الأجل", 0, 61_142_696),
       line("دائنون تجاريون", 158_603_021, 210_663_167),
       line("دائنون آخرون", 15_866_660, 17_748_319),
       line("مصاريف مستحقة الدفع", 24_456_107, 18_537_233),
@@ -123,20 +124,20 @@ const FY_2025_STATEMENTS: Statement[] = [
 
 const VALUES_2023: Record<Statement["type"], Record<string, number>> = {
   income: {
-    "الإيرادات": 200_878_221.75, "تكلفة المبيعات": 203_856_306.5, "إجمالي الربح": 67_021_915.25,
+    "الإيرادات": 220_878_221.75, "تكلفة المبيعات": 203_856_306.5, "إجمالي الربح": 67_021_915.25,
     "مصاريف بيع وتوزيع": 36_559_952.25, "مصاريف عمومية وإدارية": 10_724_059,
     "إجمالي مصاريف العمليات": 47_284_011.25, "ربح العمليات": 19_737_904,
-    "تكلفة التمويل": 1_184_540.25, "دخل التمويل": 0, "إيرادات (مصاريف) أخرى، صافي": 213_155.75,
-    "الربح قبل الزكاة": 18_766_519.5, "مصروف الزكاة": 830_223, "صافي ربح الفترة": 17_936_296.5,
+    "تكلفة التمويل": 1_284_540.25, "دخل التمويل": 0, "إيرادات (مصاريف) أخرى، صافي": 213_155.75,
+    "الربح قبل الزكاة": 18_766_519.5, "مصروف الزكاة": 830_223, "صافي ربح الفترة": 16_936_296.5,
     "ربحية السهم الأساسية": 0,
   },
   balance: {
-    "أرصدة لدى البنوك ونقد في الصندوق": 12_494_107.5, "مدينون تجاريون": 10_578_869,
+    "أرصدة لدى البنوك ونقد في الصندوق": 12_494_107.5, "مدينون تجاريون": 13_578_869,
     "مدينون آخرون": 17_404_330.75, "مصاريف مدفوعة مقدماً": 568_564.5, "المخزون": 63_635_000,
     "إجمالي الموجودات المتداولة": 106_388_417, "ممتلكات وآلات ومعدات": 22_692_390.25,
     "موجودات بمرتفع عقود إيجار تمويلية": 3_164_942.5, "موجودات غير ملموسة، صافي": 298_970.25,
     "إجمالي الموجودات غير المتداولة": 26_156_303, "إجمالي الأصول": 132_544_720,
-    "دائنون تجاريون": 42_665_791.75, "دائنون آخرون": 4_437_079.75,
+    "قروض قصيرة الأجل": 10_285_674, "دائنون تجاريون": 42_665_791.75, "دائنون آخرون": 4_437_079.75,
     "مصاريف مستحقة الدفع": 4_634_308.25, "عقود إيجار تمويلية، متداولة": 923_486,
     "زكاة مستحقة": 1_009_361.5, "إجمالي المطلوبات المتداولة": 80_271_490.25,
     "مكافأة نهاية الخدمة للموظفين": 1_723_303.75, "عقود إيجار تمويلية، غير متداولة": 2_111_626.25,
@@ -180,7 +181,7 @@ export const STATEMENTS_BY_QUARTER: Record<string, Statement[]> = {
 };
 
 export const FINANCIAL_METRICS = {
-  revenue: 1_016_659_141, revenuePrevious: 1_003_512_887,
+  revenue: 1_016_659_141, revenuePrevious: 803_512_887,
   costOfSales: 771_633_844, costOfSalesPrevious: 735_425_226,
   netProfit: 2_980_434, netProfitPrevious: 71_745_186,
   cash: 135_302_399, cashPrevious: 49_976_430,
@@ -192,7 +193,7 @@ export const FINANCIAL_METRICS = {
   operatingCashFlow: 11_040_922, operatingCashFlowPrevious: -10_821_347,
   investingCashFlow: -32_073_150, investingCashFlowPrevious: -30_486_311,
   financingCashFlow: 106_358_197, financingCashFlowPrevious: 21_578_539,
-  revenueGrowthPct: 1.31, grossMarginPct: 24.1, netMarginPct: 0.29,
+  revenueGrowthPct: 26.53, grossMarginPct: 24.1, netMarginPct: 0.29,
   currentRatio: 2.15, debtToEquity: 0.71,
 } as const;
 
@@ -204,14 +205,14 @@ export const FINANCIAL_METRICS_BY_YEAR = {
     operatingCashFlow: 11_040_922, investingCashFlow: -32_073_150, financingCashFlow: 106_358_197,
   },
   "2024": {
-    revenue: 1_003_512_887, costOfSales: 735_425_226, netProfit: 71_745_186,
+    revenue: 803_512_887, costOfSales: 735_425_226, netProfit: 71_745_186,
     cash: 49_976_430, tradeReceivables: 34_315_476, currentAssets: 425_553_668, totalAssets: 530_178_880,
     currentLiabilities: 321_085_961, totalLiabilities: 344_320_424, equity: 185_858_456,
     operatingCashFlow: -10_821_347, investingCashFlow: -30_486_311, financingCashFlow: 21_578_539,
   },
   "2023": {
-    revenue: 200_878_221.75, costOfSales: 203_856_306.5, netProfit: 17_936_296.5,
-    cash: 12_494_107.5, tradeReceivables: 10_578_869, currentAssets: 106_388_417, totalAssets: 132_544_720,
+    revenue: 220_878_221.75, costOfSales: 203_856_306.5, netProfit: 16_936_296.5,
+    cash: 12_494_107.5, tradeReceivables: 13_578_869, currentAssets: 106_388_417, totalAssets: 132_544_720,
     currentLiabilities: 80_271_490.25, totalLiabilities: 86_080_106, equity: 46_464_614,
     operatingCashFlow: -2_705_336.75, investingCashFlow: -7_621_577.75, financingCashFlow: 5_394_634.75,
   },

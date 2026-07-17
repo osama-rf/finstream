@@ -14,7 +14,7 @@ import { LICENSED_BANKS, SAMA_BANKS_SOURCE } from "@/lib/data/sama-licensed-enti
 const CASH_FLOW_INPUTS: Record<FinancialYear, { startingCash: number; capex: number; operatingIncome: number; debtService: number }> = {
   "2025": { startingCash: 49_976_430, capex: 18_525_365, operatingIncome: 10_287_981, debtService: 90_534_459 },
   "2024": { startingCash: 69_705_549, capex: 33_469_473, operatingIncome: 78_951_616, debtService: 77_964_856 },
-  "2023": { startingCash: 17_426_387.25, capex: 8_367_368.25, operatingIncome: 19_737_904, debtService: 19_491_214 },
+  "2023": { startingCash: 17_426_387.25, capex: 8_367_368.25, operatingIncome: 19_737_904, debtService: 19_591_214 },
 };
 
 export default function ControlCenterPage() {
