@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,28 +50,47 @@ export function StatementsWorkspace({ lang }: { lang: Lang }) {
   const [selectedStatement, setSelectedStatement] = useState<Statement | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [form, setForm] = useState({ date: FINANCIAL_STATEMENTS_SOURCE.endDate, description: "", debitAccount: "", creditAccount: "", amount: "" });
-  const coveragePct = 100;
-  const exceptionCount = 0;
   const dir = lang === "ar" ? "rtl" : "ltr";
   const statements = statementData[period] ?? [];
   const balanceStatement = statements.find(statement => statement.type === "balance");
+  const incomeStatement = statements.find(statement => statement.type === "income");
+  const cashFlowStatement = statements.find(statement => statement.type === "cashflow");
   const statementValue = (statement: Statement | undefined, label: string) => statement?.lines.find(line => line.label === label)?.value;
   const totalAssets = statementValue(balanceStatement, "إجمالي الأصول");
   const totalLiabilities = statementValue(balanceStatement, "إجمالي الالتزامات");
   const totalEquity = statementValue(balanceStatement, "حقوق الملكية");
-  const accountingBalanced = totalAssets !== undefined && totalLiabilities !== undefined && totalEquity !== undefined && totalAssets === totalLiabilities + totalEquity;
-  const checks = useMemo(() => lang === "ar" ? [
-    ["توازن قائمة المركز المالي", accountingBalanced ? "الأصول تساوي الالتزامات وحقوق الملكية" : "القائمة غير متوازنة وتحتاج مراجعة", accountingBalanced ? "تم" : "تنبيه"],
-    ["اكتمال مصدر البيانات", FINANCIAL_STATEMENTS_SOURCE.displayNameAr, "تم"],
-    ["الفترات المتاحة", "2023 · 2024 · 2025", "تم"],
-    ["اكتمال القوائم", `${statements.length} من 3 قوائم متاحة للفترة`, statements.length === 3 ? "تم" : "تنبيه"],
+  const balanceDifference = totalAssets !== undefined && totalLiabilities !== undefined && totalEquity !== undefined ? totalAssets - totalLiabilities - totalEquity : Number.NaN;
+  const accountingBalanced = Number.isFinite(balanceDifference) && Math.abs(balanceDifference) < 1;
+  const revenue = statementValue(incomeStatement, "الإيرادات");
+  const costOfSales = statementValue(incomeStatement, "تكلفة المبيعات");
+  const reportedGrossProfit = statementValue(incomeStatement, "إجمالي الربح");
+  const calculatedGrossProfit = revenue !== undefined && costOfSales !== undefined ? revenue - costOfSales : Number.NaN;
+  const incomeDifference = reportedGrossProfit !== undefined ? calculatedGrossProfit - reportedGrossProfit : Number.NaN;
+  const incomeReconciled = Number.isFinite(incomeDifference) && Math.abs(incomeDifference) < 1;
+  const startingCash = statementValue(cashFlowStatement, "النقد في بداية الفترة");
+  const netCashChange = statementValue(cashFlowStatement, "صافي التغير في النقد");
+  const endingCash = statementValue(cashFlowStatement, "النقد في نهاية الفترة");
+  const cashDifference = startingCash !== undefined && netCashChange !== undefined && endingCash !== undefined ? startingCash + netCashChange - endingCash : Number.NaN;
+  const cashReconciled = Number.isFinite(cashDifference) && Math.abs(cashDifference) < 1;
+  const totalLineCount = statements.reduce((sum, statement) => sum + statement.lines.length, 0);
+  const sourcedLineCount = statements.reduce((sum, statement) => sum + statement.lines.filter(line => Number.isFinite(line.value)).length, 0);
+  const statementsComplete = statements.length === 3 && totalLineCount > 0 && sourcedLineCount === totalLineCount;
+  const checkResults = [accountingBalanced, incomeReconciled, cashReconciled, statementsComplete];
+  const passedChecks = checkResults.filter(Boolean).length;
+  const exceptionCount = checkResults.filter(result => !result).length;
+  const coveragePct = totalLineCount ? Math.round((sourcedLineCount / totalLineCount) * 100) : 0;
+  const money = (value: number) => formatCurrency(Number.isFinite(value) ? value : 0);
+  const checks = lang === "ar" ? [
+    ["توازن قائمة المركز المالي", `الأصول ${money(totalAssets ?? 0)} − الالتزامات ${money(totalLiabilities ?? 0)} − حقوق الملكية ${money(totalEquity ?? 0)} = فرق ${money(balanceDifference)}`, accountingBalanced ? "تم" : "تنبيه"],
+    ["اتساق قائمة الدخل", `الإيرادات − تكلفة المبيعات = ${money(calculatedGrossProfit)}؛ إجمالي الربح المعروض ${money(reportedGrossProfit ?? 0)}؛ الفرق ${money(incomeDifference)}`, incomeReconciled ? "تم" : "تنبيه"],
+    ["تسوية التدفق النقدي", `نقد البداية ${money(startingCash ?? 0)} + صافي التغير ${money(netCashChange ?? 0)} − نقد النهاية ${money(endingCash ?? 0)} = فرق ${money(cashDifference)}`, cashReconciled ? "تم" : "تنبيه"],
+    ["اكتمال القوائم والمصدر", `${statements.length}/3 قوائم · ${sourcedLineCount}/${totalLineCount} بنداً رقمياً من ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, statementsComplete ? "تم" : "تنبيه"],
   ] : [
-    ["Statement of financial position", accountingBalanced ? "Assets equal liabilities plus equity" : "Statement is out of balance", accountingBalanced ? "Passed" : "Alert"],
-    ["Data source completeness", FINANCIAL_STATEMENTS_SOURCE.displayNameEn, "Passed"],
-    ["Available periods", "2023 · 2024 · 2025", "Passed"],
-    ["Statement completeness", `${statements.length} of 3 statements available`, statements.length === 3 ? "Passed" : "Alert"],
-  ], [accountingBalanced, lang, statements.length]);
-  const passedChecks = [accountingBalanced, true, true, statements.length === 3].filter(Boolean).length;
+    ["Statement of financial position", `Assets ${money(totalAssets ?? 0)} − liabilities ${money(totalLiabilities ?? 0)} − equity ${money(totalEquity ?? 0)} = ${money(balanceDifference)} difference`, accountingBalanced ? "Passed" : "Alert"],
+    ["Income statement reconciliation", `Revenue − cost of sales = ${money(calculatedGrossProfit)}; reported gross profit ${money(reportedGrossProfit ?? 0)}; difference ${money(incomeDifference)}`, incomeReconciled ? "Passed" : "Alert"],
+    ["Cash-flow reconciliation", `Opening cash ${money(startingCash ?? 0)} + net change ${money(netCashChange ?? 0)} − closing cash ${money(endingCash ?? 0)} = ${money(cashDifference)} difference`, cashReconciled ? "Passed" : "Alert"],
+    ["Statement and source completeness", `${statements.length}/3 statements · ${sourcedLineCount}/${totalLineCount} numeric lines from ${FINANCIAL_STATEMENTS_SOURCE.fileName}`, statementsComplete ? "Passed" : "Alert"],
+  ];
 
   async function generate() {
     setGenerating(true);
