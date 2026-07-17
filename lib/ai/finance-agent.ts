@@ -1,7 +1,7 @@
 import { BANKS, BANKING_SUMMARY } from '@/lib/mock/banking';
-import { CREDIT_REPORT, CREDIT_RATIOS } from '@/lib/mock/credit';
-import { STATEMENTS_BY_QUARTER } from '@/lib/mock/statements';
-import { ANALYTICS_OVERVIEW } from '@/lib/mock/analytics';
+import { getCreditReportForYear } from '@/lib/mock/credit';
+import { FINANCIAL_METRICS, FINANCIAL_METRICS_BY_YEAR, FINANCIAL_STATEMENTS_SOURCE, STATEMENTS_BY_QUARTER, type FinancialYear } from '@/lib/data/financial-statements';
+import { LICENSED_FINANCE_ENTITIES, SAMA_FINANCE_SOURCE } from '@/lib/data/sama-licensed-entities';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -64,6 +64,9 @@ export type FinanceReport = {
 // Sourced from lib/mock — the same data the UI pages render — so the AI
 // agent's answers never drift from what's shown on screen.
 
+const DEFAULT_CREDIT_REPORT = getCreditReportForYear("2025");
+const defaultRatio = (key: string) => DEFAULT_CREDIT_REPORT.ratios.find(ratio => ratio.key === key)!;
+
 const PLATFORM_DATA = {
   banks: BANKS.map(b => ({
     name: b.name, balance: b.balance, monthlyIn: b.monthlyIn, monthlyOut: b.monthlyOut, status: b.status,
@@ -73,58 +76,53 @@ const PLATFORM_DATA = {
   totalMonthlyIn: BANKING_SUMMARY.totalMonthlyIn,
   totalMonthlyOut: BANKING_SUMMARY.totalMonthlyOut,
   netMonthly: BANKING_SUMMARY.totalMonthlyIn - BANKING_SUMMARY.totalMonthlyOut,
-  revenueGrowth: '+18.4%',
+  revenueGrowth: `+${FINANCIAL_METRICS.revenueGrowthPct}%`,
   unclassifiedTxCount: 7,
   unclassifiedTxValue: 1_014_550,
 
-  simahScore: CREDIT_REPORT.score,
-  simahRating: CREDIT_REPORT.letter,
-  simahLabel: CREDIT_REPORT.rating,
+  simahScore: DEFAULT_CREDIT_REPORT.score,
+  simahRating: DEFAULT_CREDIT_REPORT.letter,
+  simahLabel: DEFAULT_CREDIT_REPORT.rating,
   simahSource: 'تصنيف ائتماني معتمد',
-  simahPercentile: CREDIT_REPORT.percentile,
+  simahPercentile: DEFAULT_CREDIT_REPORT.percentile,
   creditValidUntil: '2026-08-01',
 
   ratios: {
-    profitMargin: findRatio('profit_margin'),
-    currentRatio: findRatio('current_ratio'),
-    debtEquity: findRatio('debt_equity'),
-    dso: findRatio('dso'),
-    revenueGrowth: findRatio('revenue_growth'),
-    cashCoverage: findRatio('cash_coverage'),
+    profitMargin: defaultRatio('profit_margin'),
+    currentRatio: defaultRatio('current_ratio'),
+    debtEquity: defaultRatio('debt_equity'),
+    dso: defaultRatio('dso'),
+    revenueGrowth: defaultRatio('revenue_growth'),
+    cashCoverage: defaultRatio('cash_coverage'),
   },
 
   benchmarks: {
-    aboveAverage: CREDIT_REPORT.benchmarkSummary.aboveAverage,
-    total: CREDIT_REPORT.benchmarkSummary.total,
-    sector: CREDIT_REPORT.benchmarkSummary.sector,
-    region: CREDIT_REPORT.benchmarkSummary.region,
+    aboveAverage: DEFAULT_CREDIT_REPORT.benchmarkSummary.aboveAverage,
+    total: DEFAULT_CREDIT_REPORT.benchmarkSummary.total,
+    sector: DEFAULT_CREDIT_REPORT.benchmarkSummary.sector,
+    region: DEFAULT_CREDIT_REPORT.benchmarkSummary.region,
   },
 
-  statements: STATEMENTS_BY_QUARTER['Q1 2026'].map(s => ({
+  statements: Object.values(STATEMENTS_BY_QUARTER).flat().map(s => ({
     type: s.title, period: s.period, status: s.status, aiGenerated: s.aiGenerated,
-  })).concat(STATEMENTS_BY_QUARTER['Q2 2026'].map(s => ({
-    type: s.title, period: s.period, status: s.status, aiGenerated: s.aiGenerated,
-  }))),
+  })),
 
   analytics: {
-    totalRevenue: ANALYTICS_OVERVIEW.totalRevenueQuarter + 1_435_000,
-    totalExpenses: 2_343_200,
-    netProfit: 1_939_300,
-    profitMarginPct: 45.3,
-    topRevenueSource: 'خدمات استشارية (44%)',
-    topExpenseCategory: 'تكلفة الخدمات (42%)',
+    totalRevenue: FINANCIAL_METRICS.revenue,
+    totalExpenses: FINANCIAL_METRICS.revenue - FINANCIAL_METRICS.netProfit,
+    netProfit: FINANCIAL_METRICS.netProfit,
+    profitMarginPct: FINANCIAL_METRICS.netMarginPct,
+    topRevenueSource: 'إيرادات النشاط',
+    topExpenseCategory: 'تكلفة المبيعات',
   },
 
-  financingOffers: [
-    { bank: 'البنك الأهلي السعودي', product: 'تمويل رأس المال العامل', maxAmount: 3_000_000, rate: '6.5%' },
-    { bank: 'بنك الراجحي',          product: 'تمويل المشاريع الصغيرة', maxAmount: 2_500_000, rate: '6.9%' },
-    { bank: 'مصرف الإنماء',         product: 'خط ائتمان متجدد',        maxAmount: 1_500_000, rate: '7.2%' },
-  ],
+  financingOffers: LICENSED_FINANCE_ENTITIES.map(entity => ({
+    name: entity.name, activity: entity.activity, regulator: 'البنك المركزي السعودي',
+  })),
 };
 
-function findRatio(key: string) {
-  const r = CREDIT_RATIOS.find(r => r.key === key)!;
-  return { value: r.value, unit: r.unit, benchmark: r.benchmark, status: r.status };
+function financialYear(value?: string): FinancialYear {
+  return value === "2023" || value === "2024" || value === "2025" ? value : "2025";
 }
 
 // ─── Tool Declarations ───────────────────────────────────────────────────────
@@ -138,22 +136,22 @@ const TOOL_DECLARATIONS = [
   {
     name: 'get_credit_report',
     description: 'احصل على التصنيف الائتماني المعتمد: الدرجة، التقييم، المؤشرات المالية، وجاهزية التمويل.',
-    parameters: { type: 'OBJECT', properties: {} },
+    parameters: { type: 'OBJECT', properties: { year: { type: 'STRING', description: 'السنة المالية: 2023 أو 2024 أو 2025' } } },
   },
   {
     name: 'get_sector_benchmarks',
     description: 'احصل على مقارنة مؤشرات المنشأة بمتوسطات القطاع عالمياً وقطاع دول الخليج.',
-    parameters: { type: 'OBJECT', properties: {} },
+    parameters: { type: 'OBJECT', properties: { year: { type: 'STRING', description: 'السنة المالية: 2023 أو 2024 أو 2025' } } },
   },
   {
     name: 'get_financial_statements',
     description: 'احصل على حالة القوائم المالية المنشأة بالذكاء الاصطناعي من البيانات البنكية.',
-    parameters: { type: 'OBJECT', properties: {} },
+    parameters: { type: 'OBJECT', properties: { year: { type: 'STRING', description: 'السنة المالية: 2023 أو 2024 أو 2025' } } },
   },
   {
     name: 'get_analytics_summary',
     description: 'احصل على ملخص التحليل المالي: الإيرادات، المصروفات، صافي الربح، وتوزيع المصادر.',
-    parameters: { type: 'OBJECT', properties: {} },
+    parameters: { type: 'OBJECT', properties: { year: { type: 'STRING', description: 'السنة المالية: 2023 أو 2024 أو 2025' } } },
   },
   {
     name: 'get_financing_opportunities',
@@ -167,7 +165,7 @@ const TOOL_DECLARATIONS = [
       type: 'OBJECT',
       properties: {
         type: { type: 'STRING', description: 'نوع القائمة: income | balance | cashflow' },
-        period: { type: 'STRING', description: 'الفترة المالية مثل Q2 2026' },
+        period: { type: 'STRING', description: 'السنة المالية: 2023 أو 2024 أو 2025' },
       },
       required: ['type', 'period'],
     },
@@ -204,61 +202,79 @@ function execGetAggregatedBankingData() {
   });
 }
 
-function execGetCreditReport() {
-  const d = PLATFORM_DATA;
+function execGetCreditReport(yearInput?: string) {
+  const year = financialYear(yearInput);
+  const report = getCreditReportForYear(year);
   return Promise.resolve({
-    source: d.simahSource,
-    score: d.simahScore,
+    year,
+    source: PLATFORM_DATA.simahSource,
+    score: report.score,
     score_range: '300–900',
-    rating: d.simahRating,
-    label: d.simahLabel,
-    percentile: `أعلى من ${d.simahPercentile}% من شركات القطاع`,
-    valid_until: d.creditValidUntil,
-    ratios: d.ratios,
-    financing_readiness: 'جاهز — التصنيف يؤهّل للحصول على تمويل حتى 3,000,000 ريال',
-    improvement_tip: 'تقليل فترة التحصيل (DSO) من 42 إلى 35 يوماً سيرفع التصنيف إلى A-',
+    rating: report.letter,
+    label: report.rating,
+    percentile: `أعلى من ${report.percentile}% من شركات القطاع`,
+    valid_until: PLATFORM_DATA.creditValidUntil,
+    ratios: report.ratios,
+    strengths: report.strengths,
+    risks: report.risks,
+    recommendations: report.recommendations,
+    financing_readiness: 'يمكن مشاركة التقرير مع جهات التمويل المرخصة؛ الأهلية والمبلغ والتسعير يحددها كل ممول',
   });
 }
 
-function execGetSectorBenchmarks() {
-  const d = PLATFORM_DATA;
+function execGetSectorBenchmarks(yearInput?: string) {
+  const year = financialYear(yearInput);
+  const report = getCreditReportForYear(year);
   return Promise.resolve({
-    sector: d.benchmarks.sector,
-    region: d.benchmarks.region,
-    above_average: d.benchmarks.aboveAverage,
-    total_metrics: d.benchmarks.total,
-    summary: `المنشأة تتفوق على ${d.benchmarks.aboveAverage} من أصل ${d.benchmarks.total} مؤشرات في ${d.benchmarks.sector}`,
-    strengths: ['هامش الربح الصافي 32.5% (المتوسط 24%)', 'نمو الإيرادات 18.4% (المتوسط 12.3%)', 'نسبة السيولة 1.8x (المعيار ≥1.5)'],
-    areas_to_improve: ['فترة التحصيل DSO: 42 يوم (المتوسط 35 يوم)'],
+    year,
+    sector: report.benchmarkSummary.sector,
+    region: report.benchmarkSummary.region,
+    above_average: report.benchmarkSummary.aboveAverage,
+    total_metrics: report.benchmarkSummary.total,
+    rows: report.benchmarkRows,
+    summary: `في ${year} تتفوق المنشأة على ${report.benchmarkSummary.aboveAverage} من أصل ${report.benchmarkSummary.total} مؤشرات`,
+    strengths: report.strengths,
+    areas_to_improve: report.risks,
   });
 }
 
-function execGetFinancialStatements() {
+function execGetFinancialStatements(yearInput?: string) {
+  const year = financialYear(yearInput);
+  const statements = STATEMENTS_BY_QUARTER[year] ?? [];
   return Promise.resolve({
-    statements: PLATFORM_DATA.statements,
-    ai_generated_count: PLATFORM_DATA.statements.filter(s => s.aiGenerated).length,
-    pending_count: PLATFORM_DATA.statements.filter(s => s.status === 'pending_review').length,
-    draft_count: PLATFORM_DATA.statements.filter(s => s.status === 'draft').length,
-    note: 'القوائم تُنشأ تلقائياً بالذكاء الاصطناعي من البيانات المجمّعة للبنوك المربوطة',
+    year,
+    statements,
+    ai_generated_count: statements.filter(s => s.aiGenerated).length,
+    pending_count: statements.filter(s => s.status === 'pending_review').length,
+    draft_count: statements.filter(s => s.status === 'draft').length,
+    note: `القوائم مستوردة من الملف الفعلي ${FINANCIAL_STATEMENTS_SOURCE.fileName} ويقوم الوكيل بمراجعتها دون تغيير الأرقام`,
   });
 }
 
-function execGetAnalyticsSummary() {
-  const d = PLATFORM_DATA.analytics;
+function execGetAnalyticsSummary(yearInput?: string) {
+  const year = financialYear(yearInput);
+  const metrics = FINANCIAL_METRICS_BY_YEAR[year];
+  const totalExpenses = metrics.revenue - metrics.netProfit;
+  const profitMarginPct = Math.round((metrics.netProfit / metrics.revenue) * 10_000) / 100;
   return Promise.resolve({
-    ...d,
-    period: 'Q1 2026',
-    note: `صافي الربح ${d.netProfit.toLocaleString()} ريال بهامش ${d.profitMarginPct}% — أعلى من متوسط القطاع`,
+    period: year,
+    totalRevenue: metrics.revenue,
+    totalExpenses,
+    netProfit: metrics.netProfit,
+    profitMarginPct,
+    operatingCashFlow: metrics.operatingCashFlow,
+    currentAssets: metrics.currentAssets,
+    currentLiabilities: metrics.currentLiabilities,
+    note: `صافي ربح ${year} بلغ ${metrics.netProfit.toLocaleString()} ريال بهامش ${profitMarginPct}% وفق القوائم المالية المستوردة`,
   });
 }
 
 function execGetFinancingOpportunities() {
   return Promise.resolve({
     credit_rating: `${PLATFORM_DATA.simahScore}/900 — ${PLATFORM_DATA.simahRating}`,
-    offers: PLATFORM_DATA.financingOffers,
-    max_financing: 3_000_000,
-    best_rate: '6.5%',
-    recommendation: 'شارك تقريرك الائتماني مع البنك الأهلي للحصول على 3,000,000 ريال بمعدل 6.5%',
+    licensed_entities: PLATFORM_DATA.financingOffers,
+    source: SAMA_FINANCE_SOURCE,
+    recommendation: 'قارن شروط جهات التمويل المرخصة وتحقق من الأهلية والتسعير مباشرة مع الجهة المختارة',
   });
 }
 
@@ -267,20 +283,17 @@ function execGenerateAiStatement(type: string, period: string) {
     income: 'قائمة الدخل', balance: 'الميزانية العمومية', cashflow: 'قائمة التدفقات النقدية',
   };
   const label = typeMap[type] || type;
-  const d = PLATFORM_DATA.analytics;
+  const year = financialYear(period);
+  const statement = (STATEMENTS_BY_QUARTER[year] ?? []).find(item => item.type === type);
   return Promise.resolve({
-    created: true,
+    reviewed: true,
     statement_type: label,
-    period,
-    ai_generated: true,
-    source: 'بيانات 3 بنوك مربوطة عبر Open Banking',
-    summary: {
-      total_revenue: d.totalRevenue,
-      total_expenses: d.totalExpenses,
-      net_profit: d.netProfit,
-      profit_margin: `${d.profitMarginPct}%`,
-    },
-    next_step: `اذهب إلى صفحة القوائم المالية لمعاينة ${label} وإرسالها للبنوك`,
+    period: statement?.period ?? year,
+    ai_generated: false,
+    source: FINANCIAL_STATEMENTS_SOURCE.fileName,
+    company: FINANCIAL_STATEMENTS_SOURCE.companyNameAr,
+    figures: statement?.lines,
+    next_step: `اذهب إلى صفحة القوائم المالية لمعاينة ${label} لعام ${year}`,
   });
 }
 
@@ -298,10 +311,10 @@ function execClassifyTransaction(txId: string, category: string) {
 async function executeTool(name: string, args: any): Promise<any> {
   switch (name) {
     case 'get_aggregated_banking_data':  return execGetAggregatedBankingData();
-    case 'get_credit_report':            return execGetCreditReport();
-    case 'get_sector_benchmarks':        return execGetSectorBenchmarks();
-    case 'get_financial_statements':     return execGetFinancialStatements();
-    case 'get_analytics_summary':        return execGetAnalyticsSummary();
+    case 'get_credit_report':            return execGetCreditReport(args?.year);
+    case 'get_sector_benchmarks':        return execGetSectorBenchmarks(args?.year);
+    case 'get_financial_statements':     return execGetFinancialStatements(args?.year);
+    case 'get_analytics_summary':        return execGetAnalyticsSummary(args?.year);
     case 'get_financing_opportunities':  return execGetFinancingOpportunities();
     case 'generate_ai_financial_statement': return execGenerateAiStatement(args?.type, args?.period);
     case 'classify_bank_transaction':    return execClassifyTransaction(args?.transaction_id, args?.category);
@@ -334,9 +347,9 @@ function buildSystemPrompt(ctx: AgentContext) {
 - معاملات غير مصنفة: ${d.unclassifiedTxCount} معاملات بإجمالي ${d.unclassifiedTxValue.toLocaleString()} ريال — تصنيفها يرفع دقة التقرير
 - التصنيف الائتماني المعتمد: ${d.simahScore}/900 — ${d.simahRating} "${d.simahLabel}"
 - المنشأة أعلى من ${d.simahPercentile}% من شركات القطاع
-- التصنيف يؤهل للحصول على تمويل حتى 3,000,000 ريال بمعدل 6.5%
+- يمكن مشاركة التقرير مع جهات التمويل المرخصة، ولا تعرض المنصة مبلغاً أو سعراً غير صادر عن الجهة الممولة
 - مقارنة القطاع: تتفوق على ${d.benchmarks.aboveAverage} من ${d.benchmarks.total} مؤشرات
-- صافي الربح Q1 2026: ${d.analytics.netProfit.toLocaleString()} ريال بهامش ${d.analytics.profitMarginPct}%
+- صافي ربح 2025: ${d.analytics.netProfit.toLocaleString()} ريال بهامش ${d.analytics.profitMarginPct}%
 
 أدواتك:
 - get_aggregated_banking_data: بيانات البنوك والأرصدة والمعاملات
@@ -448,11 +461,11 @@ export async function generateFinanceReport(ctx: AgentContext): Promise<FinanceR
       { label: 'إجمالي الرصيد المجمّع', value: `${d.totalBalance.toLocaleString()} ريال`, alert: false },
       { label: 'التصنيف الائتماني',      value: `${d.simahScore}/900 — ${d.simahRating}`,   alert: false },
       { label: 'معاملات تحتاج تصنيفاً',  value: `${d.unclassifiedTxCount} معاملات`,           alert: true  },
-      { label: 'نمو الإيرادات السنوي',    value: d.revenueGrowth,                               alert: false },
+      { label: 'نمو الإيرادات السنوي',    value: d.revenueGrowth,                               alert: true },
     ],
     priorities: [
       { text: `تصنيف ${d.unclassifiedTxCount} معاملات بنكية بإجمالي ${d.unclassifiedTxValue.toLocaleString()} ريال لتعزيز دقة التقرير الائتماني`, page: 'bank' },
-      { text: 'مشاركة التقرير الائتماني مع البنك الأهلي للحصول على تمويل بمعدل 6.5%', page: 'credit' },
+      { text: 'مشاركة التقرير الائتماني مع جهة تمويل مرخصة وطلب عرض رسمي', page: 'credit' },
       { text: 'ربط بنك الرياض لاكتمال الصورة المالية المجمّعة وتحسين التصنيف', page: 'bank' },
     ],
     actions_taken: [
@@ -460,8 +473,8 @@ export async function generateFinanceReport(ctx: AgentContext): Promise<FinanceR
       `استرداد التصنيف الائتماني: ${d.simahScore}/900 — أعلى من ${d.simahPercentile}% من شركات ${d.benchmarks.sector}`,
     ],
     next_steps: [
-      { text: `مشاركة التقرير الائتماني ${d.simahRating} مع البنوك للحصول على تمويل حتى 3,000,000 ريال`, page: 'credit' },
-      { text: 'إنشاء قائمة دخل Q2 2026 بالذكاء الاصطناعي من البيانات المجمّعة', page: 'statements' },
+      { text: `مشاركة التقرير الائتماني ${d.simahRating} مع جهة تمويل مرخصة وطلب عرض رسمي`, page: 'credit' },
+      { text: 'مراجعة القوائم المالية الفعلية لعام 2025 ومقارنتها بعام 2024', page: 'statements' },
       { text: `مراجعة مقارنة القطاع — تتفوق على ${d.benchmarks.aboveAverage} من ${d.benchmarks.total} مؤشرات`, page: 'benchmarks' },
     ],
   };
@@ -495,9 +508,9 @@ ${JSON.stringify({
   "summary": "جملتان عن الوضع الفعلي مع أرقام من البيانات",
   "highlights": [
     {"label": "إجمالي الرصيد المجمّع", "value": "X ريال", "alert": false},
-    {"label": "التصنيف الائتماني", "value": "720/900 — B+", "alert": false},
+    {"label": "التصنيف الائتماني", "value": "استخدم الدرجة والتصنيف من البيانات", "alert": false},
     {"label": "معاملات تحتاج تصنيفاً", "value": "7 معاملات", "alert": true},
-    {"label": "نمو الإيرادات السنوي", "value": "+18.4%", "alert": false}
+    {"label": "نمو الإيرادات السنوي", "value": "+1.3%", "alert": true}
   ],
   "priorities": [{"text": "...", "page": "bank|credit|benchmarks|statements|analytics"}],
   "actions_taken": ["..."],
@@ -627,7 +640,7 @@ ${JSON.stringify(inputData, null, 2)}
     {
       "key": "profit_margin",
       "label": "هامش الربح الصافي",
-      "value": 32.5,
+      "value": 0,
       "unit": "%",
       "benchmark": 24,
       "benchmarkLabel": "متوسط القطاع: 24%",

@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, EyeOff, LoaderCircle, Landmark, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Landmark } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,10 +188,7 @@ function LoginContent() {
                   جاري تسجيل الدخول...
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-2">
-                  تسجيل الدخول
-                  <ArrowLeft className="h-4 w-4" />
-                </span>
+                "تسجيل الدخول"
               )}
             </Button>
           </form>

@@ -7,7 +7,7 @@ import { BANKING_SUMMARY } from "./banking";
 import { INDICATORS_OVERVIEW } from "./indicators";
 import { STATEMENTS_OVERVIEW } from "./statements";
 import { ANALYTICS_OVERVIEW } from "./analytics";
-import { CREDIT_REPORT } from "./credit";
+import { getCreditReportForYear } from "./credit";
 import { COMPANY_OVERVIEW } from "./company";
 import { SETTINGS_OVERVIEW } from "./settings";
 import type {
@@ -37,7 +37,7 @@ export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
 }
 
 export async function getCreditReport(): Promise<CreditReport> {
-  return CREDIT_REPORT;
+  return getCreditReportForYear("2025");
 }
 
 export async function getCompanyOverview(): Promise<CompanyOverview> {

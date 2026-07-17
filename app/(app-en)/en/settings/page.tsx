@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
 import { Toggle } from "@/components/ui/toggle";
-import { Settings, User, Bell, Shield, Save, CreditCard, Briefcase, Users2, Plus, Globe, Camera, Trash2 } from "lucide-react";
+import { Settings, User, Bell, Shield, CreditCard, Briefcase, Users2, Globe, Camera, Trash2 } from "lucide-react";
 import { useUser } from "@/lib/contexts/UserContext";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -68,8 +68,7 @@ export default function SettingsEnPage() {
               </div>
               <div className="space-y-2"><Label>Email</Label><Input defaultValue={user?.email || ""} /></div>
             </div>
-            <Button className="mt-4 gap-2" onClick={() => toast.success("Profile saved")}>
-              <Save className="h-4 w-4" />
+            <Button className="mt-4" onClick={() => toast.success("Profile saved")}>
               Save
             </Button>
           </CardContent>
@@ -103,8 +102,7 @@ export default function SettingsEnPage() {
               <div className="space-y-2"><Label>New password</Label><Input type="password" placeholder="••••••••" /></div>
               <div className="space-y-2"><Label>Confirm password</Label><Input type="password" placeholder="••••••••" /></div>
             </div>
-            <Button variant="outline" className="mt-4 gap-2" onClick={() => toast.success("Password updated")}>
-              <Shield className="h-4 w-4" />
+            <Button variant="outline" className="mt-4" onClick={() => toast.success("Password updated")}>
               Update password
             </Button>
           </CardContent>
@@ -204,8 +202,7 @@ export default function SettingsEnPage() {
                 ))}
               </TableBody>
             </Table>
-            <Button variant="outline" size="sm" className="mt-4 gap-2">
-              <Plus className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="mt-4">
               Add service
             </Button>
           </CardContent>
@@ -241,8 +238,7 @@ export default function SettingsEnPage() {
                 ))}
               </TableBody>
             </Table>
-            <Button variant="outline" size="sm" className="mt-4 gap-2">
-              <Plus className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="mt-4">
               Add client
             </Button>
           </CardContent>

@@ -53,6 +53,7 @@
   --success-foreground: #ffffff;
   --info: #0A3057;
   --info-foreground: #ffffff;
+  --control-balance-value: #0A3057;
   --border: rgba(34, 34, 34, 0.1);
   --input: rgba(34, 34, 34, 0.1);
   --ring: rgba(10, 48, 87, 0.34);
@@ -68,36 +69,37 @@
 }
 
 :root[data-theme='dark'] {
-  --background: #121214;
-  --foreground: #f7f7f7;
-  --card: rgba(28, 28, 31, 0.88);
-  --card-foreground: #f7f7f7;
-  --popover: rgba(24, 24, 27, 0.96);
-  --popover-foreground: #f7f7f7;
-  --primary: #0A3057;
-  --primary-foreground: #ffffff;
-  --primary-hover: #174a7a;
-  --secondary: rgba(80, 124, 168, 0.18);
-  --secondary-foreground: #d6e3ef;
-  --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: #a8a8b3;
-  --accent: rgba(80, 124, 168, 0.18);
-  --accent-foreground: #a9c3dc;
-  --destructive: #ff7a6b;
-  --destructive-foreground: #1a1a1a;
-  --warning: #72d6d0;
-  --warning-foreground: #0f2f2d;
-  --success: #19c48a;
-  --success-foreground: #0e2017;
-  --info: #7da4c9;
-  --info-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.09);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: rgba(83, 137, 190, 0.42);
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-strong: rgba(255, 255, 255, 0.08);
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.34);
-  --shadow-strong: 0 32px 90px rgba(0, 0, 0, 0.5);
+  --background: #071522;
+  --foreground: #edf4fa;
+  --card: rgba(13, 35, 56, 0.94);
+  --card-foreground: #edf4fa;
+  --popover: rgba(10, 29, 47, 0.98);
+  --popover-foreground: #edf4fa;
+  --primary: #78a6cf;
+  --primary-foreground: #071522;
+  --primary-hover: #91b8da;
+  --secondary: rgba(120, 166, 207, 0.16);
+  --secondary-foreground: #dbe9f5;
+  --muted: rgba(151, 184, 213, 0.09);
+  --muted-foreground: #a8bdd0;
+  --accent: rgba(120, 166, 207, 0.14);
+  --accent-foreground: #b9d2e8;
+  --destructive: #ff8d82;
+  --destructive-foreground: #2b0906;
+  --warning: #dfb65f;
+  --warning-foreground: #241a05;
+  --success: #42c59b;
+  --success-foreground: #052218;
+  --info: #8fb7da;
+  --info-foreground: #071522;
+  --control-balance-value: #ffffff;
+  --border: rgba(169, 201, 229, 0.14);
+  --input: rgba(169, 201, 229, 0.18);
+  --ring: rgba(120, 166, 207, 0.52);
+  --surface: rgba(148, 184, 215, 0.055);
+  --surface-strong: rgba(148, 184, 215, 0.10);
+  --shadow-soft: 0 18px 48px rgba(0, 8, 18, 0.34);
+  --shadow-strong: 0 32px 90px rgba(0, 5, 12, 0.56);
 }
 
 *,
@@ -118,6 +120,30 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
   opacity: 0.6;
 }
 
+/*
+ * Native select arrows sit almost against the border in Safari, especially in
+ * RTL layouts. Use one consistent arrow and reserve logical end padding for it
+ * across Arabic and English forms.
+ */
+select:not([multiple]) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline-start: 1rem !important;
+  padding-inline-end: 2.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+  background-position: right 0.875rem center;
+}
+
+select:not([multiple]):dir(rtl) {
+  background-position: left 0.875rem center;
+}
+
+:root[data-theme='dark'] select:not([multiple]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8bdd0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
 a, button, [role="button"], [role="tab"], [role="menuitem"] {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-duration: 220ms;
@@ -134,7 +160,7 @@ html {
 }
 
 html[data-theme='dark'] {
-  background: #121214;
+  background: #071522;
 }
 
 html,
@@ -158,6 +184,15 @@ body {
 
 .theme-shell {
   min-height: 100vh;
+}
+
+.sidebar-logo {
+  filter: drop-shadow(0 4px 10px rgba(10, 48, 87, 0.12));
+  transition: filter 220ms ease;
+}
+
+:root[data-theme='dark'] .sidebar-logo {
+  filter: brightness(0) invert(1) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.24));
 }
 
 .page-transition-shell {

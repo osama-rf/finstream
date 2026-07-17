@@ -7,50 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   CheckCircle2, AlertCircle, TrendingUp, Info, Building2,
-  ShieldCheck, Share2, Send,
+  ShieldCheck,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { toast } from "sonner";
-import { ANALYTICS_OVERVIEW, CREDIT_REPORT, SCENARIO_BASELINE, computeScenario } from "@/lib/mock";
+import { getCreditReportForYear, SCENARIO_BASELINE, computeScenario } from "@/lib/mock";
 import { ScoreRing } from "@/components/shared/ScoreRing";
 import { Slider } from "@/components/ui/slider";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
+import { FINANCIAL_METRICS_BY_YEAR, FINANCIAL_YEARS, type FinancialYear } from "@/lib/data/financial-statements";
+import { LICENSED_BANKS, LICENSED_FINANCE_ENTITIES, SAMA_FINANCE_SOURCE } from "@/lib/data/sama-licensed-entities";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const actualQuarterlyData = [0, 1].map(index => {
-  const months = ANALYTICS_OVERVIEW.monthlySeries.slice(index * 3, index * 3 + 3);
-  return { quarter: `Q${index + 1}`, revenue: months.reduce((sum, month) => sum + month.revenue, 0), expenses: months.reduce((sum, month) => sum + month.expense, 0), forecast: false };
-});
-const quarterlyData = [...actualQuarterlyData, { quarter: "Q3", revenue: 2_520_000, expenses: 1_245_000, forecast: true }, { quarter: "Q4", revenue: 2_760_000, expenses: 1_310_000, forecast: true }];
+const EXPENSE_DETAILS: Record<FinancialYear, { selling: number; admin: number }> = {
+  "2025": { selling: 178_895_209, admin: 55_842_107 },
+  "2024": { selling: 146_239_809, admin: 42_896_236 },
+  "2023": { selling: 36_559_952.25, admin: 10_724_059 },
+};
 
-const expenseBreakdown = ANALYTICS_OVERVIEW.expenseBreakdown.map(e => ({
-  label: e.label, amount: Math.round((e.pct / 100) * 2_343_200), pct: e.pct, color: e.color,
-}));
-
-const revenueBySource = ANALYTICS_OVERVIEW.revenueBySource.map(r => ({
-  label: r.label, amount: Math.round((r.pct / 100) * ANALYTICS_OVERVIEW.totalRevenueQuarter), pct: r.pct, color: r.color,
-}));
-
-const banksList = [
-  { name: "Saudi National Bank", product: "Working Capital Finance", maxAmount: "3,000,000", rate: "6.5%" },
-  { name: "Al Rajhi Bank", product: "SME Project Finance", maxAmount: "2,500,000", rate: "6.9%" },
-  { name: "Alinma Bank", product: "Revolving Credit Line", maxAmount: "1,500,000", rate: "7.2%" },
-];
-
-const shareBanks = ["Saudi National Bank", "Al Rajhi Bank", "Alinma Bank", "Riyad Bank"];
+const banksList = LICENSED_FINANCE_ENTITIES;
+const shareBanks = LICENSED_BANKS.map(bank => bank.name);
 
 // ─── Bar chart ──────────────────────────────────────────────────────────────
 
-function QuarterlyBarChart({ data }: { data: typeof quarterlyData }) {
+function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const data = FINANCIAL_YEARS.slice().reverse().filter(year => Number(year) <= Number(selectedYear)).map(year => {
+    const metrics = FINANCIAL_METRICS_BY_YEAR[year];
+    return { quarter: year, revenue: metrics.revenue, expenses: metrics.revenue - metrics.netProfit, forecast: false };
+  });
 
   const maxVal = Math.ceil(Math.max(...data.flatMap(d => [d.revenue, d.expenses])) / 500_000) * 500_000;
-  const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
-  const totalExpenses = data.reduce((sum, item) => sum + item.expenses, 0);
-  const operatingMargin = Math.round(((totalRevenue - totalExpenses) / totalRevenue) * 100);
-  const revenueGrowth = Math.round(((data[1].revenue - data[0].revenue) / data[0].revenue) * 100);
+  const totalRevenue = data[data.length - 1].revenue;
+  const totalExpenses = data[data.length - 1].expenses;
+  const previousItem = data.length > 1 ? data[data.length - 2] : null;
+  const revenueGrowth = previousItem ? ((totalRevenue - previousItem.revenue) / previousItem.revenue) * 100 : 0;
   const heightPx = 96;
 
   const activeIndex = hoverIndex ?? selectedIndex;
@@ -66,10 +59,10 @@ function QuarterlyBarChart({ data }: { data: typeof quarterlyData }) {
     <div className="mt-2">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
         <div className="flex flex-wrap gap-4">
-          <div><p className="text-[11px] text-[var(--muted-foreground)]">Projected annual revenue</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{formatCurrency(totalRevenue)}</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)]">Projected annual expenses</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{formatCurrency(totalExpenses)}</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)]">Operating margin</p><p className="mt-1 text-lg font-bold text-[var(--success)]">{operatingMargin}%</p></div>
-          <div><p className="text-[11px] text-[var(--muted-foreground)]">Quarterly revenue growth</p><p className="mt-1 text-lg font-bold text-[var(--success)]">+{revenueGrowth}%</p></div>
+          <div><p className="text-[11px] text-[var(--muted-foreground)]">{selectedYear} revenue</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{formatCurrency(totalRevenue)}</p></div>
+          <div><p className="text-[11px] text-[var(--muted-foreground)]">{selectedYear} expenses</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{formatCurrency(totalExpenses)}</p></div>
+          <div><p className="text-[11px] text-[var(--muted-foreground)]">Net margin</p><p className="mt-1 text-lg font-bold text-[var(--success)]">{(((totalRevenue - totalExpenses) / totalRevenue) * 100).toFixed(1)}%</p></div>
+          <div><p className="text-[11px] text-[var(--muted-foreground)]">Annual revenue growth</p><p className="mt-1 text-lg font-bold text-[var(--success)]">{revenueGrowth > 0 ? "+" : ""}{revenueGrowth.toFixed(1)}%</p></div>
         </div>
         <div className="flex items-center gap-4 rounded-full bg-[var(--surface)] px-4 py-2"><span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]"><i className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />Revenue</span><span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]"><i className="h-2.5 w-2.5 rounded-full bg-[var(--destructive)] opacity-70" />Expenses</span><span className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]"><i className="w-4 border-t-2 border-dashed border-[var(--muted-foreground)]" />Forecast</span></div>
       </div>
@@ -175,35 +168,72 @@ function QuarterlyBarChart({ data }: { data: typeof quarterlyData }) {
 
 // ─── Donut chart ────────────────────────────────────────────────────────────
 
-function DonutChart({ slices, size = 140 }: { slices: { pct: number; color: string }[]; size?: number }) {
+function DonutChart({
+  slices, size = 140, activeIndex, onActivate, onDeactivate,
+}: {
+  slices: { pct: number; color: string; label: string; amount: number }[];
+  size?: number;
+  activeIndex: number | null;
+  onActivate: (i: number) => void;
+  onDeactivate: () => void;
+}) {
   let cumulative = 0;
   const r = size / 2 - 16;
   const circ = 2 * Math.PI * r;
+  const active = activeIndex !== null ? slices[activeIndex] : null;
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-      {slices.map((s, i) => {
-        const offset = circ - (s.pct / 100) * circ;
-        const rotation = (cumulative / 100) * 360 - 90;
-        cumulative += s.pct;
-        return (
-          <circle
-            key={i}
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke={s.color}
-            strokeWidth={i === 0 ? 22 : 18}
-            strokeDasharray={`${circ}`}
-            strokeDashoffset={offset}
-            strokeLinecap="butt"
-            style={{ transform: `rotate(${rotation}deg)`, transformOrigin: "center" }}
-          />
-        );
-      })}
-      <circle cx={size / 2} cy={size / 2} r={r - 14} fill="var(--card)" />
-    </svg>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {slices.map((s, i) => {
+          const offset = circ - (s.pct / 100) * circ;
+          const rotation = (cumulative / 100) * 360 - 90;
+          cumulative += s.pct;
+          const isActive = activeIndex === i;
+          return (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              stroke={s.color}
+              strokeWidth={(i === 0 ? 22 : 18) + (isActive ? 4 : 0)}
+              strokeDasharray={`${circ}`}
+              strokeDashoffset={offset}
+              strokeLinecap="butt"
+              opacity={activeIndex === null || isActive ? 1 : 0.4}
+              style={{
+                transform: `rotate(${rotation}deg)`,
+                transformOrigin: "center",
+                transition: "opacity .15s, stroke-width .15s",
+                cursor: "pointer",
+                outline: "none",
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`${s.label}: ${s.pct}%`}
+              onMouseEnter={() => onActivate(i)}
+              onMouseLeave={onDeactivate}
+              onFocus={() => onActivate(i)}
+              onBlur={onDeactivate}
+              onClick={() => onActivate(i)}
+            />
+          );
+        })}
+        <circle cx={size / 2} cy={size / 2} r={r - 14} fill="var(--card)" />
+      </svg>
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+        {active ? (
+          <>
+            <span className="text-[10px] font-bold text-[var(--foreground)] px-2 leading-tight">{active.label}</span>
+            <span className="text-xs font-black tabular-nums" style={{ color: active.color }}>{active.pct}%</span>
+          </>
+        ) : (
+          <span className="text-[10px] text-[var(--muted-foreground)]">Breakdown</span>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -253,11 +283,11 @@ function ShareCreditModal({ letter, onClose }: { letter: string; onClose: () => 
           </div>
           <Button className="w-full gap-2" onClick={handleSend} disabled={sending || sent}>
             {sent ? (
-              <><CheckCircle2 className="h-4 w-4" />Sent</>
+              "Sent"
             ) : sending ? (
               <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />Sending...</>
             ) : (
-              <><Send className="h-4 w-4" />Send report</>
+              "Send report"
             )}
           </Button>
         </div>
@@ -269,37 +299,85 @@ function ShareCreditModal({ letter, onClose }: { letter: string; onClose: () => 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsEnPage() {
+  const [selectedYear, setSelectedYear] = useState<FinancialYear>("2025");
   const [showShareModal, setShowShareModal] = useState(false);
   const [scenario, setScenario] = useState(SCENARIO_BASELINE);
+  const [activeExpenseIndex, setActiveExpenseIndex] = useState<number | null>(null);
+  const [activeSourceIndex, setActiveSourceIndex] = useState<number | null>(null);
+  const [activeRatioKey, setActiveRatioKey] = useState<string | null>(null);
+  const [scaleHover, setScaleHover] = useState<{ val: number; pct: number } | null>(null);
 
-  const totalRevenue = revenueBySource.reduce((s, r) => s + r.amount, 0);
+  const selectedMetrics = FINANCIAL_METRICS_BY_YEAR[selectedYear];
+  const totalStatementExpenses = selectedMetrics.revenue - selectedMetrics.netProfit;
+  const expenseDetail = EXPENSE_DETAILS[selectedYear];
+  const expenseBreakdown = [
+    { label: "Cost of sales", amount: selectedMetrics.costOfSales, color: "var(--primary)" },
+    { label: "Selling and distribution", amount: expenseDetail.selling, color: "#31577D" },
+    { label: "General and administrative", amount: expenseDetail.admin, color: "#6684A2" },
+    { label: "Zakat, finance and other expenses", amount: totalStatementExpenses - selectedMetrics.costOfSales - expenseDetail.selling - expenseDetail.admin, color: "#A7B8C9" },
+  ].map(item => ({ ...item, pct: Math.round((item.amount / totalStatementExpenses) * 100) }));
+  const revenueByYear = FINANCIAL_YEARS.slice().reverse().map(year => ({ year, amount: FINANCIAL_METRICS_BY_YEAR[year].revenue }));
+  const maxRevenueByYear = Math.max(...revenueByYear.map(r => r.amount));
+  const totalRevenue = selectedMetrics.revenue;
   const totalExpenses = expenseBreakdown.reduce((s, e) => s + e.amount, 0);
+  const previousMetrics = Number(selectedYear) > 2023 ? FINANCIAL_METRICS_BY_YEAR[String(Number(selectedYear) - 1) as FinancialYear] : null;
+  const yearCreditReport = getCreditReportForYear(selectedYear);
+  const displayRatios = yearCreditReport.ratios.map(ratio => {
+    const value = ratio.key === "profit_margin" ? (selectedMetrics.netProfit / selectedMetrics.revenue) * 100
+      : ratio.key === "current_ratio" ? selectedMetrics.currentAssets / selectedMetrics.currentLiabilities
+      : ratio.key === "debt_equity" ? selectedMetrics.totalLiabilities / selectedMetrics.equity
+      : ratio.key === "dso" ? (selectedMetrics.tradeReceivables / selectedMetrics.revenue) * 365
+      : ratio.key === "revenue_growth" ? (previousMetrics ? ((selectedMetrics.revenue - previousMetrics.revenue) / previousMetrics.revenue) * 100 : 0)
+      : selectedMetrics.cash / selectedMetrics.currentLiabilities;
+    const favorable = ["debt_equity", "dso"].includes(ratio.key) ? value <= ratio.benchmark : value >= ratio.benchmark;
+    const status: "good" | "warning" | "bad" = favorable ? "good" : value < ratio.benchmark * 0.5 ? "bad" : "warning";
+    return { ...ratio, value: Math.round(value * 100) / 100, status };
+  });
 
-  const scenarioResult = useMemo(() => computeScenario(scenario), [scenario]);
+  const scenarioResult = useMemo(() => computeScenario(scenario, selectedYear), [scenario, selectedYear]);
 
-  const goodCount = CREDIT_REPORT.ratios.filter(r => r.status === "good").length;
-  const warningCount = CREDIT_REPORT.ratios.filter(r => r.status !== "good").length;
+  const goodCount = displayRatios.filter(r => r.status === "good").length;
+  const warningCount = displayRatios.filter(r => r.status !== "good").length;
 
   return (
     <div className="space-y-6 page-transition-shell" dir="ltr">
 
-      {showShareModal && <ShareCreditModal letter={CREDIT_REPORT.letter} onClose={() => setShowShareModal(false)} />}
+      {showShareModal && <ShareCreditModal letter={yearCreditReport.letter} onClose={() => setShowShareModal(false)} />}
 
-      <h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div><h1 className="text-2xl font-bold text-[var(--foreground)]">Financial Analysis</h1><p className="mt-1 text-xs text-[var(--muted-foreground)]">{selectedYear === "2023" ? "Before Rakaez" : "After Rakaez"}</p></div>
+        <label className="text-[10px] text-[var(--muted-foreground)]">Financial year<select value={selectedYear} onChange={event => setSelectedYear(event.target.value as FinancialYear)} className="mt-1 block min-w-32 rounded-xl border border-[var(--border)] bg-[var(--card)] py-2.5 text-sm font-bold text-[var(--foreground)]">{FINANCIAL_YEARS.map(year => <option key={year} value={year}>{year}</option>)}</select></label>
+      </div>
 
       {/* Expense breakdown + Revenue sources */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <div className="h-5 w-1 rounded-full bg-[var(--destructive)]" />
+              <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
               Expense Breakdown
             </h2>
             <div className="flex items-center gap-4">
-              <DonutChart slices={expenseBreakdown.map(e => ({ pct: e.pct, color: e.color }))} size={120} />
+              <DonutChart
+                slices={expenseBreakdown.map(e => ({ pct: e.pct, color: e.color, label: e.label, amount: e.amount }))}
+                size={120}
+                activeIndex={activeExpenseIndex}
+                onActivate={setActiveExpenseIndex}
+                onDeactivate={() => setActiveExpenseIndex(null)}
+              />
               <div className="flex-1 space-y-2">
-                {expenseBreakdown.map(e => (
-                  <div key={e.label} className="flex items-center justify-between gap-2">
+                {expenseBreakdown.map((e, i) => (
+                  <button
+                    key={e.label}
+                    type="button"
+                    onMouseEnter={() => setActiveExpenseIndex(i)}
+                    onMouseLeave={() => setActiveExpenseIndex(null)}
+                    onFocus={() => setActiveExpenseIndex(i)}
+                    onBlur={() => setActiveExpenseIndex(null)}
+                    onClick={() => setActiveExpenseIndex(prev => (prev === i ? null : i))}
+                    className="flex w-full items-center justify-between gap-2 rounded-[8px] px-1.5 py-1 -mx-1.5 text-left transition-colors"
+                    style={{ background: activeExpenseIndex === i ? "var(--muted)" : "transparent" }}
+                  >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <div className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: e.color }} />
                       <span className="text-xs text-[var(--foreground)] truncate">{e.label}</span>
@@ -308,13 +386,13 @@ export default function AnalyticsEnPage() {
                       <span className="text-[10px] text-[var(--muted-foreground)] tabular-nums">{formatCurrency(e.amount)}</span>
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{e.pct}%</Badge>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
               <span className="text-sm font-bold text-[var(--foreground)]">Total</span>
-              <span className="text-sm font-bold text-[var(--destructive)] tabular-nums">{formatCurrency(totalExpenses)}</span>
+              <span className="text-sm font-bold text-[var(--foreground)] tabular-nums">{formatCurrency(totalExpenses)}</span>
             </div>
           </CardContent>
         </Card>
@@ -323,20 +401,45 @@ export default function AnalyticsEnPage() {
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <div className="h-5 w-1 rounded-full bg-[var(--primary)]" />
-              Revenue Sources
+              Revenue Growth by Year
             </h2>
-            <div className="space-y-3">
-              {revenueBySource.map(r => (
-                <div key={r.label}>
-                  <div className="flex items-center justify-between mb-1.5 text-xs">
-                    <span className="text-[var(--foreground)]">{r.label}</span>
-                    <span className="font-bold text-[var(--foreground)]">{r.pct}%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-[var(--muted)] overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: r.color }} />
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-end justify-between gap-3" style={{ height: 120 }}>
+              {revenueByYear.map((r, i) => {
+                const isActive = activeSourceIndex === i;
+                const prev = i > 0 ? revenueByYear[i - 1] : null;
+                const growthPct = prev ? Math.round(((r.amount - prev.amount) / prev.amount) * 100) : null;
+                const barH = Math.max(Math.round((r.amount / maxRevenueByYear) * 92), 4);
+                return (
+                  <button
+                    key={r.year}
+                    type="button"
+                    onMouseEnter={() => setActiveSourceIndex(i)}
+                    onMouseLeave={() => setActiveSourceIndex(null)}
+                    onFocus={() => setActiveSourceIndex(i)}
+                    onBlur={() => setActiveSourceIndex(null)}
+                    onClick={() => setActiveSourceIndex(prev => (prev === i ? null : i))}
+                    className="relative flex h-full flex-1 flex-col items-center justify-end gap-2 rounded-[8px] pt-1 transition-colors"
+                    style={{ background: isActive ? "var(--muted)" : "transparent" }}
+                  >
+                    {isActive && (
+                      <div className="pointer-events-none absolute bottom-full z-10 mb-2 whitespace-nowrap rounded-[10px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 shadow-lg">
+                        <p className="text-[11px] font-bold text-[var(--foreground)]">{r.year}</p>
+                        <p className="text-[10px] text-[var(--primary)] tabular-nums">{formatCurrency(r.amount)}</p>
+                        {growthPct !== null && (
+                          <p className={`text-[10px] tabular-nums ${growthPct >= 0 ? "text-[var(--success)]" : "text-[var(--destructive)]"}`}>
+                            {growthPct >= 0 ? "+" : ""}{growthPct}% vs {prev!.year}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <div
+                      className="w-full max-w-10 rounded-t-[6px] transition-all"
+                      style={{ height: barH, background: "var(--primary)", opacity: isActive ? 1 : 0.75 }}
+                    />
+                    <span className="text-[10px] font-bold" style={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}>{r.year}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-4 flex items-center justify-between rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
               <span className="text-sm font-bold text-[var(--foreground)]">Total revenue</span>
@@ -346,11 +449,12 @@ export default function AnalyticsEnPage() {
         </Card>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardContent className="p-5">
           <h2 className="text-sm font-bold text-[var(--foreground)] mb-1 flex items-center gap-2"><div className="h-4 w-1 rounded-full bg-[var(--primary)]" />Revenue vs. Expense Trend</h2>
-          <p className="mb-4 text-xs text-[var(--muted-foreground)]">First-half actuals and second-half forecast for the full 2026 financial year</p>
-          <QuarterlyBarChart data={quarterlyData} />
+          <p className="mb-4 text-xs text-[var(--muted-foreground)]">Actual Glowpick trend · 2023 before Rakaez, 2024–2025 after Rakaez</p>
+          <YearlyBarChart selectedYear={selectedYear} />
         </CardContent>
       </Card>
 
@@ -359,17 +463,22 @@ export default function AnalyticsEnPage() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-[var(--foreground)]">Credit Rating</h2>
-            <Button size="sm" className="gap-2" onClick={() => setShowShareModal(true)}>
-              <Share2 className="h-4 w-4" />
+            <Button size="sm" onClick={() => setShowShareModal(true)}>
               Share with bank
             </Button>
           </div>
           <div className="flex flex-col gap-4 sm:gap-6">
             <div className="flex items-center gap-4 sm:gap-6">
-              <ScoreRing value={CREDIT_REPORT.score} max={CREDIT_REPORT.max} size={144} sublabel="out of 900" />
+              <ScoreRing
+                value={yearCreditReport.score}
+                max={yearCreditReport.max}
+                size={144}
+                sublabel="out of 900"
+                detail={`Rating ${yearCreditReport.letter} · Above ${yearCreditReport.percentile}% of sector`}
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 sm:gap-3 sm:mb-2">
-                  <span className="text-3xl font-black text-[var(--success)] sm:text-4xl">{CREDIT_REPORT.letter}</span>
+                  <span className="text-3xl font-black text-[var(--success)] sm:text-4xl">{yearCreditReport.letter}</span>
                   <Badge variant="success" className="text-xs px-2 py-0.5">Very Good</Badge>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -382,7 +491,7 @@ export default function AnalyticsEnPage() {
                     <span className="text-xs font-bold text-[var(--warning)]">{warningCount} need improvement</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-[var(--primary)]">Above {CREDIT_REPORT.percentile}% of sector companies</span>
+                    <span className="text-xs font-bold text-[var(--primary)]">Above {yearCreditReport.percentile}% of sector companies</span>
                   </div>
                 </div>
               </div>
@@ -392,7 +501,7 @@ export default function AnalyticsEnPage() {
               <div>
                 <p className="text-xs font-bold text-[var(--muted-foreground)] mb-2">Strengths</p>
                 <ul className="space-y-1.5">
-                  {CREDIT_REPORT.strengths.map((s, i) => (
+                  {yearCreditReport.strengths.map((s, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)]">
                       <TrendingUp className="h-3.5 w-3.5 text-[var(--success)] mt-0.5 shrink-0" />
                       {s}
@@ -403,7 +512,7 @@ export default function AnalyticsEnPage() {
               <div>
                 <p className="text-xs font-bold text-[var(--muted-foreground)] mb-2">Risks to address</p>
                 <ul className="space-y-1.5">
-                  {CREDIT_REPORT.risks.map((r, i) => (
+                  {yearCreditReport.risks.map((r, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-[var(--foreground)]">
                       <AlertCircle className="h-3.5 w-3.5 text-[var(--warning)] mt-0.5 shrink-0" />
                       {r}
@@ -417,16 +526,44 @@ export default function AnalyticsEnPage() {
               <p className="text-[10px] text-[var(--muted-foreground)] mb-3">Credit rating scale — 300 to 900</p>
               <div className="relative h-3 rounded-full flex" style={{ overflow: "visible" }}>
                 <div className="absolute inset-0 rounded-full overflow-hidden flex">
-                  <div className="h-full" style={{ flex: 200, background: "#ef4444", opacity: 0.8 }} />
-                  <div className="h-full" style={{ flex: 100, background: "#f97316", opacity: 0.8 }} />
-                  <div className="h-full" style={{ flex: 100, background: "#eab308", opacity: 0.8 }} />
-                  <div className="h-full" style={{ flex: 100, background: "#22c55e", opacity: 0.8 }} />
-                  <div className="h-full" style={{ flex: 100, background: "#10b981", opacity: 0.8 }} />
+                  {[
+                    { flex: 200, bg: "#ef4444", from: 300, to: 500, label: "Poor" },
+                    { flex: 100, bg: "#f97316", from: 500, to: 600, label: "Below average" },
+                    { flex: 100, bg: "#eab308", from: 600, to: 700, label: "Average" },
+                    { flex: 100, bg: "#22c55e", from: 700, to: 800, label: "Good" },
+                    { flex: 100, bg: "#10b981", from: 800, to: 900, label: "Excellent" },
+                  ].map(seg => (
+                    <div
+                      key={seg.label}
+                      className="h-full cursor-pointer transition-opacity"
+                      style={{ flex: seg.flex, background: seg.bg, opacity: scaleHover?.val === seg.from ? 1 : 0.8 }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${seg.label}: ${seg.from} to ${seg.to}`}
+                      onMouseEnter={() => setScaleHover({ val: seg.from, pct: ((seg.from - 300) / 600) * 100 })}
+                      onMouseLeave={() => setScaleHover(null)}
+                      onFocus={() => setScaleHover({ val: seg.from, pct: ((seg.from - 300) / 600) * 100 })}
+                      onBlur={() => setScaleHover(null)}
+                    />
+                  ))}
                 </div>
                 <div
-                  className="absolute flex flex-col items-center"
-                  style={{ left: `${((CREDIT_REPORT.score - 300) / 600) * 100}%`, top: "-10px", transform: "translateX(-50%)" }}
+                  className="absolute flex flex-col items-center cursor-pointer"
+                  style={{ left: `${((yearCreditReport.score - 300) / 600) * 100}%`, top: "-10px", transform: "translateX(-50%)" }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Your current rating: ${yearCreditReport.score}`}
+                  onMouseEnter={() => setScaleHover({ val: yearCreditReport.score, pct: ((yearCreditReport.score - 300) / 600) * 100 })}
+                  onMouseLeave={() => setScaleHover(null)}
+                  onFocus={() => setScaleHover({ val: yearCreditReport.score, pct: ((yearCreditReport.score - 300) / 600) * 100 })}
+                  onBlur={() => setScaleHover(null)}
                 >
+                  {scaleHover?.val === yearCreditReport.score && (
+                    <div className="pointer-events-none absolute bottom-full mb-2 whitespace-nowrap rounded-[8px] border border-[var(--border)] bg-[var(--card)] px-2.5 py-1.5 shadow-lg">
+                      <p className="text-[10px] font-bold text-[var(--foreground)]">Your current rating</p>
+                      <p className="text-[11px] font-black tabular-nums text-center" style={{ color: "var(--success)" }}>{yearCreditReport.score}</p>
+                    </div>
+                  )}
                   <div style={{ width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "7px solid #1e293b" }} />
                   <div style={{ width: "2px", height: "13px", background: "#1e293b" }} />
                 </div>
@@ -442,8 +579,13 @@ export default function AnalyticsEnPage() {
                 ].map(({ val, pct }) => (
                   <span
                     key={val}
-                    className="absolute text-[9px] text-[var(--muted-foreground)] tabular-nums"
-                    style={{ left: `${pct}%`, transform: pct === 0 ? "none" : pct === 100 ? "translateX(-100%)" : "translateX(-50%)" }}
+                    className="absolute text-[9px] tabular-nums transition-colors"
+                    style={{
+                      left: `${pct}%`,
+                      transform: pct === 0 ? "none" : pct === 100 ? "translateX(-100%)" : "translateX(-50%)",
+                      color: scaleHover?.val === val ? "var(--foreground)" : "var(--muted-foreground)",
+                      fontWeight: scaleHover?.val === val ? 700 : 400,
+                    }}
                   >
                     {val}
                   </span>
@@ -453,6 +595,7 @@ export default function AnalyticsEnPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
 
       {/* Scenario simulator */}
       <div>
@@ -514,13 +657,25 @@ export default function AnalyticsEnPage() {
         <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Indicators & Offers</h2>
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CREDIT_REPORT.ratios.map(ratio => {
+            {displayRatios.map(ratio => {
               const isGood = ratio.status === "good";
               const isBad = ratio.status === "bad";
               const color = isGood ? "var(--success)" : isBad ? "var(--destructive)" : "var(--warning)";
               const barPct = Math.min(100, Math.round((ratio.value / (ratio.benchmark * 1.6)) * 100));
+              const isActive = activeRatioKey === ratio.key;
               return (
-                <Card key={ratio.key} className={!isGood ? "border-[var(--warning)]/30" : ""}>
+                <Card
+                  key={ratio.key}
+                  role="button"
+                  tabIndex={0}
+                  onMouseEnter={() => setActiveRatioKey(ratio.key)}
+                  onMouseLeave={() => setActiveRatioKey(null)}
+                  onFocus={() => setActiveRatioKey(ratio.key)}
+                  onBlur={() => setActiveRatioKey(null)}
+                  onClick={() => setActiveRatioKey(prev => (prev === ratio.key ? null : ratio.key))}
+                  className={`cursor-pointer transition-all ${!isGood ? "border-[var(--warning)]/30" : ""}`}
+                  style={isActive ? { borderColor: color, boxShadow: `0 0 0 1px ${color}` } : undefined}
+                >
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <p className="text-sm font-bold text-[var(--foreground)] leading-snug">{ratio.label}</p>
@@ -532,9 +687,14 @@ export default function AnalyticsEnPage() {
                       {ratio.value}{ratio.unit}
                     </p>
                     <div className="h-1.5 rounded-full bg-[var(--muted)] overflow-hidden mb-2">
-                      <div className="h-full rounded-full" style={{ width: `${barPct}%`, background: color }} />
+                      <div className="h-full rounded-full transition-[filter]" style={{ width: `${barPct}%`, background: color, filter: isActive ? "brightness(1.15)" : "none" }} />
                     </div>
                     <p className="text-[11px] text-[var(--muted-foreground)]">{ratio.benchmarkLabel}</p>
+                    {isActive && (
+                      <p className="mt-2 text-[11px] font-bold" style={{ color }}>
+                        {ratio.description}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -548,7 +708,7 @@ export default function AnalyticsEnPage() {
                 <h3 className="text-base font-bold text-[var(--foreground)]">Recommendations to improve rating</h3>
               </div>
               <div className="space-y-3">
-                {CREDIT_REPORT.recommendations.map((rec, i) => (
+                {yearCreditReport.recommendations.map((rec, i) => (
                   <div key={i} className="flex items-start gap-3 rounded-[12px] border border-[var(--primary)]/15 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)] px-4 py-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white text-xs font-black">{i + 1}</span>
                     <div>
@@ -567,11 +727,11 @@ export default function AnalyticsEnPage() {
                 <div className="flex items-center gap-3">
                   <ShieldCheck className="h-5 w-5 text-[var(--primary)] shrink-0" />
                   <p className="text-sm font-bold text-[var(--foreground)]">
-                    Based on your {CREDIT_REPORT.letter} rating, you qualify for financing up to SAR 3,000,000
+                    SAMA-licensed financing entities
                   </p>
                 </div>
               </div>
-              <div className="space-y-3">
+              <div className="max-h-[620px] space-y-3 overflow-y-auto pe-1">
                 {banksList.map(bank => (
                   <div key={bank.name} className="rounded-[14px] border border-[var(--border)] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -581,20 +741,12 @@ export default function AnalyticsEnPage() {
                         </div>
                         <div>
                           <p className="font-bold text-[var(--foreground)]">{bank.name}</p>
-                          <p className="text-sm text-[var(--muted-foreground)]">{bank.product}</p>
+                          <p className="text-sm text-[var(--muted-foreground)]">{bank.activity}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 sm:gap-6">
-                        <div className="text-center">
-                          <p className="text-xs text-[var(--muted-foreground)]">Max amount</p>
-                          <p className="text-base font-bold text-[var(--foreground)]">SAR {bank.maxAmount}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-[var(--muted-foreground)]">Rate</p>
-                          <p className="text-base font-bold text-[var(--success)]">{bank.rate}</p>
-                        </div>
-                        <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setShowShareModal(true)}>
-                          <Share2 className="h-3.5 w-3.5" />
+                        <Badge variant="success">SAMA licensed</Badge>
+                        <Button size="sm" className="shrink-0" onClick={() => setShowShareModal(true)}>
                           Send
                         </Button>
                       </div>
@@ -602,6 +754,7 @@ export default function AnalyticsEnPage() {
                   </div>
                 ))}
               </div>
+              <a href={SAMA_FINANCE_SOURCE} target="_blank" rel="noreferrer" className="mt-4 block text-xs text-[var(--primary)] underline underline-offset-4">Source: Saudi Central Bank</a>
             </CardContent>
           </Card>
 
@@ -609,14 +762,14 @@ export default function AnalyticsEnPage() {
             <CardContent className="p-5">
               <h3 className="text-base font-bold text-[var(--foreground)] mb-1">Credit metrics vs. sector</h3>
               <p className="text-xs text-[var(--muted-foreground)] mb-4">
-                {CREDIT_REPORT.benchmarkSummary.sector} · {CREDIT_REPORT.benchmarkSummary.region}
+                {yearCreditReport.benchmarkSummary.sector} · {yearCreditReport.benchmarkSummary.region}
               </p>
               <div className="flex items-center gap-4 mb-4">
                 <span className="text-xs text-[var(--success)] font-bold">
-                  Above average: {CREDIT_REPORT.benchmarkSummary.aboveAverage} metrics
+                  Above average: {yearCreditReport.benchmarkSummary.aboveAverage} metrics
                 </span>
                 <span className="text-xs text-[var(--destructive)] font-bold">
-                  Below average: {CREDIT_REPORT.benchmarkSummary.belowAverage} metric ({CREDIT_REPORT.benchmarkSummary.belowAverageNote})
+                  Below average: {yearCreditReport.benchmarkSummary.belowAverage} metric ({yearCreditReport.benchmarkSummary.belowAverageNote})
                 </span>
               </div>
               <Table>
@@ -628,7 +781,7 @@ export default function AnalyticsEnPage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {CREDIT_REPORT.benchmarkRows.map(row => (
+                  {yearCreditReport.benchmarkRows.map(row => (
                     <TableRow key={row.key}>
                       <TableCell>
                         {row.key === "profit_margin" ? "Net profit margin"

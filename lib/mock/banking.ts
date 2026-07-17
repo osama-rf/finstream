@@ -1,4 +1,5 @@
 import type { BankSource, AvailableSource, Transaction, CategorizedTransaction, BankingSummary } from "./types";
+import { LICENSED_BANKS } from "@/lib/data/sama-licensed-entities";
 
 export const BANKS: BankSource[] = [
   { id: "1", name: "بنك الراجحي", code: "RJHI", balance: 1_840_000, currency: "SAR", iban: "SA44 2000 0001 2345 6789 1234", status: "connected", lastSync: "2026-07-02 10:32", monthlyIn: 650_000, monthlyOut: 312_000, color: "#006838", type: "bank" },
@@ -7,12 +8,11 @@ export const BANKS: BankSource[] = [
   { id: "4", name: "بنك الرياض", code: "RIBL", balance: 0, currency: "SAR", iban: "SA04 2000 0001 9999 8888 7777", status: "disconnected", lastSync: null, monthlyIn: 0, monthlyOut: 0, color: "#C8102E", type: "bank" },
 ];
 
-export const AVAILABLE_TO_CONNECT: AvailableSource[] = [
-  { name: "مصرف الإنماء", color: "#005CA9", type: "bank" },
-  { name: "بنك البلاد", color: "#4A1942", type: "bank" },
-  { name: "تمارا", color: "#2B3A8C", type: "gateway" },
-  { name: "تابي", color: "#3DBE9E", type: "gateway" },
-];
+export const AVAILABLE_TO_CONNECT: AvailableSource[] = LICENSED_BANKS.map((bank, index) => ({
+  name: bank.name,
+  color: ["#0A3057", "#31577D", "#6684A2", "#1F6B5C"][index % 4],
+  type: "bank",
+}));
 
 export const RECENT_TRANSACTIONS: Transaction[] = [
   { id: "t1", bank: "بنك الراجحي", desc: "تحويل وارد — شركة الأفق للتجارة", amount: 250_000, type: "credit", date: "2026-07-01" },

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { Building2, Landmark, Save, Plus, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Building2, Landmark, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/lib/contexts/UserContext";
 import type { UserRole } from "@/lib/types/database";
@@ -73,8 +73,7 @@ export default function CompanyPage() {
     <div className="space-y-6 page-transition-shell" dir="rtl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">الشركة والفريق</h1>
-        <Button size="sm" className="font-arabic gap-2 w-fit" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" />
+        <Button size="sm" className="font-arabic w-fit" onClick={() => setOpen(true)}>
           دعوة عضو
         </Button>
       </div>
@@ -111,8 +110,7 @@ export default function CompanyPage() {
                 <Input defaultValue={COMPANY_PROFILE.servicesOffered} />
               </div>
             </div>
-            <Button className="mt-4 w-full font-arabic gap-2" onClick={() => toast.success("تم حفظ التغييرات")}>
-              <Save className="h-4 w-4" />
+            <Button className="mt-4 w-full font-arabic" onClick={() => toast.success("تم حفظ التغييرات")}>
               حفظ التغييرات
             </Button>
           </CardContent>

@@ -1,39 +1,76 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight, Clock3, CircleAlert, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/shared/ScoreRing";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
+import { getCreditReportForYear } from "@/lib/mock";
+import { FINANCIAL_METRICS_BY_YEAR, FINANCIAL_YEARS, type FinancialYear } from "@/lib/data/financial-statements";
+import { LICENSED_BANKS, SAMA_BANKS_SOURCE } from "@/lib/data/sama-licensed-entities";
+
+const CASH_FLOW_INPUTS: Record<FinancialYear, { startingCash: number; capex: number; operatingIncome: number; debtService: number }> = {
+  "2025": { startingCash: 49_976_430, capex: 18_525_365, operatingIncome: 10_287_981, debtService: 90_534_459 },
+  "2024": { startingCash: 69_705_549, capex: 33_469_473, operatingIncome: 78_951_616, debtService: 77_964_856 },
+  "2023": { startingCash: 17_426_387.25, capex: 8_367_368.25, operatingIncome: 19_737_904, debtService: 19_491_214 },
+};
 
 export default function ControlCenterEnPage() {
-  const connected = BANKS.filter(b => b.status === "connected");
-  const totalBalance = connected.reduce((s, b) => s + b.balance, 0);
-  const totalIn = connected.reduce((s, b) => s + b.monthlyIn, 0);
-  const totalOut = connected.reduce((s, b) => s + b.monthlyOut, 0);
-  const netBalance = totalIn - totalOut;
-  const monthlyCoverage = totalOut > 0 ? totalBalance / totalOut : 0;
-  const largestBank = connected.reduce((largest, bank) => bank.balance > largest.balance ? bank : largest, connected[0]);
-  const largestBankShare = largestBank && totalBalance > 0 ? Math.round((largestBank.balance / totalBalance) * 100) : 0;
+  const [selectedYear, setSelectedYear] = useState<FinancialYear>("2025");
+  const selectedMetrics = FINANCIAL_METRICS_BY_YEAR[selectedYear];
+  const previousYear = String(Math.max(2023, Number(selectedYear) - 1)) as FinancialYear;
+  const previousMetrics = FINANCIAL_METRICS_BY_YEAR[previousYear];
+  const revenueGrowth = selectedYear === "2023" ? null : ((selectedMetrics.revenue - previousMetrics.revenue) / previousMetrics.revenue) * 100;
+  const netMargin = (selectedMetrics.netProfit / selectedMetrics.revenue) * 100;
+  const cashFlowInputs = CASH_FLOW_INPUTS[selectedYear];
+  const monthlyBurnRate = (cashFlowInputs.startingCash - selectedMetrics.cash) / 12;
+  const freeCashFlow = selectedMetrics.operatingCashFlow - cashFlowInputs.capex;
+  const dscr = cashFlowInputs.operatingIncome / cashFlowInputs.debtService;
+  const capitalBase = selectedMetrics.equity + selectedMetrics.totalLiabilities;
+  const equityWeight = selectedMetrics.equity / capitalBase;
+  const debtWeight = selectedMetrics.totalLiabilities / capitalBase;
+  const wacc = (0.12 * equityWeight + 0.065 * debtWeight * (1 - 0.025)) * 100;
+  const currentRatio = selectedMetrics.currentAssets / selectedMetrics.currentLiabilities;
+  const yearCreditReport = getCreditReportForYear(selectedYear);
+  const liquidityScore = Math.min(100, Math.round((selectedMetrics.currentAssets / selectedMetrics.currentLiabilities / 2) * 100));
+  const profitabilityScore = Math.min(100, Math.max(0, Math.round((selectedMetrics.netProfit / selectedMetrics.revenue) * 1000)));
+  const cashFlowScore = selectedMetrics.operatingCashFlow > 0 ? 90 : 35;
+  const sustainabilityScore = {
+    value: Math.round(liquidityScore * 0.4 + profitabilityScore * 0.3 + cashFlowScore * 0.3),
+    max: 100,
+    subMetrics: [
+      { key: "liquidity", label: "السيولة", value: liquidityScore },
+      { key: "profitability", label: "الربحية", value: profitabilityScore },
+      { key: "operational_discipline", label: "التدفق التشغيلي", value: cashFlowScore },
+    ],
+  };
+  const bankAccounts = [
+    { bank: "Al Rajhi Bank", account: "Operating account", iban: "SA•• 0001 2345", share: 0.52, status: "Connected" },
+    { bank: "Saudi National Bank", account: "Collections account", iban: "SA•• 1016 7519", share: 0.31, status: "Connected" },
+    { bank: "Riyad Bank", account: "Payroll account", iban: "SA•• 8888 7777", share: 0.17, status: "Connected" },
+  ].map(account => ({ ...account, balance: selectedMetrics.cash * account.share }));
 
   const kpis = [
-    { label: "Total balances", value: totalBalance, color: "var(--primary)", icon: Wallet },
-    { label: "Revenue (30 days)", value: totalIn, color: "var(--success)", icon: TrendingUp },
-    { label: "Payments (30 days)", value: totalOut, color: "var(--destructive)", icon: TrendingDown },
-    { label: "Net balance (30 days)", value: netBalance, color: netBalance >= 0 ? "var(--success)" : "var(--destructive)", icon: ArrowLeftRight },
+    { label: "Cash and cash equivalents", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
+    { label: `${selectedYear} revenue`, value: selectedMetrics.revenue, color: "var(--success)", icon: TrendingUp },
+    { label: `${selectedYear} net profit`, value: selectedMetrics.netProfit, color: "var(--success)", icon: TrendingDown },
+    { label: "Operating cash flow", value: selectedMetrics.operatingCashFlow, color: selectedMetrics.operatingCashFlow >= 0 ? "var(--success)" : "var(--destructive)", icon: ArrowLeftRight },
   ];
 
   return (
     <div className="space-y-6 page-transition-shell" dir="ltr">
-      <div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Control Center</h1>
         <p className="mt-1 text-sm text-[var(--muted-foreground)]">A unified executive view of liquidity, banking activity, and financial risk</p>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)]">
-          <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />Last updated: Jul 2, 2026 at 11:05 AM</span>
-          <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />{connected.length} sources connected</span>
+          <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />Year ended December 31, {selectedYear}</span>
+          <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />Actual {selectedYear} statements · {LICENSED_BANKS.length} banks in SAMA registry</span>
         </div>
+        </div>
+        <label className="text-[10px] text-[var(--muted-foreground)]">Financial year<select value={selectedYear} onChange={event => setSelectedYear(event.target.value as FinancialYear)} className="mt-1 block min-w-32 rounded-xl border border-[var(--border)] bg-[var(--card)] py-2.5 text-sm font-bold text-[var(--foreground)]">{FINANCIAL_YEARS.map(year => <option key={year}>{year}</option>)}</select></label>
       </div>
 
       <Card className="border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_4%,transparent)]">
@@ -42,9 +79,9 @@ export default function ControlCenterEnPage() {
             <Wallet className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
-            <p className="text-xs text-[var(--muted-foreground)]">Total balances</p>
-            <p className="text-2xl font-bold text-[var(--primary)] tabular-nums">{formatCurrency(totalBalance)}</p>
-            <p className="mt-1 text-xs text-[var(--muted-foreground)]">Covers {monthlyCoverage.toFixed(1)} months of payments at the current run rate</p>
+            <p className="text-xs text-[var(--muted-foreground)]">Cash and cash equivalents</p>
+            <p className="text-2xl font-bold text-[var(--control-balance-value)] tabular-nums">{formatCurrency(selectedMetrics.cash)}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{selectedYear === "2023" ? "Baseline year before Rakaez" : `Compared with ${formatCurrency(previousMetrics.cash)} in ${previousYear}`}</p>
           </div>
         </CardContent>
       </Card>
@@ -66,7 +103,7 @@ export default function ControlCenterEnPage() {
                   {formatCurrency(kpi.value)}
                 </p>
                 <p className="mt-1 text-[11px] text-[var(--muted-foreground)]">
-                  {kpi.label.includes("Revenue") ? "+8.4% vs. previous period" : kpi.label.includes("Payments") ? "+3.1% vs. previous period" : `${Math.round((netBalance / totalIn) * 100)}% of revenue retained`}
+                  {kpi.label.includes("revenue") ? (revenueGrowth === null ? "Comparison baseline" : `${revenueGrowth >= 0 ? "+" : ""}${revenueGrowth.toFixed(1)}% vs. ${previousYear}`) : kpi.label.includes("profit") ? `Net margin ${netMargin.toFixed(1)}%` : `${selectedMetrics.operatingCashFlow >= 0 ? "Positive" : "Negative"} in ${selectedYear}`}
                 </p>
               </CardContent>
             </Card>
@@ -75,11 +112,13 @@ export default function ControlCenterEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Executive Readout</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Card><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">Cash-flow strength</p><p className="mt-1 text-lg font-bold text-[var(--success)]">Positive and stable</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">Net inflow of {formatCurrency(netBalance)} over the last 30 days.</p></CardContent></Card>
-          <Card className={largestBankShare > 60 ? "border-[var(--warning)]/30" : ""}><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">Liquidity concentration</p><p className="mt-1 text-lg font-bold text-[var(--foreground)]">{largestBankShare}% at {largestBank?.name}</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">Monitor reliance on one account and diversify operating reserves when needed.</p></CardContent></Card>
-          <Card><CardContent className="p-5"><p className="text-xs text-[var(--muted-foreground)]">This week’s priority</p><p className="mt-1 text-lg font-bold text-[var(--warning)]">Accelerate collections</p><p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)]">DSO is 42 days; reducing it to 35 days supports liquidity and credit strength.</p></CardContent></Card>
+        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Financial Health Metrics</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)]">Monthly Burn Rate</p><p className={`mt-2 text-lg font-bold ${monthlyBurnRate <= 0 ? "text-[var(--success)]" : "text-[var(--destructive)]"}`}>{formatCurrency(Math.abs(monthlyBurnRate))}</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)]">{monthlyBurnRate <= 0 ? "Net cash generation" : "Net cash consumption"} · (Start − End) ÷ 12</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)]">Free Cash Flow</p><p className={`mt-2 text-lg font-bold ${freeCashFlow >= 0 ? "text-[var(--success)]" : "text-[var(--destructive)]"}`}>{formatCurrency(freeCashFlow)}</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)]">Operating cash flow − CapEx</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)]">Debt Service Coverage</p><p className={`mt-2 text-lg font-bold ${dscr >= 1.25 ? "text-[var(--success)]" : dscr >= 1 ? "text-[var(--warning)]" : "text-[var(--destructive)]"}`}>{dscr.toFixed(2)}x</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)]">Operating income ÷ principal, leases, and finance cost</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)]">Cost of Capital (WACC)</p><p className="mt-2 text-lg font-bold text-[var(--primary)]">{wacc.toFixed(1)}%</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)]">12% equity · 6.5% debt · 2.5% zakat</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)]">Current Ratio</p><p className={`mt-2 text-lg font-bold ${currentRatio >= 1.5 ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>{currentRatio.toFixed(2)}x</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)]">Current assets ÷ current liabilities</p></CardContent></Card>
         </div>
       </div>
 
@@ -88,13 +127,18 @@ export default function ControlCenterEnPage() {
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Credit Rating</h2>
             <div className="flex items-center gap-5">
-              <ScoreRing value={CREDIT_REPORT.score} max={CREDIT_REPORT.max} size={110} />
+              <ScoreRing
+                value={yearCreditReport.score}
+                max={yearCreditReport.max}
+                size={110}
+                detail={`Rating ${yearCreditReport.letter} · Above ${yearCreditReport.percentile}% of sector`}
+              />
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl font-black text-[var(--success)]">{CREDIT_REPORT.letter}</span>
+                  <span className="text-2xl font-black text-[var(--success)]">{yearCreditReport.letter}</span>
                   <Badge variant="success" className="text-xs">Very Good</Badge>
                 </div>
-                <p className="text-xs text-[var(--muted-foreground)]">Above {CREDIT_REPORT.percentile}% of sector companies</p>
+                <p className="text-xs text-[var(--muted-foreground)]">Above {yearCreditReport.percentile}% of sector companies</p>
               </div>
             </div>
           </CardContent>
@@ -104,9 +148,17 @@ export default function ControlCenterEnPage() {
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] mb-4">Financial Sustainability Score</h2>
             <div className="flex items-center gap-5">
-              <ScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={110} colorOverride="var(--primary)" />
+              <ScoreRing
+                value={sustainabilityScore.value}
+                max={sustainabilityScore.max}
+                size={110}
+                colorOverride="var(--primary)"
+                detail={sustainabilityScore.subMetrics.map(m =>
+                  `${m.label === "السيولة" ? "Liquidity" : m.label === "الربحية" ? "Profitability" : "Operational discipline"} ${m.value}`
+                ).join(" · ")}
+              />
               <div className="flex-1 space-y-2.5">
-                {SUSTAINABILITY_SCORE.subMetrics.map(m => (
+                {sustainabilityScore.subMetrics.map(m => (
                   <div key={m.key} className="flex items-center justify-between text-xs">
                     <span className="text-[var(--muted-foreground)]">
                       {m.label === "السيولة" ? "Liquidity" : m.label === "الربحية" ? "Profitability" : "Operational discipline"}
@@ -121,47 +173,38 @@ export default function ControlCenterEnPage() {
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] mb-3">Balance Details</h2>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div><h2 className="text-base font-bold text-[var(--foreground)]">Bank Accounts</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Cash and cash equivalents allocation for {selectedYear}</p></div>
+          <div className="text-right"><p className="text-[10px] text-[var(--muted-foreground)]">Total balance</p><p className="text-sm font-bold text-[var(--foreground)]">{formatCurrency(selectedMetrics.cash)}</p></div>
+        </div>
         <Card>
           <CardContent className="p-5">
             <Table>
               <TableHead>
                 <TableRow>
                   <TableHeaderCell>Bank</TableHeaderCell>
+                  <TableHeaderCell>Account</TableHeaderCell>
+                  <TableHeaderCell>Account number</TableHeaderCell>
                   <TableHeaderCell>Balance</TableHeaderCell>
-                  <TableHeaderCell>In / out (30 days)</TableHeaderCell>
-                  <TableHeaderCell>Net movement</TableHeaderCell>
-                  <TableHeaderCell>Share of total</TableHeaderCell>
-                  <TableHeaderCell>Sync status</TableHeaderCell>
+                  <TableHeaderCell>Share</TableHeaderCell>
+                  <TableHeaderCell>Status</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {connected.map(bank => (
-                  <TableRow key={bank.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] text-white font-bold text-[11px]" style={{ background: bank.color }}>
-                          {bank.name[0]}
-                        </div>
-                        {bank.name}
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatCurrency(bank.balance)}</TableCell>
-                    <TableCell><span className="text-[var(--success)]">{formatCurrency(bank.monthlyIn)}</span> / <span className="text-[var(--destructive)]">{formatCurrency(bank.monthlyOut)}</span></TableCell>
-                    <TableCell><span className="font-bold text-[var(--success)]">{formatCurrency(bank.monthlyIn - bank.monthlyOut)}</span></TableCell>
-                    <TableCell>{totalBalance > 0 ? Math.round((bank.balance / totalBalance) * 100) : 0}%</TableCell>
-                    <TableCell><Badge variant="success" className="gap-1"><CheckCircle2 className="h-3 w-3" />Current</Badge></TableCell>
-                  </TableRow>
-                ))}
+                {bankAccounts.map(account => <TableRow key={account.bank}>
+                  <TableCell className="font-bold">{account.bank}</TableCell>
+                  <TableCell>{account.account}</TableCell>
+                  <TableCell className="text-[var(--muted-foreground)]">{account.iban}</TableCell>
+                  <TableCell className="font-bold">{formatCurrency(account.balance)}</TableCell>
+                  <TableCell>{Math.round(account.share * 100)}%</TableCell>
+                  <TableCell><Badge variant="success">{account.status}</Badge></TableCell>
+                </TableRow>)}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-[var(--warning)]/25">
-        <CardContent className="p-5"><div className="flex items-start gap-3"><CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warning)]" /><div><h2 className="text-sm font-bold text-[var(--foreground)]">Follow-up needed</h2><p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)]">Riyad Bank is currently disconnected, so its balances and activity are excluded from this summary. Reconnect it for a complete liquidity view.</p></div></div></CardContent>
-      </Card>
     </div>
   );
 }

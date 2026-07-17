@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { Building2, Landmark, Save, Plus, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { Building2, Landmark, Eye, EyeOff, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { UserRole } from "@/lib/types/database";
 import { COMPANY_PROFILE, TEAM, ACTIVITY_LOG, BANKS } from "@/lib/mock";
@@ -85,8 +85,7 @@ export default function CompanyEnPage() {
     <div className="space-y-6 page-transition-shell" dir="ltr">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Company & Team</h1>
-        <Button size="sm" className="gap-2 w-fit" onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" />
+        <Button size="sm" className="w-fit" onClick={() => setOpen(true)}>
           Invite member
         </Button>
       </div>
@@ -122,8 +121,7 @@ export default function CompanyEnPage() {
                 <Input defaultValue="Technical consulting, software development, training & workshops" />
               </div>
             </div>
-            <Button className="mt-4 w-full gap-2" onClick={() => toast.success("Changes saved")}>
-              <Save className="h-4 w-4" />
+            <Button className="mt-4 w-full" onClick={() => toast.success("Changes saved")}>
               Save changes
             </Button>
           </CardContent>

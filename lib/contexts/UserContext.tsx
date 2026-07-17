@@ -17,7 +17,7 @@ const MOCK_USER: User = {
   companies: {
     id: 'company-001',
     name: 'Horizon Technology & Consulting Co.',
-    name_ar: 'شركة الأفق للتقنية والاستشارات',
+    name_ar: 'Glowpick',
     commercial_registration: '1010123456',
     tax_number: '300012345600003',
     bank_account_iban: 'SA44 2000 0001 2345 6789 1234',
@@ -51,8 +51,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     isLoading: false,
     isAuthenticated: true,
     error: null,
-    refetchUser: async () => {},
-    logout: () => {},
+    refetchUser: async () => { },
+    logout: () => { },
     updateUser: (updates) => setUser(current => ({ ...current, ...updates })),
   }), [user]);
 

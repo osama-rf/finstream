@@ -7,6 +7,8 @@ import type {
   ScenarioResult,
   IndicatorsOverview,
 } from "./types";
+import { FINANCIAL_METRICS_BY_YEAR, type FinancialYear } from "@/lib/data/financial-statements";
+import { getCreditReportForYear } from "./credit";
 
 export const SUSTAINABILITY_SCORE: SustainabilityScore = {
   value: 78,
@@ -41,32 +43,38 @@ export const SCENARIO_BASELINE: ScenarioInputs = {
   additionalFinancing: 200_000,
 };
 
-const BASE_RUNWAY_MONTHS = 7.2;
-const BASE_CREDIT_SCORE = 720;
-const BASE_SUSTAINABILITY_SCORE = 78;
-
 /**
- * Deterministic projection used by the scenario simulator sliders.
- * Not a real forecasting model — a simple linear blend calibrated so the
- * documented baseline inputs (+5% / -8% / 200,000 SAR) reproduce the
- * mockup's baseline outputs (11.4mo / A / 84).
+ * Deterministic demo projection based on the selected year's actual figures.
+ * Every year therefore starts from its own cash runway, credit assessment,
+ * and sustainability position.
  */
-export function computeScenario(inputs: ScenarioInputs): ScenarioResult {
+export function computeScenario(inputs: ScenarioInputs, year: FinancialYear = "2025"): ScenarioResult {
   const { revenueGrowthPct, expenseReductionPct, additionalFinancing } = inputs;
+  const metrics = FINANCIAL_METRICS_BY_YEAR[year];
+  const creditReport = getCreditReportForYear(year);
+  const annualExpenses = Math.max(1, metrics.revenue - metrics.netProfit);
+  const baseRunwayMonths = Math.min(24, metrics.cash / (annualExpenses / 12));
+  const liquidity = metrics.currentAssets / Math.max(1, metrics.currentLiabilities);
+  const margin = (metrics.netProfit / Math.max(1, metrics.revenue)) * 100;
+  const baseSustainabilityScore = Math.round(Math.min(100, Math.max(0,
+    Math.min(100, liquidity / 2 * 100) * 0.35 +
+    Math.min(100, Math.max(0, margin) / 12 * 100) * 0.35 +
+    (metrics.operatingCashFlow > 0 ? 90 : 30) * 0.30
+  )));
   const financingUnits = additionalFinancing / 200_000;
 
   const runwayFromRevenue = revenueGrowthPct * 0.2;
   const runwayFromExpense = -expenseReductionPct * 0.15;
   const runwayFromFinancing = financingUnits * 2.0;
   const projectedRunwayMonths = Math.round(
-    (BASE_RUNWAY_MONTHS + runwayFromRevenue + runwayFromExpense + runwayFromFinancing) * 10
+    (baseRunwayMonths + runwayFromRevenue + runwayFromExpense + runwayFromFinancing) * 10
   ) / 10;
 
   const scoreDelta =
     revenueGrowthPct * 3 +
     -expenseReductionPct * 2 +
     financingUnits * 9;
-  const projectedCreditScore = Math.min(900, Math.round(BASE_CREDIT_SCORE + scoreDelta));
+  const projectedCreditScore = Math.min(900, Math.round(creditReport.score + scoreDelta));
   const projectedCreditRating = ratingForScore(projectedCreditScore);
 
   const sustainabilityDelta =
@@ -75,7 +83,7 @@ export function computeScenario(inputs: ScenarioInputs): ScenarioResult {
     financingUnits * 1.6;
   const projectedSustainabilityScore = Math.min(
     100,
-    Math.round(BASE_SUSTAINABILITY_SCORE + sustainabilityDelta)
+    Math.round(baseSustainabilityScore + sustainabilityDelta)
   );
 
   return { projectedRunwayMonths, projectedCreditRating, projectedSustainabilityScore };

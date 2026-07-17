@@ -5,43 +5,33 @@ import type {
   AnomalyItem,
   AnalyticsOverview,
 } from "./types";
+import { FINANCIAL_METRICS } from "@/lib/data/financial-statements";
 
 export const MONTHLY_SERIES: MonthlySeriesPoint[] = [
-  { label: "يناير", revenue: 580_000, expense: 310_000 },
-  { label: "فبراير", revenue: 620_000, expense: 290_000 },
-  { label: "مارس", revenue: 695_000, expense: 340_000 },
-  { label: "أبريل", revenue: 730_000, expense: 365_000 },
-  { label: "مايو", revenue: 810_000, expense: 390_000 },
-  { label: "يونيو", revenue: 847_500, expense: 423_200 },
+  { label: "2024", revenue: FINANCIAL_METRICS.revenuePrevious, expense: FINANCIAL_METRICS.revenuePrevious - FINANCIAL_METRICS.netProfitPrevious },
+  { label: "2025", revenue: FINANCIAL_METRICS.revenue, expense: FINANCIAL_METRICS.revenue - FINANCIAL_METRICS.netProfit },
 ];
 
 export const EXPENSE_BREAKDOWN: ExpenseBreakdownItem[] = [
-  { label: "تكلفة الخدمات", pct: 42, color: "var(--primary)" },
-  { label: "رواتب وأجور", pct: 18, color: "#31577D" },
-  { label: "إدارية وعمومية", pct: 19, color: "#6684A2" },
-  { label: "تسويق ومبيعات", pct: 3, color: "#A7B8C9" },
+  { label: "تكلفة المبيعات", pct: 76, color: "var(--primary)" },
+  { label: "بيع وتوزيع", pct: 18, color: "#31577D" },
+  { label: "إدارية وعمومية", pct: 5, color: "#6684A2" },
+  { label: "أخرى", pct: 1, color: "#A7B8C9" },
 ];
 
 export const REVENUE_BY_SOURCE: RevenueSourceItem[] = [
-  { label: "خدمات استشارية", pct: 44, color: "var(--primary)" },
-  { label: "مشاريع تقنية", pct: 32, color: "#31577D" },
-  { label: "تدريب وورش عمل", pct: 15, color: "#6684A2" },
-  { label: "تراخيص برمجيات", pct: 9, color: "#A7B8C9" },
+  { label: "إيرادات النشاط", pct: 100, color: "var(--primary)" },
 ];
 
 // Net profit trend expressed as monthly series where `revenue` carries the profit value.
 export const NET_PROFIT_TREND: MonthlySeriesPoint[] = [
-  { label: "يناير", revenue: 270_000, expense: 0 },
-  { label: "فبراير", revenue: 330_000, expense: 0 },
-  { label: "مارس", revenue: 355_000, expense: 0 },
-  { label: "أبريل", revenue: 365_000, expense: 0 },
-  { label: "مايو", revenue: 420_000, expense: 0 },
-  { label: "يونيو", revenue: 424_300, expense: 0 },
+  { label: "2024", revenue: FINANCIAL_METRICS.netProfitPrevious, expense: 0 },
+  { label: "2025", revenue: FINANCIAL_METRICS.netProfit, expense: 0 },
 ];
 
 export const ANOMALIES: AnomalyItem[] = [
-  { title: "ارتفاع غير معتاد في مصروفات \"أخرى\"", sub: "+140% عن المتوسط الشهري", severity: "warning" },
-  { title: "انخفاض إيرادات تراخيص البرمجيات", sub: "-22% مقارنة بالربع السابق", severity: "danger" },
+  { title: "انخفاض جوهري في صافي الربح", sub: "من 71.7 مليون في 2024 إلى 3.0 مليون ريال في 2025", severity: "danger" },
+  { title: "تحسن قوي في الرصيد النقدي", sub: "ارتفع من 50.0 مليون إلى 135.3 مليون ريال", severity: "warning" },
 ];
 
 export const ANALYTICS_OVERVIEW: AnalyticsOverview = {
@@ -49,8 +39,8 @@ export const ANALYTICS_OVERVIEW: AnalyticsOverview = {
   expenseBreakdown: EXPENSE_BREAKDOWN,
   revenueBySource: REVENUE_BY_SOURCE,
   netProfitTrend: NET_PROFIT_TREND,
-  totalRevenueQuarter: 2_847_500,
-  burnRatePerMonth: 67_400,
-  projectedRunwayMonths: 7.2,
+  totalRevenueQuarter: FINANCIAL_METRICS.revenue,
+  burnRatePerMonth: Math.round((FINANCIAL_METRICS.revenue - FINANCIAL_METRICS.netProfit) / 12),
+  projectedRunwayMonths: 1.6,
   anomalies: ANOMALIES,
 };

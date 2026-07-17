@@ -6,7 +6,7 @@ insert into companies (id, name, name_ar, commercial_registration, tax_number, b
 values (
   'a1b2c3d4-0000-0000-0000-000000000001',
   'Horizon Technology & Consulting Co.',
-  'شركة الأفق للتقنية والاستشارات',
+  'Glowpick',
   '1010123456',
   '300012345600003',
   'SA44 2000 0001 2345 6789 1234',

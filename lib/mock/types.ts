@@ -113,6 +113,7 @@ export type StatementStatus = "draft" | "pending_review" | "approved";
 export interface StatementLineItem {
   label: string;
   value: number;
+  comparisonValue?: number;
   emphasis?: "positive" | "negative";
 }
 

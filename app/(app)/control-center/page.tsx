@@ -1,39 +1,79 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown, ArrowLeftRight, Clock3, CircleAlert, CheckCircle2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { ScoreRing } from "@/components/shared/ScoreRing";
 import { Table, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from "@/components/ui/table";
-import { BANKS, CREDIT_REPORT, SUSTAINABILITY_SCORE } from "@/lib/mock";
+import { getCreditReportForYear } from "@/lib/mock";
+import { FINANCIAL_METRICS_BY_YEAR, FINANCIAL_YEARS, type FinancialYear } from "@/lib/data/financial-statements";
+import { LICENSED_BANKS, SAMA_BANKS_SOURCE } from "@/lib/data/sama-licensed-entities";
+
+const CASH_FLOW_INPUTS: Record<FinancialYear, { startingCash: number; capex: number; operatingIncome: number; debtService: number }> = {
+  "2025": { startingCash: 49_976_430, capex: 18_525_365, operatingIncome: 10_287_981, debtService: 90_534_459 },
+  "2024": { startingCash: 69_705_549, capex: 33_469_473, operatingIncome: 78_951_616, debtService: 77_964_856 },
+  "2023": { startingCash: 17_426_387.25, capex: 8_367_368.25, operatingIncome: 19_737_904, debtService: 19_491_214 },
+};
 
 export default function ControlCenterPage() {
-  const connected = BANKS.filter(b => b.status === "connected");
-  const totalBalance = connected.reduce((s, b) => s + b.balance, 0);
-  const totalIn = connected.reduce((s, b) => s + b.monthlyIn, 0);
-  const totalOut = connected.reduce((s, b) => s + b.monthlyOut, 0);
-  const netBalance = totalIn - totalOut;
-  const monthlyCoverage = totalOut > 0 ? totalBalance / totalOut : 0;
-  const largestBank = connected.reduce((largest, bank) => bank.balance > largest.balance ? bank : largest, connected[0]);
-  const largestBankShare = largestBank && totalBalance > 0 ? Math.round((largestBank.balance / totalBalance) * 100) : 0;
+  const [selectedYear, setSelectedYear] = useState<FinancialYear>("2025");
+  const selectedMetrics = FINANCIAL_METRICS_BY_YEAR[selectedYear];
+  const previousYear = String(Math.max(2023, Number(selectedYear) - 1)) as FinancialYear;
+  const previousMetrics = FINANCIAL_METRICS_BY_YEAR[previousYear];
+  const revenueGrowth = selectedYear === "2023" ? null : ((selectedMetrics.revenue - previousMetrics.revenue) / previousMetrics.revenue) * 100;
+  const netMargin = (selectedMetrics.netProfit / selectedMetrics.revenue) * 100;
+  const cashFlowInputs = CASH_FLOW_INPUTS[selectedYear];
+  const monthlyBurnRate = (cashFlowInputs.startingCash - selectedMetrics.cash) / 12;
+  const freeCashFlow = selectedMetrics.operatingCashFlow - cashFlowInputs.capex;
+  const dscr = cashFlowInputs.operatingIncome / cashFlowInputs.debtService;
+  const capitalBase = selectedMetrics.equity + selectedMetrics.totalLiabilities;
+  const equityWeight = selectedMetrics.equity / capitalBase;
+  const debtWeight = selectedMetrics.totalLiabilities / capitalBase;
+  const costOfEquity = 0.12;
+  const costOfDebt = 0.065;
+  const zakatRate = 0.025;
+  const wacc = (costOfEquity * equityWeight + costOfDebt * debtWeight * (1 - zakatRate)) * 100;
+  const currentRatio = selectedMetrics.currentAssets / selectedMetrics.currentLiabilities;
+  const yearCreditReport = getCreditReportForYear(selectedYear);
+  const liquidityScore = Math.min(100, Math.round((selectedMetrics.currentAssets / selectedMetrics.currentLiabilities / 2) * 100));
+  const profitabilityScore = Math.min(100, Math.max(0, Math.round((selectedMetrics.netProfit / selectedMetrics.revenue) * 1000)));
+  const cashFlowScore = selectedMetrics.operatingCashFlow > 0 ? 90 : 35;
+  const sustainabilityScore = {
+    value: Math.round(liquidityScore * 0.4 + profitabilityScore * 0.3 + cashFlowScore * 0.3),
+    max: 100,
+    subMetrics: [
+      { key: "liquidity", label: "السيولة", value: liquidityScore },
+      { key: "profitability", label: "الربحية", value: profitabilityScore },
+      { key: "operational_discipline", label: "التدفق التشغيلي", value: cashFlowScore },
+    ],
+  };
+  const bankAccounts = [
+    { bank: "مصرف الراجحي", account: "حساب تشغيلي", iban: "SA•• 0001 2345", share: 0.52, status: "متصل" },
+    { bank: "البنك الأهلي السعودي", account: "حساب التحصيل", iban: "SA•• 1016 7519", share: 0.31, status: "متصل" },
+    { bank: "بنك الرياض", account: "حساب الرواتب", iban: "SA•• 8888 7777", share: 0.17, status: "متصل" },
+  ].map(account => ({ ...account, balance: selectedMetrics.cash * account.share }));
 
   const kpis = [
-    { label: "إجمالي الأرصدة", value: totalBalance, color: "var(--primary)", icon: Wallet },
-    { label: "الإيرادات (30 يوم)", value: totalIn, color: "var(--success)", icon: TrendingUp },
-    { label: "المدفوعات (30 يوم)", value: totalOut, color: "var(--destructive)", icon: TrendingDown },
-    { label: "صافي الرصيد (30 يوم)", value: netBalance, color: netBalance >= 0 ? "var(--success)" : "var(--destructive)", icon: ArrowLeftRight },
+    { label: "النقد وما في حكمه", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
+    { label: `إيرادات ${selectedYear}`, value: selectedMetrics.revenue, color: "var(--success)", icon: TrendingUp },
+    { label: `صافي ربح ${selectedYear}`, value: selectedMetrics.netProfit, color: "var(--success)", icon: TrendingDown },
+    { label: "التدفق النقدي التشغيلي", value: selectedMetrics.operatingCashFlow, color: selectedMetrics.operatingCashFlow >= 0 ? "var(--success)" : "var(--destructive)", icon: ArrowLeftRight },
   ];
 
   return (
     <div className="space-y-6 page-transition-shell" dir="rtl">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">مركز التحكم</h1>
-        <p className="mt-1 text-sm text-[var(--muted-foreground)] font-arabic">ملخص تنفيذي موحّد للسيولة والحركة البنكية والمخاطر المالية</p>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)] font-arabic">
-          <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />آخر تحديث: 2 يوليو 2026، 11:05 ص</span>
-          <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />{connected.length} مصادر متصلة</span>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] font-arabic">مركز التحكم</h1>
+          <p className="mt-1 text-sm text-[var(--muted-foreground)] font-arabic">ملخص تنفيذي موحّد للسيولة والحركة البنكية والمخاطر المالية</p>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-[var(--muted-foreground)] font-arabic">
+            <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" />الفترة المنتهية في 31 ديسمبر {selectedYear}</span>
+            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" />قوائم {selectedYear} فعلية · {LICENSED_BANKS.length} بنكاً في سجل ساما</span>
+          </div>
         </div>
+        <label className="text-[10px] text-[var(--muted-foreground)] font-arabic">السنة المالية<select value={selectedYear} onChange={event => setSelectedYear(event.target.value as FinancialYear)} className="mt-1 block min-w-32 rounded-xl border border-[var(--border)] bg-[var(--card)] py-2.5 text-sm font-bold text-[var(--foreground)]">{FINANCIAL_YEARS.map(year => <option key={year}>{year}</option>)}</select></label>
       </div>
 
       {/* Total balance */}
@@ -43,9 +83,9 @@ export default function ControlCenterPage() {
             <Wallet className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
-            <p className="text-xs text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p>
-            <p className="text-2xl font-bold text-[var(--primary)] tabular-nums" dir="ltr">{formatCurrency(totalBalance)}</p>
-            <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">يغطي {monthlyCoverage.toFixed(1)} شهر من المدفوعات بالمعدل الحالي</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-arabic">النقد وما في حكمه</p>
+            <p className="text-2xl font-bold text-[var(--control-balance-value)] tabular-nums" dir="ltr">{formatCurrency(selectedMetrics.cash)}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">{selectedYear === "2023" ? "سنة الأساس " : <>مقارنةً بـ <span dir="ltr">{formatCurrency(previousMetrics.cash)}</span> في {previousYear}</>}</p>
           </div>
         </CardContent>
       </Card>
@@ -68,7 +108,7 @@ export default function ControlCenterPage() {
                   {formatCurrency(kpi.value)}
                 </p>
                 <p className="mt-1 text-[11px] text-[var(--muted-foreground)] font-arabic">
-                  {kpi.label.includes("الإيرادات") ? "+8.4% مقارنة بالفترة السابقة" : kpi.label.includes("المدفوعات") ? "+3.1% مقارنة بالفترة السابقة" : `${Math.round((netBalance / totalIn) * 100)}% من الإيرادات محتفظ بها`}
+                  {kpi.label.includes("إيرادات") ? (revenueGrowth === null ? "سنة الأساس للمقارنة" : `${revenueGrowth >= 0 ? "+" : ""}${revenueGrowth.toFixed(1)}% مقارنة بعام ${previousYear}`) : kpi.label.includes("ربح") ? `هامش صافي الربح ${netMargin.toFixed(1)}%` : `${selectedMetrics.operatingCashFlow >= 0 ? "تدفق مرتفع" : "تدفق منخفض"} في ${selectedYear}`}
                 </p>
               </CardContent>
             </Card>
@@ -76,31 +116,15 @@ export default function ControlCenterPage() {
         })}
       </div>
 
-      {/* Executive insights */}
+      {/* Financial health metrics */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">قراءة تنفيذية</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">قوة التدفق النقدي</p>
-              <p className="mt-1 text-lg font-bold text-[var(--success)] font-arabic">موجب ومستقر</p>
-              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">صافي تدفق قدره <span dir="ltr">{formatCurrency(netBalance)}</span> خلال آخر 30 يوماً.</p>
-            </CardContent>
-          </Card>
-          <Card className={largestBankShare > 60 ? "border-[var(--warning)]/30" : ""}>
-            <CardContent className="p-5">
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">تركيز السيولة</p>
-              <p className="mt-1 text-lg font-bold text-[var(--foreground)] font-arabic">{largestBankShare}% لدى {largestBank?.name}</p>
-              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">راقب الاعتماد على حساب واحد ووزّع الاحتياطي التشغيلي عند الحاجة.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-xs text-[var(--muted-foreground)] font-arabic">أولوية هذا الأسبوع</p>
-              <p className="mt-1 text-lg font-bold text-[var(--warning)] font-arabic">تسريع التحصيل</p>
-              <p className="mt-2 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">فترة التحصيل 42 يوماً؛ خفضها إلى 35 يوماً يدعم السيولة والتصنيف.</p>
-            </CardContent>
-          </Card>
+        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">مؤشرات الصحة المالية</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)] font-arabic">معدل الحرق الشهري</p><p className={`mt-2 text-lg font-bold ${monthlyBurnRate <= 0 ? "text-[var(--success)]" : "text-[var(--destructive)]"}`} dir="ltr">{formatCurrency(Math.abs(monthlyBurnRate))}</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">{monthlyBurnRate <= 0 ? "توليد نقدي صافي" : "استهلاك نقدي"} · (نقد البداية − النهاية) ÷ 12</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)] font-arabic">التدفق النقدي الحر FCF</p><p className={`mt-2 text-lg font-bold ${freeCashFlow >= 0 ? "text-[var(--success)]" : "text-[var(--destructive)]"}`} dir="ltr">{formatCurrency(freeCashFlow)}</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">التدفق التشغيلي − الإنفاق الرأسمالي</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)] font-arabic">تغطية خدمة الدين DSCR</p><p className={`mt-2 text-lg font-bold ${dscr >= 1.25 ? "text-[var(--success)]" : dscr >= 1 ? "text-[var(--warning)]" : "text-[var(--destructive)]"}`} dir="ltr">{dscr.toFixed(2)}x</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">ربح العمليات ÷ أصل الدين والإيجارات وتكلفة التمويل</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)] font-arabic">تكلفة رأس المال WACC</p><p className="mt-2 text-lg font-bold text-[var(--primary)]" dir="ltr">{wacc.toFixed(1)}%</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">تكلفة ملكية 12% · دين 6.5% · زكاة 2.5%</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-[var(--muted-foreground)] font-arabic">نسبة السيولة الجارية</p><p className={`mt-2 text-lg font-bold ${currentRatio >= 1.5 ? "text-[var(--success)]" : "text-[var(--warning)]"}`} dir="ltr">{currentRatio.toFixed(2)}x</p><p className="mt-2 text-[10px] leading-4 text-[var(--muted-foreground)] font-arabic">الأصول المتداولة ÷ الالتزامات المتداولة</p></CardContent></Card>
         </div>
       </div>
 
@@ -110,13 +134,18 @@ export default function ControlCenterPage() {
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">التصنيف الائتماني</h2>
             <div className="flex items-center gap-5">
-              <ScoreRing value={CREDIT_REPORT.score} max={CREDIT_REPORT.max} size={110} />
+              <ScoreRing
+                value={yearCreditReport.score}
+                max={yearCreditReport.max}
+                size={110}
+                detail={`تصنيف ${yearCreditReport.letter} · أعلى من ${yearCreditReport.percentile}% من القطاع`}
+              />
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl font-black text-[var(--success)]">{CREDIT_REPORT.letter}</span>
-                  <Badge variant="success" className="font-arabic text-xs">{CREDIT_REPORT.rating}</Badge>
+                  <span className="text-2xl font-black text-[var(--success)]">{yearCreditReport.letter}</span>
+                  <Badge variant="success" className="font-arabic text-xs">{yearCreditReport.rating}</Badge>
                 </div>
-                <p className="text-xs text-[var(--muted-foreground)] font-arabic">أعلى من {CREDIT_REPORT.percentile}% من شركات القطاع</p>
+                <p className="text-xs text-[var(--muted-foreground)] font-arabic">أعلى من {yearCreditReport.percentile}% من شركات القطاع</p>
               </div>
             </div>
           </CardContent>
@@ -126,9 +155,15 @@ export default function ControlCenterPage() {
           <CardContent className="p-5">
             <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-4">مؤشر الاستدامة المالية</h2>
             <div className="flex items-center gap-5">
-              <ScoreRing value={SUSTAINABILITY_SCORE.value} max={SUSTAINABILITY_SCORE.max} size={110} colorOverride="var(--primary)" />
+              <ScoreRing
+                value={sustainabilityScore.value}
+                max={sustainabilityScore.max}
+                size={110}
+                colorOverride="var(--primary)"
+                detail={sustainabilityScore.subMetrics.map(m => `${m.label} ${m.value}`).join(" · ")}
+              />
               <div className="flex-1 space-y-2.5">
-                {SUSTAINABILITY_SCORE.subMetrics.map(m => (
+                {sustainabilityScore.subMetrics.map(m => (
                   <div key={m.key} className="flex items-center justify-between text-xs">
                     <span className="text-[var(--muted-foreground)] font-arabic">{m.label}</span>
                     <span className="font-bold text-[var(--foreground)]">{m.value}</span>
@@ -140,57 +175,51 @@ export default function ControlCenterPage() {
         </Card>
       </div>
 
-      {/* Balance details */}
+      {/* Bank accounts */}
       <div>
-        <h2 className="text-base font-bold text-[var(--foreground)] font-arabic mb-3">تفاصيل الأرصدة</h2>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div><h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">توزيع النقد وما في حكمه للسنة المالية {selectedYear}</p></div>
+          <div className="text-left"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p><p className="text-sm font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(selectedMetrics.cash)}</p></div>
+        </div>
         <Card>
           <CardContent className="p-5">
             <Table>
               <TableHead>
                 <TableRow>
                   <TableHeaderCell>البنك</TableHeaderCell>
+                  <TableHeaderCell>الحساب</TableHeaderCell>
+                  <TableHeaderCell>رقم الحساب</TableHeaderCell>
                   <TableHeaderCell>الرصيد</TableHeaderCell>
-                  <TableHeaderCell>الداخل / الخارج (30 يوم)</TableHeaderCell>
-                  <TableHeaderCell>صافي الحركة</TableHeaderCell>
-                  <TableHeaderCell>النسبة من الإجمالي</TableHeaderCell>
-                  <TableHeaderCell>حالة المزامنة</TableHeaderCell>
+                  <TableHeaderCell>النسبة</TableHeaderCell>
+                  <TableHeaderCell>الحالة</TableHeaderCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {connected.map(bank => (
-                  <TableRow key={bank.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] text-white font-bold text-[11px]" style={{ background: bank.color }}>
-                          {bank.name[0]}
-                        </div>
-                        {bank.name}
-                      </div>
-                    </TableCell>
-                    <TableCell><span dir="ltr">{formatCurrency(bank.balance)}</span></TableCell>
-                    <TableCell><span className="text-[var(--success)]" dir="ltr">{formatCurrency(bank.monthlyIn)}</span> / <span className="text-[var(--destructive)]" dir="ltr">{formatCurrency(bank.monthlyOut)}</span></TableCell>
-                    <TableCell><span className="font-bold text-[var(--success)]" dir="ltr">{formatCurrency(bank.monthlyIn - bank.monthlyOut)}</span></TableCell>
-                    <TableCell>{totalBalance > 0 ? Math.round((bank.balance / totalBalance) * 100) : 0}%</TableCell>
-                    <TableCell><Badge variant="success" className="gap-1 font-arabic"><CheckCircle2 className="h-3 w-3" />محدّث</Badge></TableCell>
-                  </TableRow>
-                ))}
+                {bankAccounts.map(account => <TableRow key={account.bank}>
+                  <TableCell className="font-arabic font-bold">{account.bank}</TableCell>
+                  <TableCell className="font-arabic">{account.account}</TableCell>
+                  <TableCell><span dir="ltr" className="text-[var(--muted-foreground)]">{account.iban}</span></TableCell>
+                  <TableCell><span dir="ltr" className="font-bold">{formatCurrency(account.balance)}</span></TableCell>
+                  <TableCell><span dir="ltr">{Math.round(account.share * 100)}%</span></TableCell>
+                  <TableCell><Badge variant="success" className="font-arabic">{account.status}</Badge></TableCell>
+                </TableRow>)}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-[var(--warning)]/25">
+      {/* <Card className="border-[var(--warning)]/25">
         <CardContent className="p-5">
           <div className="flex items-start gap-3">
             <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-[var(--warning)]" />
             <div>
-              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic">تنبيه يحتاج متابعة</h2>
-              <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">بنك الرياض غير متصل حالياً، لذلك لا تدخل أرصدته أو حركاته في هذا الملخص. إعادة الربط تمنحك صورة سيولة مكتملة.</p>
+              <h2 className="text-sm font-bold text-[var(--foreground)] font-arabic">حدود البيانات المتاحة</h2>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted-foreground)] font-arabic">القوائم المالية تعرض إجمالي النقد ولا تتضمن توزيعاً حسب البنك. تُستخدم <a href={SAMA_BANKS_SOURCE} target="_blank" rel="noreferrer" className="text-[var(--primary)] underline">قائمة ساما</a> للتحقق من ترخيص البنك فقط، وليس لاستخراج أرصدة المنشأة.</p>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

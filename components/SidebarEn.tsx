@@ -48,13 +48,15 @@ export function SidebarEn({
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className={`shrink-0 border-b border-[var(--border)] ${collapsed ? "p-3" : "p-6"}`}>
         <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-          <Image src="/logo.png" alt="Rakaez" width={48} height={59} className="h-12 w-auto shrink-0 object-contain" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center">
+            <Image src="/logo.png" alt="Rakaez" width={48} height={57} priority className="sidebar-logo h-12 w-auto object-contain" />
+          </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h1 className="truncate text-base font-bold text-[var(--foreground)]">
-                {user?.companies?.name || user?.companies?.name_ar || "Raka'ez Platform"}
+              <p className="text-[10px] font-medium text-[var(--muted-foreground)]">Company workspace</p>
+              <h1 className="truncate text-lg font-black tracking-tight text-[var(--foreground)]">
+                Glowpick
               </h1>
-              <p className="text-xs text-[var(--muted-foreground)]">Open Banking for SMEs</p>
             </div>
           )}
         </div>

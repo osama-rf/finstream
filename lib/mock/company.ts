@@ -1,7 +1,7 @@
 import type { CompanyProfile, TeamMember, ActivityLogEntry, CompanyOverview } from "./types";
 
 export const COMPANY_PROFILE: CompanyProfile = {
-  name: "شركة الأفق للتقنية والاستشارات",
+  name: "Glowpick",
   commercialRegistration: "1010123456",
   taxNumber: "300012345600003",
   sector: "الاستشارات والخدمات التقنية",
@@ -16,7 +16,7 @@ export const TEAM: TeamMember[] = [
 ];
 
 export const ACTIVITY_LOG: ActivityLogEntry[] = [
-  { id: "a1", icon: "check", title: "خالد العمر اعتمد قائمة الدخل Q1 2026", timestamp: "2026-04-10 · 11:20 ص" },
+  { id: "a1", icon: "check", title: "تم استيراد القوائم المالية السنوية للأعوام 2023–2025", timestamp: "2026-07-17 · 11:20 ص" },
   { id: "a2", icon: "link", title: "أسامة الرفاعي ربط STC Pay", timestamp: "2026-07-13 · 09:02 ص" },
   { id: "a3", icon: "share", title: "تمت مشاركة التقرير الائتماني مع بنك الراجحي", timestamp: "2026-07-06 · 03:41 م" },
 ];
