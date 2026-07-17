@@ -34,21 +34,22 @@ const shareBanks = LICENSED_BANKS.map(bank => bank.name);
 function YearlyBarChart({ selectedYear }: { selectedYear: FinancialYear }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [detailYear, setDetailYear] = useState<FinancialYear>(selectedYear);
-  const data = FINANCIAL_YEARS.slice().reverse().filter(year => Number(year) <= Number(selectedYear)).map(year => {
+  const data = FINANCIAL_YEARS.slice().reverse().map(year => {
     const metrics = FINANCIAL_METRICS_BY_YEAR[year];
     return { quarter: year, revenue: metrics.revenue, expenses: metrics.revenue - metrics.netProfit, forecast: false };
   });
 
   const maxVal = Math.ceil(Math.max(...data.flatMap(d => [d.revenue, d.expenses])) / 500_000) * 500_000;
-  const totalRevenue = data[data.length - 1].revenue;
-  const totalExpenses = data[data.length - 1].expenses;
-  const previousItem = data.length > 1 ? data[data.length - 2] : null;
+  const selectedItem = data.find(item => item.quarter === selectedYear) ?? data[data.length - 1];
+  const totalRevenue = selectedItem.revenue;
+  const totalExpenses = selectedItem.expenses;
+  const previousItem = data.find(item => Number(item.quarter) === Number(selectedYear) - 1) ?? null;
   const revenueGrowth = previousItem ? ((totalRevenue - previousItem.revenue) / previousItem.revenue) * 100 : 0;
   const heightPx = 96;
 
   const activeIndex = hoverIndex;
   const activeItem = activeIndex !== null ? data[activeIndex] : null;
-  const detailItem = data.find(item => item.quarter === detailYear) ?? data[data.length - 1];
+  const detailItem = data.find(item => item.quarter === detailYear) ?? selectedItem;
   const detailMargin = ((detailItem.revenue - detailItem.expenses) / detailItem.revenue) * 100;
 
   useEffect(() => setDetailYear(selectedYear), [selectedYear]);
