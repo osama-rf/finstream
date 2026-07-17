@@ -46,11 +46,13 @@ export default function ControlCenterEnPage() {
       { key: "operational_discipline", label: "التدفق التشغيلي", value: cashFlowScore },
     ],
   };
+  const rajhiBalance = Math.round(selectedMetrics.cash * 0.52);
+  const snbBalance = Math.round(selectedMetrics.cash * 0.31);
   const bankAccounts = [
-    { bank: "Al Rajhi Bank", account: "Operating account", iban: "SA•• 0001 2345", share: 0.52, status: "Connected" },
-    { bank: "Saudi National Bank", account: "Collections account", iban: "SA•• 1016 7519", share: 0.31, status: "Connected" },
-    { bank: "Riyad Bank", account: "Payroll account", iban: "SA•• 8888 7777", share: 0.17, status: "Connected" },
-  ].map(account => ({ ...account, balance: selectedMetrics.cash * account.share }));
+    { bank: "Al Rajhi Bank", account: "Operations and suppliers", iban: "SA•• 0001 2345", share: 52, balance: rajhiBalance, status: "Connected" },
+    { bank: "Saudi National Bank", account: "Sales collections", iban: "SA•• 1016 7519", share: 31, balance: snbBalance, status: "Connected" },
+    { bank: "Riyad Bank", account: "Payroll and expenses", iban: "SA•• 8888 7777", share: 17, balance: selectedMetrics.cash - rajhiBalance - snbBalance, status: "Connected" },
+  ];
 
   const kpis = [
     { label: "Cash and cash equivalents", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
@@ -174,8 +176,8 @@ export default function ControlCenterEnPage() {
 
       <div>
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div><h2 className="text-base font-bold text-[var(--foreground)]">Bank Accounts</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">Cash and cash equivalents allocation for {selectedYear}</p></div>
-          <div className="text-right"><p className="text-[10px] text-[var(--muted-foreground)]">Total balance</p><p className="text-sm font-bold text-[var(--foreground)]">{formatCurrency(selectedMetrics.cash)}</p></div>
+          <div><h2 className="text-base font-bold text-[var(--foreground)]">Bank Account Balances</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">3 connected accounts · total reconciles to the {selectedYear} statements</p></div>
+          <div className="rounded-xl border border-[var(--primary)]/20 bg-[color:color-mix(in_srgb,var(--primary)_5%,transparent)] px-4 py-2 text-right"><p className="text-[10px] text-[var(--muted-foreground)]">Consolidated balance</p><p className="text-base font-bold text-[var(--primary)]">{formatCurrency(selectedMetrics.cash)}</p></div>
         </div>
         <Card>
           <CardContent className="p-5">
@@ -183,10 +185,10 @@ export default function ControlCenterEnPage() {
               <TableHead>
                 <TableRow>
                   <TableHeaderCell>Bank</TableHeaderCell>
-                  <TableHeaderCell>Account</TableHeaderCell>
+                  <TableHeaderCell>Account use</TableHeaderCell>
                   <TableHeaderCell>Account number</TableHeaderCell>
                   <TableHeaderCell>Balance</TableHeaderCell>
-                  <TableHeaderCell>Share</TableHeaderCell>
+                  <TableHeaderCell>Share of balance</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
                 </TableRow>
               </TableHead>
@@ -196,7 +198,7 @@ export default function ControlCenterEnPage() {
                   <TableCell>{account.account}</TableCell>
                   <TableCell className="text-[var(--muted-foreground)]">{account.iban}</TableCell>
                   <TableCell className="font-bold">{formatCurrency(account.balance)}</TableCell>
-                  <TableCell>{Math.round(account.share * 100)}%</TableCell>
+                  <TableCell>{account.share}%</TableCell>
                   <TableCell><Badge variant="success">{account.status}</Badge></TableCell>
                 </TableRow>)}
               </TableBody>

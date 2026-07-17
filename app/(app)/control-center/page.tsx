@@ -49,11 +49,13 @@ export default function ControlCenterPage() {
       { key: "operational_discipline", label: "التدفق التشغيلي", value: cashFlowScore },
     ],
   };
+  const rajhiBalance = Math.round(selectedMetrics.cash * 0.52);
+  const snbBalance = Math.round(selectedMetrics.cash * 0.31);
   const bankAccounts = [
-    { bank: "مصرف الراجحي", account: "حساب تشغيلي", iban: "SA•• 0001 2345", share: 0.52, status: "متصل" },
-    { bank: "البنك الأهلي السعودي", account: "حساب التحصيل", iban: "SA•• 1016 7519", share: 0.31, status: "متصل" },
-    { bank: "بنك الرياض", account: "حساب الرواتب", iban: "SA•• 8888 7777", share: 0.17, status: "متصل" },
-  ].map(account => ({ ...account, balance: selectedMetrics.cash * account.share }));
+    { bank: "مصرف الراجحي", account: "التشغيل والموردون", iban: "SA•• 0001 2345", share: 52, balance: rajhiBalance, status: "متصل" },
+    { bank: "البنك الأهلي السعودي", account: "تحصيل المبيعات", iban: "SA•• 1016 7519", share: 31, balance: snbBalance, status: "متصل" },
+    { bank: "بنك الرياض", account: "الرواتب والمصروفات", iban: "SA•• 8888 7777", share: 17, balance: selectedMetrics.cash - rajhiBalance - snbBalance, status: "متصل" },
+  ];
 
   const kpis = [
     { label: "الرصيد", value: selectedMetrics.cash, color: "var(--primary)", icon: Wallet },
@@ -178,8 +180,7 @@ export default function ControlCenterPage() {
       {/* Bank accounts */}
       <div>
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div><h2 className="text-base font-bold text-[var(--foreground)] font-arabic">الحسابات البنكية</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">توزيع الرصيد للسنة المالية {selectedYear}</p></div>
-          <div className="text-left"><p className="text-[10px] text-[var(--muted-foreground)] font-arabic">إجمالي الأرصدة</p><p className="text-sm font-bold text-[var(--foreground)]" dir="ltr">{formatCurrency(selectedMetrics.cash)}</p></div>
+          <div><h2 className="text-base font-bold text-[var(--foreground)] font-arabic">أرصدة الحسابات البنكية</h2><p className="mt-1 text-xs text-[var(--muted-foreground)] font-arabic">3 حسابات متصلة · مجموعها يطابق الرصيد المسجل في قوائم {selectedYear}</p></div>
         </div>
         <Card>
           <CardContent className="p-5">
@@ -187,10 +188,10 @@ export default function ControlCenterPage() {
               <TableHead>
                 <TableRow>
                   <TableHeaderCell>البنك</TableHeaderCell>
-                  <TableHeaderCell>الحساب</TableHeaderCell>
+                  <TableHeaderCell>استخدام الحساب</TableHeaderCell>
                   <TableHeaderCell>رقم الحساب</TableHeaderCell>
                   <TableHeaderCell>الرصيد</TableHeaderCell>
-                  <TableHeaderCell>النسبة</TableHeaderCell>
+                  <TableHeaderCell>الحصة من الرصيد</TableHeaderCell>
                   <TableHeaderCell>الحالة</TableHeaderCell>
                 </TableRow>
               </TableHead>
@@ -200,7 +201,7 @@ export default function ControlCenterPage() {
                   <TableCell className="font-arabic">{account.account}</TableCell>
                   <TableCell><span dir="ltr" className="text-[var(--muted-foreground)]">{account.iban}</span></TableCell>
                   <TableCell><span dir="ltr" className="font-bold">{formatCurrency(account.balance)}</span></TableCell>
-                  <TableCell><span dir="ltr">{Math.round(account.share * 100)}%</span></TableCell>
+                  <TableCell><span dir="ltr">{account.share}%</span></TableCell>
                   <TableCell><Badge variant="success" className="font-arabic">{account.status}</Badge></TableCell>
                 </TableRow>)}
               </TableBody>
